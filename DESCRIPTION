@@ -1,0 +1,42 @@
+Package: gfoRmula
+Title: Parametric G-formula for R
+Version: 0.1.0
+Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
+                     email = "vlin@alumni.harvard.edu"),
+              person("Sean", "McGrath", role = c("aut", "cre"),
+                      email = "sean.mcgrath@hsph.harvard.edu", 
+                      comment = c(ORCID = "0000-0002-7281-3516")),
+              person("Zilu", "Zhang", role = c("aut"),
+                      email = "zilu_zhang@dfci.harvard.edu"),
+              person("Roger W.", "Logan", role = c("aut"),
+                      email = "rwlogan@hsph.harvard.edu"),
+              person("Lucia C.", "Petito", role = c("aut"),
+                      email = "petito@hsph.harvard.edu"),
+              person("Jessica G.", "Young", role = c("aut"),
+                      email = "jyoung@hsph.harvard.edu",
+                      comment = c(ORCID = "0000-0002-2758-6932")),
+              person("Miguel A.", "Hernan", role = c("aut"),
+                      email = "mhernan@hsph.harvard.edu"))
+Description: Implements the parametric g-formula algorithm for R. It  is 
+    capable of estimating risk for survival analysis, as well as mean 
+    outcomes over time in continuous outcome or continuous end-of-follow-up 
+    outcome cases.
+Depends: R (>= 3.4.0)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1
+Imports: 
+    data.table,
+    ggplot2,
+    ggpubr,
+    grDevices,
+    nnet,
+    parallel,
+    stats,
+    stringr,
+    survival,
+    truncnorm,
+    truncreg,
+    Hmisc,
+    utils
