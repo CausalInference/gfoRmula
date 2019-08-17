@@ -1,0 +1,14 @@
+---
+output: md_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Package Updates
+
+### Changes in Version 0.1.0 (2019-08-17)
+*  First version released on GitHub 
+   ([https://github.com/CausalInference/gfoRmula](https://github.com/CausalInference/gfoRmula)) 
+

@@ -1,8 +1,0 @@
-After downloading the gformula folder, set your R working directory to the parent directory of the gformula folder. Subsequently, execute:
-
-install.packages("devtools")
-library(devtools)
-
-install("gformula")
-
-The gformula package should then be available to use.

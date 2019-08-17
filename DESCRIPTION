@@ -4,7 +4,7 @@ Version: 0.1.0
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu"),
               person("Sean", "McGrath", role = c("aut", "cre"),
-                      email = "sean.mcgrath@hsph.harvard.edu", 
+                      email = "sean_mcgrath@g.harvard.edu", 
                       comment = c(ORCID = "0000-0002-7281-3516")),
               person("Zilu", "Zhang", role = c("aut"),
                       email = "zilu_zhang@dfci.harvard.edu"),
@@ -40,3 +40,5 @@ Imports:
     truncreg,
     Hmisc,
     utils
+URL: https://github.com/CausalInference/gfoRmula
+BugReports: https://github.com/CausalInference/gfoRmula/issues
