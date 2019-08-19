@@ -3,6 +3,12 @@
 
 # gfoRmula: Parametric G-formula for R
 
+<!-- badges: start -->
+
+[![Travis build
+status](https://travis-ci.org/CausalInference/gfoRmula.svg?branch=master)](https://travis-ci.org/CausalInference/gfoRmula)
+<!-- badges: end -->
+
 ## Installation
 
 After installing the `devtools` package (i.e., calling

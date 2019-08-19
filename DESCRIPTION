@@ -2,10 +2,13 @@ Package: gfoRmula
 Title: Parametric G-formula for R
 Version: 0.1.0
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
-                     email = "vlin@alumni.harvard.edu"),
+                     email = "vlin@alumni.harvard.edu", 
+                     comment = "V. Lin and S. McGrath made equal 
+                     contributions"),
               person("Sean", "McGrath", role = c("aut", "cre"),
                       email = "sean_mcgrath@g.harvard.edu", 
-                      comment = c(ORCID = "0000-0002-7281-3516")),
+                      comment = c(ORCID = "0000-0002-7281-3516", 
+                      "V. Lin and S. McGrath made equal contributions")),
               person("Zilu", "Zhang", role = c("aut"),
                       email = "zilu_zhang@dfci.harvard.edu"),
               person("Roger W.", "Logan", role = c("aut"),
@@ -14,9 +17,12 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
                       email = "petito@hsph.harvard.edu"),
               person("Jessica G.", "Young", role = c("aut"),
                       email = "jyoung@hsph.harvard.edu",
-                      comment = c(ORCID = "0000-0002-2758-6932")),
+                      comment = c(ORCID = "0000-0002-2758-6932", 
+                      "M.A. Hernan and J.G. Young made equal contributions")),
               person("Miguel A.", "Hernan", role = c("aut"),
-                      email = "mhernan@hsph.harvard.edu"))
+                      email = "mhernan@hsph.harvard.edu",
+                      comment = "M.A. Hernan and J.G. Young made equal  
+                      contributions"))
 Description: Implements the parametric g-formula algorithm for R. It  is 
     capable of estimating risk for survival analysis, as well as mean 
     outcomes over time in continuous outcome or continuous end-of-follow-up 
