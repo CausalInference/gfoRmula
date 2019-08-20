@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Bootstrap Observed Data and Simulate Under All Interventions
 #'
 #' This internal function bootstraps the observed data (i.e., resamples the observed data set with replacement to

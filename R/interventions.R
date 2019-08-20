@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Example Intervention 1
 #'
 #' This function implements an example intervention for the specified intervention variable in

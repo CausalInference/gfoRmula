@@ -1,5 +1,5 @@
 Package: gfoRmula
-Title: Parametric G-formula for R
+Title: Parametric G-Formula for R
 Version: 0.1.0
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
@@ -29,6 +29,7 @@ Description: Implements the parametric g-formula algorithm for R. It  is
     outcome cases.
 Depends: R (>= 3.4.0)
 License: GPL-3
+Copyright: 2019 The President and Fellows of Harvard College
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
@@ -44,7 +45,6 @@ Imports:
     survival,
     truncnorm,
     truncreg,
-    Hmisc,
     utils
 URL: https://github.com/CausalInference/gfoRmula
 BugReports: https://github.com/CausalInference/gfoRmula/issues

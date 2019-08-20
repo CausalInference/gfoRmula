@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Fit GLM on Covariate
 #'
 #' This internal function fits a generalized linear model (GLM) for a single covariate using the observed data.

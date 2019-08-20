@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Simulate Binary Values
 #'
 #' This internal function simulates covariate values from a binomial distribution.

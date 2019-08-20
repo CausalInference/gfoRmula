@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' History functions
 #'
 #' These functions create new columns in an input data table for covariate histories. Users must specify which covariates are to be used in the history functions. The data table is modified in place.

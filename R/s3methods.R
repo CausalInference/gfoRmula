@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Print method for objects of class "gformula_survival"
 #'
 #' Print method for objects of class "gformula_survival".

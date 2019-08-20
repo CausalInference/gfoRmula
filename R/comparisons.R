@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Calculate Observed Covariate Means and Risk
 #'
 #' This internal function calculates the mean observed values of covariates at each time point, as well as mean

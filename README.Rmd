@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-# gfoRmula: Parametric G-formula for R
+# gfoRmula: Parametric G-Formula for R
 
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/CausalInference/gfoRmula.svg?branch=master)](https://travis-ci.org/CausalInference/gfoRmula)

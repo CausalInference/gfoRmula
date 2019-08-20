@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Simple Restriction
 #'
 #' This function assists the implementation of a restriction on a covariate in the data

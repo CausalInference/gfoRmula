@@ -1,3 +1,5 @@
+# Copyright (c) 2019 The President and Fellows of Harvard College
+
 #' Estimation of Survival Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this function estimates the risk over time under multiple

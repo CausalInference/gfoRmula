@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# gfoRmula: Parametric G-formula for R
+# gfoRmula: Parametric G-Formula for R
 
 <!-- badges: start -->
 
