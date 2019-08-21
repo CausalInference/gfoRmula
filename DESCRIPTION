@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula for R
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
@@ -18,10 +18,10 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
               person("Jessica G.", "Young", role = c("aut"),
                       email = "jyoung@hsph.harvard.edu",
                       comment = c(ORCID = "0000-0002-2758-6932", 
-                      "M.A. Hernan and J.G. Young made equal contributions")),
-              person("Miguel A.", "Hernan", role = c("aut"),
+                      "M.A. Hernán and J.G. Young made equal contributions")),
+              person("Miguel A.", "Hernán", role = c("aut"),
                       email = "mhernan@hsph.harvard.edu",
-                      comment = "M.A. Hernan and J.G. Young made equal  
+                      comment = "M.A. Hernán and J.G. Young made equal  
                       contributions"))
 Description: Implements the parametric g-formula algorithm for R. It  is 
     capable of estimating risk for survival analysis, as well as mean 
@@ -46,5 +46,6 @@ Imports:
     truncnorm,
     truncreg,
     utils
-URL: https://github.com/CausalInference/gfoRmula
+URL: https://github.com/CausalInference/gfoRmula, 
+    https://arxiv.org/abs/1908.07072
 BugReports: https://github.com/CausalInference/gfoRmula/issues

@@ -3,7 +3,7 @@
 #' Estimation of Survival Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this function estimates the risk over time under multiple
-#' user-specified interventions using the parametric g-formula. See (TO DO - link to arXiv paper) for
+#' user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -115,6 +115,7 @@
 #' The results for the g-formula simulation under various interventions only for the first and last time points are printed with the \code{\link{print.gformula_survival}} function. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}} function.
 #'
 #'
+#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #' ## Estimating the effect of static treatment strategies on risk of a
@@ -766,7 +767,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' Estimation of Continuous End-of-Follow-Up Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this function estimates the outcome mean at end-of-follow-up under
-#' multiple user-specified interventions using the parametric g-formula. See (TO DO - link to arXiv paper) for
+#' multiple user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -865,7 +866,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_continuous_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{print.gformula_continuous_eof}} function.
 #'
-#'
+#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #'
@@ -1390,7 +1391,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' Estimation of Binary End-of-Follow-Up Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this function estimates the outcome probability at
-#' end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See (TO DO - link to arXiv paper) for
+#' end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -1489,6 +1490,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #'
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_binary_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{plot.gformula_binary_eof}} function.
 #'
+#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #'

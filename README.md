@@ -18,3 +18,8 @@ be installed from GitHub with:
 ``` r
 devtools::install_github("CausalInference/gfoRmula")
 ```
+
+## Usage
+
+Please refer to [Lin et al. (2019)](https://arxiv.org/abs/1908.07072)
+for a detailed guide to the `gfoRmula` package.

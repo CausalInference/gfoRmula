@@ -420,8 +420,6 @@ prep_cluster <- function(ncores, threads , covtypes, bootstrap_option = FALSE){
   clusterAssign(cl, "fit_trunc_normal", fit_trunc_normal)
   clusterAssign(cl, "pred_fun_Y", pred_fun_Y)
   clusterAssign(cl, "pred_fun_D", pred_fun_D)
-  # Note warning suppression when submitting to CRAN, reference 'future' package
-  # as doing the same thing for similar issue
   suppressWarnings(parallel::clusterExport(cl, as.vector(utils::lsf.str())))
   if (bootstrap_option){
     clusterAssign(cl, "simulate", simulate)
