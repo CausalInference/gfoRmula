@@ -25,3 +25,4 @@ Numeric vector of simulated covariate values under the truncated normal
 This internal function simulates covariate values from a normal distribution truncated
 on one side.
 }
+\keyword{internal}

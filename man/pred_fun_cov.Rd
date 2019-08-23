@@ -43,3 +43,4 @@ A list of fitted models, one for each covariate in \code{covnames}.
 \description{
 This internal function fits a model for each covariate using the observed data.
 }
+\keyword{internal}

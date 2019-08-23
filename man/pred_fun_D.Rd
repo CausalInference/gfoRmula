@@ -24,3 +24,4 @@ Fitted model for the competing event variable.
 \description{
 This internal function fits a generalized linear model (GLM) for the competing event variable using the observed data.
 }
+\keyword{internal}

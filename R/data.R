@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Example Dataset for a Survival Outcome without Censoring
 #'
 #' A dataset consisting of 13,170 observations on 2,500 individuals over 7 time points. Each row in the dataset corresponds to the record of one individual at one time point.

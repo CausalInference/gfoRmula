@@ -19,8 +19,12 @@ natural(newdf, pool, intvar, intvals, time_name, t)
 
 \item{t}{Integer specifying the current time index.}
 }
+\value{
+No value is returned.
+}
 \description{
 This function implements the natural course (i.e., model-based simulation) for the specified
 intervention variable in the data table newdf. Because \code{newdf} is initiated with the
 natural course, this function does nothing.
 }
+\keyword{internal}

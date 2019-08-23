@@ -23,3 +23,4 @@ A list of covariate plots.
 \description{
 This internal function obtains the covariate plots for \code{\link{gformula_survival}}, \code{\link{gformula_continuous_eof}}, and \code{\link{gformula_binary_eof}}.
 }
+\keyword{internal}

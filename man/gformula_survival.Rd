@@ -171,8 +171,7 @@ further details concerning the application and implementation of the parametric 
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a
 ## failure event
-
-\dontrun{
+\donttest{
 id <- 'id'
 time_points <- 7
 time_name <- 't0'
@@ -207,14 +206,12 @@ gform_basic <- gformula_survival(obs_data = basicdata_nocomp, id = id,
                                  basecovs = c('L3'), nsimul = nsimul,
                                  seed = 1234)
 gform_basic
-plot(gform_basic)
 }
 
 
 ## Estimating the effect of treatment strategies on risk of a failure event
 ## when competing events exist
-
-\dontrun{
+\donttest{
 id <- 'id'
 time_points <- 7
 time_name <- 't0'
@@ -252,7 +249,7 @@ gform_basic <- gformula_survival(obs_data = basicdata, id = id,
                                  histories = histories, histvars = histvars,
                                  basecovs = c('L3'), nsimul = nsimul,
                                  seed = 1234)
-print(gform_basic, rmses = TRUE)
+gform_basic
 }
 
 }

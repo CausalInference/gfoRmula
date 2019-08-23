@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Bootstrap Observed Data and Simulate Under All Interventions
 #'
 #' This internal function bootstraps the observed data (i.e., resamples the observed data set with replacement to
@@ -108,6 +106,7 @@
 #' \item{bootcoeffs}{List of the coefficients of the fitted models. If the argument \code{boot_diag} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootstderrs}{List of the standard errors of the coefficients of the fitted models. If the argument \code{boot_diag} is set to \code{FALSE}, a value of \code{NA} is given.}
 #'
+#' @keywords internal
 #' @import data.table
 bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              intvars, interventions, int_times, ref_int,

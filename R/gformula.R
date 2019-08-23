@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Estimation of Survival Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this function estimates the risk over time under multiple
@@ -120,8 +118,7 @@
 #' @examples
 #' ## Estimating the effect of static treatment strategies on risk of a
 #' ## failure event
-#'
-#' \dontrun{
+#' \donttest{
 #' id <- 'id'
 #' time_points <- 7
 #' time_name <- 't0'
@@ -156,14 +153,12 @@
 #'                                  basecovs = c('L3'), nsimul = nsimul,
 #'                                  seed = 1234)
 #' gform_basic
-#' plot(gform_basic)
 #' }
 #'
 #'
 #' ## Estimating the effect of treatment strategies on risk of a failure event
 #' ## when competing events exist
-#'
-#' \dontrun{
+#' \donttest{
 #' id <- 'id'
 #' time_points <- 7
 #' time_name <- 't0'
@@ -201,7 +196,7 @@
 #'                                  histories = histories, histvars = histvars,
 #'                                  basecovs = c('L3'), nsimul = nsimul,
 #'                                  seed = 1234)
-#' print(gform_basic, rmses = TRUE)
+#' gform_basic
 #' }
 #'
 #' @import data.table
@@ -872,8 +867,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'
 #' ## Estimating the effect of treatment strategies on the mean of a continuous
 #' ## end of follow-up outcome
-#'
-#' \dontrun{
+#' \donttest{
 #' library('Hmisc')
 #' id <- 'id'
 #' time_name <- 't0'
@@ -1496,8 +1490,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #'
 #' ## Estimating the effect of threshold interventions on the mean of a binary
 #' ## end of follow-up outcome
-#'
-#' \dontrun{
+#' \donttest{
 #' id <- 'id_num'
 #' time_name <- 'time'
 #' covnames <- c('cov1', 'cov2', 'treat')
@@ -1517,7 +1510,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #'                       list(c(threshold, 1, Inf)))
 #' int_descript <- c('Never treat', 'Threshold - lower bound 1')
 #' nsimul <- 10000
-#' ncores <- parallel::detectCores() - 1
+#' ncores <- 2
 #'
 #' gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
 #'                                      time_name = time_name,
@@ -1531,7 +1524,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #'                                      int_descript = int_descript,
 #'                                      histories = histories, histvars = histvars,
 #'                                      basecovs = c("cov3"), seed = 1234,
-#'                                      parallel = TRUE, nsamples = 20,
+#'                                      parallel = TRUE, nsamples = 5,
 #'                                      nsimul = nsimul, ncores = ncores)
 #' gform_bin_eof
 #' }

@@ -152,8 +152,7 @@ further details concerning the application and implementation of the parametric 
 
 ## Estimating the effect of threshold interventions on the mean of a binary
 ## end of follow-up outcome
-
-\dontrun{
+\donttest{
 id <- 'id_num'
 time_name <- 'time'
 covnames <- c('cov1', 'cov2', 'treat')
@@ -173,7 +172,7 @@ interventions <- list(list(c(static, rep(0, 7))),
                       list(c(threshold, 1, Inf)))
 int_descript <- c('Never treat', 'Threshold - lower bound 1')
 nsimul <- 10000
-ncores <- parallel::detectCores() - 1
+ncores <- 2
 
 gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
                                      time_name = time_name,
@@ -187,7 +186,7 @@ gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
                                      int_descript = int_descript,
                                      histories = histories, histvars = histvars,
                                      basecovs = c("cov3"), seed = 1234,
-                                     parallel = TRUE, nsamples = 20,
+                                     parallel = TRUE, nsamples = 5,
                                      nsimul = nsimul, ncores = ncores)
 gform_bin_eof
 }

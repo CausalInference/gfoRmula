@@ -130,3 +130,4 @@ This internal function simulates a new dataset containing covariates, outcome pr
 probabilities (if any), outcomes, and competing events (if any) based on an observed
 dataset and a user-specified intervention.
 }
+\keyword{internal}

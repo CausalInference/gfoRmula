@@ -27,3 +27,4 @@ This internal function models a covariate using a "bounded normal" distribution
 by first standardizing the covariate values to the range [0, 1], noninclusive,
 then fitting a generalized linear model (GLM) under the Gaussian family function.
 }
+\keyword{internal}

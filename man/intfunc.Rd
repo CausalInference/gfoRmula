@@ -24,7 +24,11 @@ integers used to specify the treatment regime).}
 
 \item{t}{Integer specifying the current time index.}
 }
+\value{
+No value is returned. The data table \code{newdf} is modified in place.
+}
 \description{
 This internal function executes the intervention of interest on the specified intervention variable
-in the data table \code{newdf}. The data table \code{newdf} is modified in place.
+in the data table \code{newdf}.
 }
+\keyword{internal}

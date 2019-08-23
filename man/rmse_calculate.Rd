@@ -51,3 +51,4 @@ The RMSE for the model.
 This internal function calculates root mean square error (RMSE) for the covariate (and the outcome and competing event, if applicable) models fit on
 the observed data.
 }
+\keyword{internal}

@@ -83,3 +83,4 @@ No value is returned.
 \description{
 This internal function catches various potential errors in the user input in \code{\link{gformula_survival}}, \code{\link{gformula_continuous_eof}}, and \code{\link{gformula_binary_eof}}.
 }
+\keyword{internal}

@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Print method for objects of class "gformula_survival"
 #'
 #' Print method for objects of class "gformula_survival".
@@ -12,6 +10,46 @@
 #' @param ... Other arguments.
 #' @return No value is returned.
 #' @seealso \code{\link{gformula_survival}}
+#'
+#' @examples
+#' ## Estimating the effect of static treatment strategies on risk of a
+#' ## failure event
+#' \donttest{
+#' id <- 'id'
+#' time_points <- 7
+#' time_name <- 't0'
+#' covnames <- c('L1', 'L2', 'A')
+#' outcome_name <- 'Y'
+#' covtypes <- c('binary', 'bounded normal', 'binary')
+#' histories <- c(lagged, lagavg)
+#' histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
+#' covparams <- list(covmodels = c(L1 ~ lag1_A + lag_cumavg1_L1 + lag_cumavg1_L2 +
+#'                                   L3 + t0,
+#'                                 L2 ~ lag1_A + L1 + lag_cumavg1_L1 +
+#'                                   lag_cumavg1_L2 + L3 + t0,
+#'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
+#'                                   lag_cumavg1_L2 + L3 + t0))
+#' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
+#' intvars <- list('A', 'A')
+#' interventions <- list(list(c(static, rep(0, time_points))),
+#'                       list(c(static, rep(1, time_points))))
+#' int_descript <- c('Never treat', 'Always treat')
+#' nsimul <- 10000
+#'
+#' gform_basic <- gformula_survival(obs_data = basicdata_nocomp, id = id,
+#'                                  time_points = time_points,
+#'                                  time_name = time_name, covnames = covnames,
+#'                                  outcome_name = outcome_name,
+#'                                  covtypes = covtypes,
+#'                                  covparams = covparams, ymodel = ymodel,
+#'                                  intvars = intvars,
+#'                                  interventions = interventions,
+#'                                  int_descript = int_descript,
+#'                                  histories = histories, histvars = histvars,
+#'                                  basecovs = c('L3'), nsimul = nsimul,
+#'                                  seed = 1234)
+#' print(gform_basic)
+#' }
 #'
 #' @export
 
@@ -56,6 +94,45 @@ print.gformula_survival <- function(x, coefficients = FALSE, stderrs = FALSE,
 #' @return No value is returned.
 #' @seealso \code{\link{gformula_continuous_eof}}
 #'
+#' @examples
+#' ## Estimating the effect of treatment strategies on the mean of a continuous
+#' ## end of follow-up outcome
+#' \donttest{
+#' library('Hmisc')
+#' id <- 'id'
+#' time_name <- 't0'
+#' covnames <- c('L1', 'L2', 'A')
+#' outcome_name <- 'Y'
+#' covtypes <- c('categorical', 'normal', 'binary')
+#' histories <- c(lagged)
+#' histvars <- list(c('A', 'L1', 'L2'))
+#' covparams <- list(covmodels = c(L1 ~ lag1_A + lag1_L1 + L3 + t0 +
+#'                                   rcspline.eval(lag1_L2, knots = c(-1, 0, 1)),
+#'                                 L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
+#'                                 A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
+#' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
+#' intvars <- list('A', 'A')
+#' interventions <- list(list(c(static, rep(0, 7))),
+#'                       list(c(static, rep(1, 7))))
+#' int_descript <- c('Never treat', 'Always treat')
+#' nsimul <- 10000
+#'
+#' gform_cont_eof <- gformula_continuous_eof(obs_data = continuous_eofdata,
+#'                                           id = id,
+#'                                           time_name = time_name,
+#'                                           covnames = covnames,
+#'                                           outcome_name = outcome_name,
+#'                                           covtypes = covtypes,
+#'                                           covparams = covparams, ymodel = ymodel,
+#'                                           intvars = intvars,
+#'                                           interventions = interventions,
+#'                                           int_descript = int_descript,
+#'                                           histories = histories, histvars = histvars,
+#'                                           basecovs = c("L3"),
+#'                                           nsimul = nsimul, seed = 1234)
+#' print(gform_cont_eof)
+#' }
+#'
 #' @export
 
 print.gformula_continuous_eof <- function(x, coefficients = FALSE,
@@ -94,6 +171,48 @@ print.gformula_continuous_eof <- function(x, coefficients = FALSE,
 #' @param ... Other arguments.
 #' @return No value is returned.
 #' @seealso \code{\link{gformula_binary_eof}}
+#'
+#' @examples
+#' ## Estimating the effect of threshold interventions on the mean of a binary
+#' ## end of follow-up outcome
+#' \donttest{
+#' id <- 'id_num'
+#' time_name <- 'time'
+#' covnames <- c('cov1', 'cov2', 'treat')
+#' outcome_name <- 'outcome'
+#' histories <- c(lagged, cumavg)
+#' histvars <- list(c('treat', 'cov1', 'cov2'), c('cov1', 'cov2'))
+#' covtypes <- c('binary', 'zero-inflated normal', 'normal')
+#' covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3 +
+#'                                   time,
+#'                                 cov2 ~ lag1_treat + cov1 + lag1_cov1 + lag1_cov2 +
+#'                                   cov3 + time,
+#'                                 treat ~ lag1_treat + cumavg_cov1 +
+#'                                   cumavg_cov2 + cov3 + time))
+#' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
+#' intvars <- list('treat', 'treat')
+#' interventions <- list(list(c(static, rep(0, 7))),
+#'                       list(c(threshold, 1, Inf)))
+#' int_descript <- c('Never treat', 'Threshold - lower bound 1')
+#' nsimul <- 10000
+#' ncores <- 2
+#'
+#' gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
+#'                                      time_name = time_name,
+#'                                      covnames = covnames,
+#'                                      outcome_name = outcome_name,
+#'                                      covtypes = covtypes,
+#'                                      covparams = covparams,
+#'                                      ymodel = ymodel,
+#'                                      intvars = intvars,
+#'                                      interventions = interventions,
+#'                                      int_descript = int_descript,
+#'                                      histories = histories, histvars = histvars,
+#'                                      basecovs = c("cov3"), seed = 1234,
+#'                                      parallel = TRUE, nsamples = 5,
+#'                                      nsimul = nsimul, ncores = ncores)
+#' print(gform_bin_eof)
+#' }
 #'
 #' @export
 
@@ -144,7 +263,49 @@ print.gformula_binary_eof <- function(x, coefficients = FALSE, stderrs = FALSE,
 #' @param pos_surv Integer specifying the position at which to order the survival plot (if applicable). By default, this argument is set to the number of plots in the grid (i.e., orders the survival plot last).
 #' @param ci_risk Logical scalar specifying whether to include error bars for the 95\% confidence intervals of the estimated risk under the natural course. This argument is only effective if the argument \code{nsamples} was set to a positive value in \code{\link{gformula_survival}}. The default is \code{TRUE}.
 #' @param ... Other arguments, which are passed to \code{\link[ggpubr]{ggarrange}}.
+#' @return An object of class "ggarrange". See documentation of \code{\link[ggpubr]{ggarrange}}.
 #' @seealso \code{\link{gformula_survival}}
+#'
+#' @examples
+#' ## Estimating the effect of static treatment strategies on risk of a
+#' ## failure event
+#' \donttest{
+#' id <- 'id'
+#' time_points <- 7
+#' time_name <- 't0'
+#' covnames <- c('L1', 'L2', 'A')
+#' outcome_name <- 'Y'
+#' covtypes <- c('binary', 'bounded normal', 'binary')
+#' histories <- c(lagged, lagavg)
+#' histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
+#' covparams <- list(covmodels = c(L1 ~ lag1_A + lag_cumavg1_L1 + lag_cumavg1_L2 +
+#'                                   L3 + t0,
+#'                                 L2 ~ lag1_A + L1 + lag_cumavg1_L1 +
+#'                                   lag_cumavg1_L2 + L3 + t0,
+#'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
+#'                                   lag_cumavg1_L2 + L3 + t0))
+#' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
+#' intvars <- list('A', 'A')
+#' interventions <- list(list(c(static, rep(0, time_points))),
+#'                       list(c(static, rep(1, time_points))))
+#' int_descript <- c('Never treat', 'Always treat')
+#' nsimul <- 10000
+#'
+#' gform_basic <- gformula_survival(obs_data = basicdata_nocomp, id = id,
+#'                                  time_points = time_points,
+#'                                  time_name = time_name, covnames = covnames,
+#'                                  outcome_name = outcome_name,
+#'                                  covtypes = covtypes,
+#'                                  covparams = covparams, ymodel = ymodel,
+#'                                  intvars = intvars,
+#'                                  interventions = interventions,
+#'                                  int_descript = int_descript,
+#'                                  histories = histories, histvars = histvars,
+#'                                  basecovs = c('L3'), nsimul = nsimul,
+#'                                  seed = 1234)
+#' plot(gform_basic)
+#' }
+#'
 #'
 #' @export
 
@@ -254,7 +415,47 @@ plot.gformula_survival <- function(x, covnames = NULL, risk = TRUE,
 #' @param xlab Character string for the x axes of all plots. By default, this argument is set to the \code{time_name} argument specified in \code{\link{gformula_continuous_eof}}.
 #' @param ylab_cov Vector of character strings for the y axes of the plots for the covariates. This argument must be the same length as \code{covnames}. The i-th element of this argument corresponds to the plot for the i-th element of \code{covnames}.
 #' @param ... Other arguments, which are passed to \code{\link[ggpubr]{ggarrange}}.
+#' @return An object of class "ggarrange". See documentation of \code{\link[ggpubr]{ggarrange}}.
 #' @seealso \code{\link{gformula_continuous_eof}}
+#'
+#' @examples
+#' ## Estimating the effect of treatment strategies on the mean of a continuous
+#' ## end of follow-up outcome
+#' \donttest{
+#' library('Hmisc')
+#' id <- 'id'
+#' time_name <- 't0'
+#' covnames <- c('L1', 'L2', 'A')
+#' outcome_name <- 'Y'
+#' covtypes <- c('categorical', 'normal', 'binary')
+#' histories <- c(lagged)
+#' histvars <- list(c('A', 'L1', 'L2'))
+#' covparams <- list(covmodels = c(L1 ~ lag1_A + lag1_L1 + L3 + t0 +
+#'                                   rcspline.eval(lag1_L2, knots = c(-1, 0, 1)),
+#'                                 L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
+#'                                 A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
+#' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
+#' intvars <- list('A', 'A')
+#' interventions <- list(list(c(static, rep(0, 7))),
+#'                       list(c(static, rep(1, 7))))
+#' int_descript <- c('Never treat', 'Always treat')
+#' nsimul <- 10000
+#'
+#' gform_cont_eof <- gformula_continuous_eof(obs_data = continuous_eofdata,
+#'                                           id = id,
+#'                                           time_name = time_name,
+#'                                           covnames = covnames,
+#'                                           outcome_name = outcome_name,
+#'                                           covtypes = covtypes,
+#'                                           covparams = covparams, ymodel = ymodel,
+#'                                           intvars = intvars,
+#'                                           interventions = interventions,
+#'                                           int_descript = int_descript,
+#'                                           histories = histories, histvars = histvars,
+#'                                           basecovs = c("L3"),
+#'                                           nsimul = nsimul, seed = 1234)
+#' plot(gform_cont_eof)
+#' }
 #'
 #' @export
 
@@ -331,7 +532,50 @@ plot.gformula_continuous_eof <- function(x, covnames = NULL, ncol = NULL, nrow =
 #' @param xlab Character string for the x axes of all plots. By default, this argument is set to the \code{time_name} argument specified in \code{\link{gformula_binary_eof}}.
 #' @param ylab_cov Vector of character strings for the y axes of the plots for the covariates. This argument must be the same length as \code{covnames}. The i-th element of this argument corresponds to the plot for the i-th element of \code{covnames}.
 #' @param ... Other arguments, which are passed to \code{\link[ggpubr]{ggarrange}}.
+#' @return An object of class "ggarrange". See documentation of \code{\link[ggpubr]{ggarrange}}.
 #' @seealso \code{\link{gformula_binary_eof}}
+#'
+#' @examples
+#' ## Estimating the effect of threshold interventions on the mean of a binary
+#' ## end of follow-up outcome
+#' \donttest{
+#' id <- 'id_num'
+#' time_name <- 'time'
+#' covnames <- c('cov1', 'cov2', 'treat')
+#' outcome_name <- 'outcome'
+#' histories <- c(lagged, cumavg)
+#' histvars <- list(c('treat', 'cov1', 'cov2'), c('cov1', 'cov2'))
+#' covtypes <- c('binary', 'zero-inflated normal', 'normal')
+#' covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3 +
+#'                                   time,
+#'                                 cov2 ~ lag1_treat + cov1 + lag1_cov1 + lag1_cov2 +
+#'                                   cov3 + time,
+#'                                 treat ~ lag1_treat + cumavg_cov1 +
+#'                                   cumavg_cov2 + cov3 + time))
+#' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
+#' intvars <- list('treat', 'treat')
+#' interventions <- list(list(c(static, rep(0, 7))),
+#'                       list(c(threshold, 1, Inf)))
+#' int_descript <- c('Never treat', 'Threshold - lower bound 1')
+#' nsimul <- 10000
+#' ncores <- 2
+#'
+#' gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
+#'                                      time_name = time_name,
+#'                                      covnames = covnames,
+#'                                      outcome_name = outcome_name,
+#'                                      covtypes = covtypes,
+#'                                      covparams = covparams,
+#'                                      ymodel = ymodel,
+#'                                      intvars = intvars,
+#'                                      interventions = interventions,
+#'                                      int_descript = int_descript,
+#'                                      histories = histories, histvars = histvars,
+#'                                      basecovs = c("cov3"), seed = 1234,
+#'                                      parallel = TRUE, nsamples = 5,
+#'                                      nsimul = nsimul, ncores = ncores)
+#' plot(gform_bin_eof)
+#' }
 #'
 #' @export
 

@@ -25,9 +25,13 @@ a visit is forced (in the simulated data). Multiple values exist in the
 vector when the modeling of more than covariate is attached to a visit
 process.}
 }
+\value{
+No value is returned. The data table \code{pool} is modified in place.
+}
 \description{
-This function assists in the implementation of a visit process by creating a covariate,
+This internal function assists in the implementation of a visit process by creating a covariate,
 \code{ts_visit}, that counts the number of visits in the past \code{max_visits} time points. If this
 number is greater than 0, then the individual has not missed more than the maximum number
 of visits.
 }
+\keyword{internal}

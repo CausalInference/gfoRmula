@@ -33,3 +33,4 @@ A list. Its first entry is a list of mean covariate values at each time point;
 This internal function calculates the mean observed values of covariates at each time point, as well as mean
 observed risk.
 }
+\keyword{internal}

@@ -19,3 +19,4 @@ Numeric vector of simulated covariate values under the binomial distribution.
 \description{
 This internal function simulates covariate values from a binomial distribution.
 }
+\keyword{internal}

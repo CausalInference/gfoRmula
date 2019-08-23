@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Fit GLM on Covariate
 #'
 #' This internal function fits a generalized linear model (GLM) for a single covariate using the observed data.
@@ -14,6 +12,7 @@
 #' @param j           Integer specifying the index of the covariate.
 #'
 #' @return            Fitted model for the covariate at index \eqn{j}.
+#' @keywords internal
 
 fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
   # Get model parameters
@@ -48,6 +47,7 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
 #' @param j           Integer specifying the index of the covariate.
 #'
 #' @return            Fitted model for the covariate at index \eqn{j}.
+#' @keywords internal
 
 fit_multinomial <- function(covparams, obs_data, j){
   covmodels <- covparams$covmodels
@@ -71,6 +71,7 @@ fit_multinomial <- function(covparams, obs_data, j){
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
 #' @return            Fitted model for the covariate at index \eqn{j}.
+#' @keywords internal
 #' @import data.table
 
 fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j){
@@ -125,6 +126,7 @@ fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j){
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
 #' @return            Fitted model for the covariate at index \eqn{j}.
+#' @keywords internal
 #' @import data.table
 
 fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data, j){
@@ -160,6 +162,7 @@ fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data, j
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
 #' @return            Fitted model for the covariate at index \eqn{j}.
+#' @keywords internal
 
 fit_trunc_normal <- function(covparams, obs_data, j){
   covmodels <- covparams$covmodels
@@ -200,6 +203,7 @@ fit_trunc_normal <- function(covparams, obs_data, j){
 #' @param time_name       Character string specifying the name of the time variable in \code{obs_data}.
 #' @param obs_data        Data on which the models are fit.
 #' @return                A list of fitted models, one for each covariate in \code{covnames}.
+#' @keywords internal
 #' @import data.table
 
 pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
@@ -292,6 +296,7 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
 #' @param time_name      Character string specifying the name of the time variable in \code{obs_data}.
 #' @param obs_data       Data on which the model is fit.
 #' @return               Fitted model for the outcome variable.
+#' @keywords internal
 #' @import data.table
 
 pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name, time_name, obs_data){
@@ -346,6 +351,7 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name, time_na
 #'                               second entry.
 #' @param obs_data               Data on which the model is fit.
 #' @return                       Fitted model for the competing event variable.
+#' @keywords internal
 #' @import data.table
 
 pred_fun_D <- function(model, compevent_restrictions, obs_data){

@@ -27,3 +27,4 @@ A list of plots for the risk and survival.
 \description{
 This internal function obtains the risk and survival plots for \code{\link{gformula_survival}}.
 }
+\keyword{internal}

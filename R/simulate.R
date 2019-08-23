@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Simulate Binary Values
 #'
 #' This internal function simulates covariate values from a binomial distribution.
@@ -8,6 +6,7 @@
 #' @param size  Integer specifying the number of trials.
 #' @param prob  Numeric vector specifying the probabilities.
 #' @return      Numeric vector of simulated covariate values under the binomial distribution.
+#' @keywords internal
 #'
 predict_binomial <- function(x, size, prob){
   return (stats::rbinom(x, size, prob))
@@ -21,6 +20,7 @@ predict_binomial <- function(x, size, prob){
 #' @param mean    Numeric scalar specifying the mean of the distribution.
 #' @param est_sd  Numeric scalar specifying the standard deviation of the distribution.
 #' @return        Numeric vector of simulated covariate values under the normal distribution.
+#' @keywords internal
 #'
 predict_normal <- function(x, mean, est_sd = NA){
   return (stats::rnorm(x, mean, est_sd))
@@ -39,6 +39,7 @@ predict_normal <- function(x, mean, est_sd = NA){
 #' @param b         Numeric scalar specifying the upper bound of truncation.
 #' @return          Numeric vector of simulated covariate values under the truncated normal
 #'                  distribution.
+#' @keywords internal
 #'
 predict_trunc_normal <- function(x, mean, est_sd, a, b){
   return (truncnorm::rtruncnorm(x = x, mean = mean, sd = est_sd, a = a, b = b))
@@ -128,6 +129,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #'                                are set to their values at time 0. The default is \code{FALSE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        A data table containing simulated data under the specified intervention.
+#' @keywords internal
 #' @import data.table
 simulate <- function(o, fitcov, fitY, fitD,
                      yrestrictions, compevent_restrictions, restrictions,

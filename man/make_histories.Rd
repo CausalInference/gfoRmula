@@ -37,10 +37,10 @@ level (for categorical covariates). If this argument is set to \code{TRUE}, the 
 are set to their values at time 0. The default is \code{FALSE}.}
 }
 \value{
-A data table containing all preexisting information at time \eqn{t}, plus columns containing
-                  new function-of-history variables.
+No value is returned. The data table \code{pool} is modified in place.
 }
 \description{
 This internal function applies the history functions to create new columns in an input data table containing new variables that are functions
 of the histories of existing variables in the dataset.
 }
+\keyword{internal}

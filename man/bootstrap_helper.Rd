@@ -159,3 +159,4 @@ construct bootstrap confidence intervals and standard errors). Then, the functio
 using the resampled dataset to estimate the survival outcome, binary end-of-follow-up outcome, or
 continuous end-of-follow-up outcome.
 }
+\keyword{internal}

@@ -1,5 +1,3 @@
-# Copyright (c) 2019 The President and Fellows of Harvard College
-
 #' Calculate Observed Covariate Means and Risk
 #'
 #' This internal function calculates the mean observed values of covariates at each time point, as well as mean
@@ -17,6 +15,7 @@
 #'                        outcome types) or the mean observed outcome (for \code{"continuous_eof"} and
 #'                        \code{"binary_eof"} outcome types); for \code{"survival"} outcome types, its
 #'                        third entry is a vector of mean observed survival.
+#' @keywords internal
 #' @import data.table
 obs_calculate <- function(outcome_name, compevent_name, time_name, covnames, comprisk,
                           outcome_type, obs_data){
@@ -102,6 +101,7 @@ obs_calculate <- function(outcome_name, compevent_name, time_name, covnames, com
 #'                                  second entry.
 #'
 #' @return                          The RMSE for the model.
+#' @keywords internal
 #' @import data.table
 
 rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, time_name,
@@ -170,6 +170,7 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 #' \item{obs_results}{A list of the mean observed values at each time point for covariates and - if the outcome is of type \code{"survival"} - the risk and survival.}
 #' \item{dt_cov_plot}{A list of data tables The data tables contain the observed and simulated mean values of the covariates under each time point.}
 #' \item{dt_obs_plot}{For outcomes of type \code{"survival"}, a list of data tables. The data tables contain the observed and simulated risks and survival under each time point. For other outcomes, a value of \code{NA} is given.}
+#' @keywords internal
 #' @import data.table
 #' @import ggplot2
 get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
@@ -251,6 +252,7 @@ get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
 #' @param xlab           Character string for the x axes of all plots.
 #' @param ylab_cov       Vector of character strings for the y axes of the plots for the covariates. This argument must be the same length as \code{covnames}. The i-th element of this argument corresponds to the plot for the i-th element of \code{covnames}.
 #' @return               A list of covariate plots.
+#' @keywords internal
 #' @import data.table
 #' @import ggplot2
 get_cvgrphs <- function(x, covnames, covtypes, xlab, ylab_cov){
@@ -286,6 +288,7 @@ get_cvgrphs <- function(x, covnames, covtypes, xlab, ylab_cov){
 #' @param ylab_surv      Character string for the y axis of the plot for the survival (if applicable).
 #' @param ci_risk        Logical scalar specifying whether to include error bars for the 95\% confidence intervals of the estimated risk under the natural course. This argument is only effective if the argument \code{nsamples} was set to a positive value in \code{\link{gformula_survival}}.
 #' @return               A list of plots for the risk and survival.
+#' @keywords internal
 #' @import data.table
 #' @import ggplot2
 get_outgrphs <- function(x, risk, survival, xlab, ylab_risk, ylab_surv, ci_risk){

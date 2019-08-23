@@ -152,8 +152,7 @@ further details concerning the application and implementation of the parametric 
 
 ## Estimating the effect of treatment strategies on the mean of a continuous
 ## end of follow-up outcome
-
-\dontrun{
+\donttest{
 library('Hmisc')
 id <- 'id'
 time_name <- 't0'

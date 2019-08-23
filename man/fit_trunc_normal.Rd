@@ -22,3 +22,4 @@ Fitted model for the covariate at index \eqn{j}.
 This internal function models a covariate using a normal distribution truncated on one
 side at a user-specified cutoff.
 }
+\keyword{internal}

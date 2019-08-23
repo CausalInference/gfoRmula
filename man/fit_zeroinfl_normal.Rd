@@ -27,3 +27,4 @@ This internal function models a zero-inflated normal distribution through the co
 use of a generalized linear model (GLM) fit on a zero vs. non-zero indicator
 and a GLM fit on all non-zero values.
 }
+\keyword{internal}

@@ -21,3 +21,4 @@ Fitted model for the covariate at index \eqn{j}.
 \description{
 This internal function fits a multinomial regression model for a categorical covariate using the observed data.
 }
+\keyword{internal}

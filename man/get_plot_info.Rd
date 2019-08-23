@@ -40,3 +40,4 @@ A list with the following components:
 \description{
 This internal function obtains the data tables necessary for plotting. For continuous and binary covariates, the mean observed and simulated values are obtained for each time point. For categorical covariates, the observed and simulated counts of the levels of the factors are obtained for each time point.  When the outcome is of type \code{"survival"}, the observed and simulated risk and survival are obtained for each time point.
 }
+\keyword{internal}

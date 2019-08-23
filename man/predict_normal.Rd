@@ -19,3 +19,4 @@ Numeric vector of simulated covariate values under the normal distribution.
 \description{
 This internal function simulates covariate values from a normal distribution.
 }
+\keyword{internal}
