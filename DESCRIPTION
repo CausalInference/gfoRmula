@@ -26,9 +26,9 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
               person("2019 The President and Fellows of Harvard College", 
                       role = c("cph")))
 Description: Implements the parametric g-formula algorithm of Robins (1986) 
-    <doi:10.1016/0270-0255(86)90088-6>. It is capable of estimating risk for 
-    survival analysis, as well as mean outcomes over time in continuous outcome 
-    or continuous end-of-follow-up outcome cases.
+    <doi:10.1016/0270-0255(86)90088-6>. This package is capable of handling 
+    survival outcomes as well as binary and continuous end of follow-up 
+    outcomes.
 Depends: R (>= 3.4.0)
 License: GPL-3
 Encoding: UTF-8
