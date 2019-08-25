@@ -8,7 +8,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Package Updates
 
+### Changes in Version TBD (TBD)
+*  Updates to the documentation
+
 ### Changes in Version 0.2.1 (2019-08-24)
+*  First version released on CRAN
+   ([https://cran.r-project.org/web/packages/gfoRmula/index.html](https://cran.r-project.org/web/packages/gfoRmula/index.html)) 
 *  Updates to the documentation
 
 ### Changes in Version 0.2.0 (2019-08-22)
