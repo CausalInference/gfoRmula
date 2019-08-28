@@ -180,7 +180,7 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags){
           myclass <- paste('as.', classtmp, sep = "")
           pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
                  as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
-                                  droplevels(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]]), FUN = sum) / t)]
+                                  droplevels(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]]), FUN = mean))]
         })
       } else {
         lapply(histvars, FUN = function(histvar){
@@ -188,7 +188,7 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags){
           myclass <- paste('as.', classtmp, sep = "")
           pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
                  as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
-                                  pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]], FUN = sum) / t)]
+                                  pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]], FUN = mean))]
         })
       }
     }
