@@ -298,7 +298,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   }
 
 
-  for (i in 1:length(covnames)){
+  for (i in seq_along(covnames)){
     if (covtypes[i] == 'absorbing'){
       restrictions <- c(restrictions[!is.na(restrictions)],
                         list(c(covnames[i], paste("lag1_", covnames[i], "==0", sep = ""),
@@ -328,7 +328,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   bootseeds <- newseeds[2:(nsamples + 1)]
 
   # Determine ranges of observed covariates and outcome
-  ranges <- lapply(1:length(covnames), FUN = function(i){
+  ranges <- lapply(seq_along(covnames), FUN = function(i){
     if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
         covtypes[i] == 'truncated normal') {
       range(obs_data[[covnames[i]]])
@@ -391,8 +391,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   if (is.null(int_times)){
     comb_int_times <- list()
-    for (i in 1:length(comb_interventions)){
-      comb_int_times[[i]] <- lapply(1:length(comb_interventions[[i]]),
+    for (i in seq_along(comb_interventions)){
+      comb_int_times[[i]] <- lapply(seq_along(comb_interventions[[i]]),
                                     FUN = function(i) {0:(time_points - 1)})
     }
   } else {
@@ -403,7 +403,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   # subject
   if (parallel){
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
-    pools <- parallel::parLapply(cl, 1:length(comb_interventions), simulate,
+    pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
                                  fitcov = fitcov, fitY = fitY, fitD = fitD,
                                  yrestrictions = yrestrictions,
                                  compevent_restrictions = compevent_restrictions,
@@ -423,7 +423,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                  baselags = baselags, ...)
     parallel::stopCluster(cl)
   } else {
-    pools <- lapply(1:length(comb_interventions), FUN = function(i){
+    pools <- lapply(seq_along(comb_interventions), FUN = function(i){
       simulate(fitcov = fitcov, fitY = fitY, fitD = fitD,
                yrestrictions = yrestrictions,
                compevent_restrictions = compevent_restrictions,
@@ -481,7 +481,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   if (hazardratio){
     # Generate dataset containing failure/censor time information for each subject
     # under each intervention
-    pools_hr <- lapply(1:length(intcomp), FUN = hr_helper, intcomp = intcomp,
+    pools_hr <- lapply(seq_along(intcomp), FUN = hr_helper, intcomp = intcomp,
                        time_name = time_name, pools = pools)
     data_hr <- rbindlist(pools_hr)
     names(data_hr)[names(data_hr) == time_name] <- "t0"
@@ -704,7 +704,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          outcome_name = outcome_name, compevent_name = compevent_name,
                          covnames = covnames)
 
-  rmses <- lapply(1:length(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
+  rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
                   covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
                   time_name = time_name, restrictions = restrictions,
                   yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
@@ -1003,7 +1003,7 @@ gformula_continuous_eof <- function(obs_data, id,
   sample_size <- length(unique(obs_data[[id]]))
   time_points <- diff(range(obs_data[[time_name]]))+1
 
-  for (i in 1:length(covnames)){
+  for (i in seq_along(covnames)){
     if (covtypes[i] == 'absorbing'){
       restrictions <- c(restrictions[!is.na(restrictions)],
                         list(c(covnames[i], paste("lag1_", covnames[i], "==0", sep = ""),
@@ -1032,7 +1032,7 @@ gformula_continuous_eof <- function(obs_data, id,
   bootseeds <- newseeds[2:(nsamples + 1)]
 
   # Determine ranges of observed covariates and outcome
-  ranges <- lapply(1:length(covnames), FUN = function(i){
+  ranges <- lapply(seq_along(covnames), FUN = function(i){
     if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
         covtypes[i] == 'truncated normal') {
       range(obs_data[[covnames[i]]])
@@ -1086,8 +1086,8 @@ gformula_continuous_eof <- function(obs_data, id,
 
   if (is.null(int_times)){
     comb_int_times <- list()
-    for (i in 1:length(comb_interventions)){
-      comb_int_times[[i]] <- lapply(1:length(comb_interventions[[i]]),
+    for (i in seq_along(comb_interventions)){
+      comb_int_times[[i]] <- lapply(seq_along(comb_interventions[[i]]),
                                     FUN = function(i) {0:(time_points - 1)})
     }
   } else {
@@ -1096,7 +1096,7 @@ gformula_continuous_eof <- function(obs_data, id,
 
   if (parallel){
     cl <- prep_cluster(ncores = ncores, threads = threads,  covtypes = covtypes)
-    pools <- parallel::parLapply(cl, 1:length(comb_interventions), simulate,
+    pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
                                  fitcov = fitcov, fitY = fitY, fitD = NA,
                                  yrestrictions = yrestrictions,
                                  compevent_restrictions = compevent_restrictions,
@@ -1115,7 +1115,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                  baselags = baselags, ...)
     parallel::stopCluster(cl)
   } else {
-    pools <- lapply(1:length(comb_interventions), FUN = function(i){
+    pools <- lapply(seq_along(comb_interventions), FUN = function(i){
       simulate(fitcov = fitcov, fitY = fitY, fitD = NA,
                yrestrictions = yrestrictions,
                compevent_restrictions = compevent_restrictions,
@@ -1257,7 +1257,7 @@ gformula_continuous_eof <- function(obs_data, id,
 
   # Generate results table
   if (!is.null(interventions)){
-    resultdf <- lapply(1:length(int_result), function(k){
+    resultdf <- lapply(seq_along(int_result), function(k){
       if (nsamples > 0){
         data.table(t = time_points - 1, Intervention = k - 1,
                    EOFMean = int_result[k],
@@ -1338,7 +1338,7 @@ gformula_continuous_eof <- function(obs_data, id,
                          covnames = covnames)
 
 
-  rmses <- lapply(1:length(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
+  rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
                   covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
                   time_name = time_name, restrictions = restrictions,
                   yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
@@ -1624,7 +1624,7 @@ gformula_binary_eof <- function(obs_data, id,
   sample_size <- length(unique(obs_data[[id]]))
   time_points <- diff(range(obs_data[[time_name]]))+1
 
-  for (i in 1:length(covnames)){
+  for (i in seq_along(covnames)){
     if (covtypes[i] == 'absorbing'){
       restrictions <- c(restrictions[!is.na(restrictions)],
                         list(c(covnames[i], paste("lag1_", covnames[i], "==0", sep = ""),
@@ -1652,7 +1652,7 @@ gformula_binary_eof <- function(obs_data, id,
   bootseeds <- newseeds[2:(nsamples + 1)]
 
   # Determine ranges of observed covariates and outcome
-  ranges <- lapply(1:length(covnames), FUN = function(i){
+  ranges <- lapply(seq_along(covnames), FUN = function(i){
     if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
         covtypes[i] == 'truncated normal') {
       range(obs_data[[covnames[i]]])
@@ -1706,8 +1706,8 @@ gformula_binary_eof <- function(obs_data, id,
 
   if (is.null(int_times)){
     comb_int_times <- list()
-    for (i in 1:length(comb_interventions)){
-      comb_int_times[[i]] <- lapply(1:length(comb_interventions[[i]]),
+    for (i in seq_along(comb_interventions)){
+      comb_int_times[[i]] <- lapply(seq_along(comb_interventions[[i]]),
                                     FUN = function(i) {0:(time_points - 1)})
     }
   } else {
@@ -1716,7 +1716,7 @@ gformula_binary_eof <- function(obs_data, id,
 
   if (parallel){
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
-    pools <- parallel::parLapply(cl, 1:length(comb_interventions), simulate,
+    pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
                                  fitcov = fitcov, fitY = fitY, fitD = NA,
                                  yrestrictions = yrestrictions,
                                  compevent_restrictions = compevent_restrictions,
@@ -1736,7 +1736,7 @@ gformula_binary_eof <- function(obs_data, id,
     parallel::stopCluster(cl)
 
   } else {
-    pools <- lapply(1:length(comb_interventions), FUN = function(i){
+    pools <- lapply(seq_along(comb_interventions), FUN = function(i){
       simulate(fitcov = fitcov, fitY = fitY, fitD = NA,
                yrestrictions = yrestrictions,
                compevent_restrictions = compevent_restrictions,
@@ -1878,7 +1878,7 @@ gformula_binary_eof <- function(obs_data, id,
 
   # Generate results table
   if (!is.null(interventions)){
-    resultdf <- lapply(1:length(int_result), function(k){
+    resultdf <- lapply(seq_along(int_result), function(k){
       if (nsamples > 0){
         data.table(t = time_points - 1, Intervention = k - 1,
                    EOFMean = int_result[k],
@@ -1959,7 +1959,7 @@ gformula_binary_eof <- function(obs_data, id,
                          covnames = covnames)
 
 
-  rmses <- lapply(1:length(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
+  rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
                   covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
                   time_name = time_name, restrictions = restrictions,
                   yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)

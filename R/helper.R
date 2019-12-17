@@ -166,7 +166,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     stop("Missing covariate information (covnames and covtypes are of unequal length)")
   }
 
-  for (k in 1:length(covnames)){
+  for (k in seq_along(covnames)){
     if (covtypes[k] == 'zero-inflated normal'){
       if (sum(obs_data[[covnames[k]]] < 0) != 0){
         stop("zero-inflated normal covariates cannot contain negative values")
@@ -215,8 +215,8 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     time_points <- diff(range(obs_data[[time_name]]))+1
   }
   if (!is.null(interventions)){
-    for (i in 1:length(interventions)){
-      for (j in 1:length(interventions[[i]])){
+    for (i in seq_along(interventions)){
+      for (j in seq_along(interventions[[i]])){
         if (identical(interventions[[i]][[j]][[1]], static) &&
             length(interventions[[i]][[j]]) - 1 != time_points){
           stop("For static interventions, a vector of length time_points must be given to specify the treatment values")
@@ -254,7 +254,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     }
   }
   if (!is.na(histories[1])){
-    for (i in 1:length(histories)){
+    for (i in seq_along(histories)){
       if (isTRUE(all.equal(histories[[i]], lagavg)) |
           isTRUE(all.equal(histories[[i]], cumavg))){
         for (histvar in histvars[[i]]){
@@ -292,7 +292,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
   if (length(covmodels) != length(covnames)){
     stop("covmodels and covnames are unequal lengths")
   }
-  for (i in 1:length(covnames)){
+  for (i in seq_along(covnames)){
     rel_model <- paste(deparse(covmodels[[i]]), collapse = "")
     model_var <- stringr::str_extract(rel_model, '[^~]+')
     model_var <- stringr::str_trim(model_var, 'left')
@@ -362,7 +362,7 @@ get_header <- function(int_descript, sample_size, nsimul, nsamples, ref_int){
                    "Intervention \t Description\n",
                    "0 \t\t Natural course\n")
   if (!is.null(int_descript)){
-    for (i in 1:length(int_descript)){
+    for (i in seq_along(int_descript)){
       header <- paste0(header, i, "\t\t ", int_descript[i], "\n")
     }
   }

@@ -210,11 +210,11 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
                          restrictions, time_name, obs_data){
   if (!is.na(restrictions[[1]][[1]])){ # Check for restrictions
     # Create list of covariates whose modeling is affected by restrictions
-    restrictnames <- lapply(1:length(restrictions), FUN = function(r){
+    restrictnames <- lapply(seq_along(restrictions), FUN = function(r){
       restrictions[[r]][[1]]
     })
     # Create list of conditions where covariates are modeled
-    conditions <- lapply(1:length(restrictions), FUN = function(r){
+    conditions <- lapply(seq_along(restrictions), FUN = function(r){
       restrictions[[r]][[2]]
     })
   } else {
@@ -225,7 +225,7 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
 
   subdata <- obs_data[obs_data[[time_name]] > 0]
 
-  fits <- lapply(1:length(covnames), FUN = function(j){
+  fits <- lapply(seq_along(covnames), FUN = function(j){
     if (!is.na(restrictions[[1]][[1]])){
       if (covnames[j] %in% restrictnames){
         i <- which(restrictnames %in% covnames[j])

@@ -154,7 +154,7 @@ simulate <- function(o, fitcov, fitY, fitD,
   }
 
   if (!is.null(fitcov)){
-    rmses <- lapply(1:length(fitcov), FUN = rmse_calculate, fits = fitcov, covnames = covnames,
+    rmses <- lapply(seq_along(fitcov), FUN = rmse_calculate, fits = fitcov, covnames = covnames,
                     covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
                     time_name = time_name, restrictions = restrictions,
                     yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
@@ -173,7 +173,7 @@ simulate <- function(o, fitcov, fitY, fitD,
   if (!(length(intvar) == 1 && intvar == 'none')) {
     intvar_vec <- unique(unlist(intvar))
     histvars_int <- histories_int <- rep(list(NA), length(histvars))
-    for (l in 1:length(histvars)){
+    for (l in seq_along(histvars)){
       histvars_temp <- histvars[[l]][histvars[[l]] %in% intvar_vec]
       if (length(histvars_temp) > 0){
         histvars_int[[l]] <- histvars_temp
@@ -300,7 +300,7 @@ simulate <- function(o, fitcov, fitY, fitD,
                      time_name = time_name, t = t, id = 'id', max_visits = max_visits,
                      baselags = baselags)
       newdf <- pool[pool[[time_name]] == t]
-      for (i in 1:length(covnames)){
+      for (i in seq_along(covnames)){
         cast <- get(paste0('as.',unname(col_types[covnames[i]])))
         if (covtypes[i] == 'binary'){
           set(newdf, j = covnames[i],
@@ -330,10 +330,10 @@ simulate <- function(o, fitcov, fitY, fitD,
           set(newdf, j = paste("I_", covnames[i], sep = ""), value = NULL)
         } else if (covtypes[i] == 'bounded normal'){
           if (!is.na(restrictions[[1]][[1]])){
-            restrictnames <- lapply(1:length(restrictions), FUN = function(r){
+            restrictnames <- lapply(seq_along(restrictions), FUN = function(r){
               restrictions[[r]][[1]]})
             # Create list of conditions where covariates are modeled
-            conditions <- lapply(1:length(restrictions), FUN = function(r){
+            conditions <- lapply(seq_along(restrictions), FUN = function(r){
               restrictions[[r]][[2]]
             })
             if (covnames[i] %in% restrictnames){
@@ -399,10 +399,10 @@ simulate <- function(o, fitcov, fitY, fitD,
           }
         } else if (covtypes[i] == 'custom'){
           if (!is.na(restrictions[[1]][[1]])){
-            restrictnames <- lapply(1:length(restrictions), FUN = function(r){
+            restrictnames <- lapply(seq_along(restrictions), FUN = function(r){
               restrictions[[r]][[1]]})
             # Create list of conditions where covariates are modeled
-            conditions <- lapply(1:length(restrictions), FUN = function(r){
+            conditions <- lapply(seq_along(restrictions), FUN = function(r){
               restrictions[[r]][[2]]
             })
             if (covnames[i] %in% restrictnames){
@@ -462,7 +462,7 @@ simulate <- function(o, fitcov, fitY, fitD,
         }
         # Check if there are restrictions on covariate simulation
         if (!is.na(restrictions[[1]][[1]])){
-          lapply(1:length(restrictions), FUN = function(r){
+          lapply(seq_along(restrictions), FUN = function(r){
             if (restrictions[[r]][[1]] == covnames[i]){
               restrict_ids <- newdf[!eval(parse(text = restrictions[[r]][[2]]))]$id
               if (length(restrict_ids) != 0){
