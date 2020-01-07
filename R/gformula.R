@@ -1099,9 +1099,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   header <- get_header(int_descript, sample_size, nsimul, nsamples, ref_int)
 
   if (sim_data_b){
-    sim_data <- pools
+    sim_data <- c(list('Natural course' = nat_pool), pools)
     if (!is.null(int_descript)){
-      names(sim_data) <- int_descript
+      names(sim_data)[2:length(sim_data)] <- int_descript
     }
   } else {
     sim_data <- NA
@@ -1727,9 +1727,9 @@ gformula_continuous_eof <- function(obs_data, id,
   header <- get_header(int_descript, sample_size, nsimul, nsamples, ref_int)
 
   if (sim_data_b){
-    sim_data <- pools
+    sim_data <- c(list('Natural course' = nat_pool), pools)
     if (!is.null(int_descript)){
-      names(sim_data) <- int_descript
+      names(sim_data)[2:length(sim_data)] <- int_descript
     }
   } else {
     sim_data <- NA
@@ -2349,9 +2349,9 @@ gformula_binary_eof <- function(obs_data, id,
   header <- get_header(int_descript, sample_size, nsimul, nsamples, ref_int)
 
   if (sim_data_b){
-    sim_data <- pools
+    sim_data <- c(list('Natural course' = nat_pool), pools)
     if (!is.null(int_descript)){
-      names(sim_data) <- int_descript
+      names(sim_data)[2:length(sim_data)] <- int_descript
     }
   } else {
     sim_data <- NA

@@ -8,6 +8,8 @@ Package Updates
     `gformula_binary_eof()` functions. Users should now use the more
     general `gformula()` function to apply the g-formula.
 -   Fixed minor bug in the `lagavg()` function
+-   Added simulated data under the natural course to the `sim_data`
+    component of the output of the `gformula()` function
 -   Updates to the documentation
 
 ### Changes in Version 0.2.1 (2019-08-24)
