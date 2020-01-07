@@ -28,8 +28,14 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
   }
 
   # Fit GLM for covariate using user-specified formula
-  fit <- stats::glm(stats::as.formula(paste(covmodels[j])), family = eval(parse(text = famtext)),
-             data = obs_data, y = TRUE)
+  if (!is.null(covparams$control) && !is.na(covparams$control[j])){
+    fit <- stats::glm(stats::as.formula(paste(covmodels[j])), family = eval(parse(text = famtext)),
+                      data = obs_data, y = TRUE, control = covparams$control[j])
+  } else {
+    fit <- stats::glm(stats::as.formula(paste(covmodels[j])), family = eval(parse(text = famtext)),
+                      data = obs_data, y = TRUE)
+  }
+
   fit$rmse <- add_rmse(fit)
   fit$stderrs <- add_stderr(fit)
   fit <- trim_glm(fit)
@@ -51,7 +57,13 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
 
 fit_multinomial <- function(covparams, obs_data, j){
   covmodels <- covparams$covmodels
-  fit <- nnet::multinom(stats::as.formula(paste(covmodels[j])), data = obs_data)
+  if (!is.null(covparams$control) && !is.na(covparams$control[j])){
+    fit <- nnet::multinom(stats::as.formula(paste(covmodels[j])), data = obs_data,
+                          unlist(covparams$control[j]))
+  } else {
+    fit <- nnet::multinom(stats::as.formula(paste(covmodels[j])), data = obs_data)
+  }
+
   fit$stderr <- add_stderr(fit)
   fit <- trim_multinom(fit)
   return (fit)
@@ -94,13 +106,28 @@ fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j){
   obs_data[obs_data[[covname]] != 0][, paste("log_", covname, sep = "")] <-
     log(obs_data[obs_data[[covname]] != 0][[covname]])
   # Fit binomial model on indicator of whether covariate is 0 or not
-  fit1 <- stats::glm(stats::as.formula(paste("I_", covmodels[j], sep = "")), family = stats::binomial(),
-              data = obs_data)
+  if (!is.null(covparams$control) && !is.na(covparams$control[j]) &&
+      !is.null(covparams$control[j][[1]])){
+    fit1 <- stats::glm(stats::as.formula(paste("I_", covmodels[j], sep = "")), family = stats::binomial(),
+                       control = covparams$control[j][[1]], data = obs_data)
+  } else {
+    fit1 <- stats::glm(stats::as.formula(paste("I_", covmodels[j], sep = "")), family = stats::binomial(),
+                       data = obs_data)
+  }
+
 
   # Fit Gaussian model on data points for which covariate does not equal 0
-  fit2 <- stats::glm(stats::as.formula(paste("log_", covmodels[j], sep = "")),
-              family = eval(parse(text = famtext)),
-              data = obs_data[obs_data[[covname]] != 0])
+  if (!is.null(covparams$control) && !is.na(covparams$control[j]) &&
+      !is.null(covparams$control[j][[2]])){
+    fit2 <- stats::glm(stats::as.formula(paste("log_", covmodels[j], sep = "")),
+                       family = eval(parse(text = famtext)),
+                       control = covparams$control[j][[2]],
+                       data = obs_data[obs_data[[covname]] != 0])
+  } else {
+    fit2 <- stats::glm(stats::as.formula(paste("log_", covmodels[j], sep = "")),
+                       family = eval(parse(text = famtext)),
+                       data = obs_data[obs_data[[covname]] != 0])
+  }
 
   fit1$rmse <- add_rmse(fit1)
   fit2$rmse <- add_rmse(fit2)
@@ -139,11 +166,22 @@ fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data, j
   obs_data[, paste("norm_", covname, sep = "")] <-
     (obs_data[[covname]] - min(obs_data[[covname]]))/(max(obs_data[[covname]]) - min(obs_data[[covname]]))
   if (!is.na(covlink[j])){
-    fit <- stats::glm(stats::as.formula(paste("norm_", covmodels[j], sep = "")),
-               family = stats::gaussian(link = covlink[j]), data = obs_data, y = TRUE)
+    if (!is.null(covparams$control) && !is.na(covparams$control[j])){
+      fit <- stats::glm(stats::as.formula(paste("norm_", covmodels[j], sep = "")),
+                        family = stats::gaussian(link = covlink[j]), data = obs_data, y = TRUE,
+                        control = covparams$control[j])
+    } else {
+      fit <- stats::glm(stats::as.formula(paste("norm_", covmodels[j], sep = "")),
+                        family = stats::gaussian(link = covlink[j]), data = obs_data, y = TRUE)
+    }
   } else {
-    fit <- stats::glm(stats::as.formula(paste("norm_", covmodels[j], sep = "")), family = stats::gaussian(),
-               data = obs_data, y = TRUE)
+    if (!is.null(covparams$control) && !is.na(covparams$control[j])){
+      fit <- stats::glm(stats::as.formula(paste("norm_", covmodels[j], sep = "")), family = stats::gaussian(),
+                        data = obs_data, y = TRUE, control = covparams$control[j])
+    } else {
+      fit <- stats::glm(stats::as.formula(paste("norm_", covmodels[j], sep = "")), family = stats::gaussian(),
+                        data = obs_data, y = TRUE)
+    }
   }
   fit$rmse <- add_rmse(fit)
   fit$stderr <- add_stderr(fit)
@@ -168,8 +206,14 @@ fit_trunc_normal <- function(covparams, obs_data, j){
   covmodels <- covparams$covmodels
   point <- covparams$point[j]
   direction <- covparams$direction[j]
-  fit <- truncreg::truncreg(stats::as.formula(paste(covmodels[j])), data = obs_data, point = point,
-                            direction = direction, y = TRUE)
+  if (!is.null(covparams$control) && !is.na(covparams$control[j])){
+    fit <- truncreg::truncreg(stats::as.formula(paste(covmodels[j])), data = obs_data, point = point,
+                              direction = direction, y = TRUE, unlist(covparams$control[j]))
+  } else {
+    fit <- truncreg::truncreg(stats::as.formula(paste(covmodels[j])), data = obs_data, point = point,
+                              direction = direction, y = TRUE)
+  }
+
   fit$rmse <- add_rmse(fit)
   fit$stderr <- add_stderr(fit)
   fit <- trim_truncreg(fit)
