@@ -1,8 +1,13 @@
 Package Updates
 ---------------
 
-### Changes in Version TBD (TBD)
+### Changes in Version 0.3.0 (TBD)
 
+-   Added wrapper function called `gformula()` for the
+    `gformula_survival()`, `gformula_continuous_eof()`, and
+    `gformula_binary_eof()` functions. Users should now use the more
+    general `gformula()` function to apply the g-formula.
+-   Fixed minor bug in the `lagavg()` function
 -   Updates to the documentation
 
 ### Changes in Version 0.2.1 (2019-08-24)

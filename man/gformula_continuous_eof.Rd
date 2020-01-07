@@ -144,7 +144,7 @@ An object of class \code{gformula_continuous_eof}. The object is a list with the
 The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_continuous_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{print.gformula_continuous_eof}} function.
 }
 \description{
-Based on an observed data set, this function estimates the outcome mean at end-of-follow-up under
+Based on an observed data set, this internal function estimates the outcome mean at end-of-follow-up under
 multiple user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
 further details concerning the application and implementation of the parametric g-formula.
 }
@@ -193,4 +193,7 @@ gform_cont_eof
 Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
 
 Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
+}
+\seealso{
+\code{\link{gformula}}
 }
