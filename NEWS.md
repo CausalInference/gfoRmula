@@ -7,6 +7,9 @@ Package Updates
     `gformula_survival()`, `gformula_continuous_eof()`, and
     `gformula_binary_eof()` functions. Users should now use the more
     general `gformula()` function to apply the g-formula.
+-   Added option for users to specify the values for lags at
+    pre-baseline times by including rows at time t = -1, t = -2, …, t =
+    -i.
 -   Added option for users to pass in “control parameters” (e.g.,
     maximum number of iterations, maxit, in glm.control) when fitting
     models for time-varying covariates via the `covparams$control`
@@ -14,6 +17,8 @@ Package Updates
 -   Added simulated data under the natural course to the `sim_data`
     component of the output of the `gformula()` function
 -   Fixed minor bug in the `lagavg()` function
+-   Fixed bug occuring when not using lags of the intervention
+    variable(s)
 -   Updates to the documentation
 
 ### Changes in Version 0.2.1 (2019-08-24)

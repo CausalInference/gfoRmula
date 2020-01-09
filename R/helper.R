@@ -74,6 +74,7 @@ hr_helper <- function(i, intcomp, time_name, pools){
 #' @param histvals               List of length 3. First element contains a vector of integers specifying the number of lags back for the lagged function. Second element contains
 #'                               a vector of integers indicating the number of lags back for the lagavg function. The last element is an indicator whether a cumavg term
 #'                               appears in any of the model statements.
+#' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
 #'
 #' @return                       No value is returned.
 #' @keywords internal
@@ -84,7 +85,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
                         hazardratio, intcomp, time_points, outcome_type,
                         time_name, obs_data, parallel, ncores, nsamples,
                         sim_data_b, outcome_name, compevent_name, comprisk,
-                        covmodels, histvals){
+                        covmodels, histvals, min_time){
 
   if (!is.data.table(obs_data)){
     if (is.data.frame(obs_data)){
@@ -101,11 +102,6 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     stop("Missing parameter id")
   } else if (!(id %in% obs_colnames)){
     stop(paste('id', id, 'not found in obs_data'))
-  }
-  if (missing(time_name)){
-    stop("Missing parameter time_name")
-  } else if (!(time_name %in% obs_colnames)){
-    stop(paste('time_name', time_name, 'not found in obs_data'))
   }
   if (missing(outcome_name)){
     stop("Missing parameter outcome_name")
@@ -148,15 +144,15 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
 
   correct_time_indicator <- tapply(obs_data[[time_name]], obs_data[[id]],
                                    FUN = function(x){
-                                     all(x == 0:(length(x)-1))
+                                     all(x == min(min_time, 0):(length(x)+min(min_time, 0)-1))
                                      })
   if (!all(correct_time_indicator)){
-    stop("Time variable in obs_data not correctly specified. For each individual time records should begin with 0 and increase in increments of 1, where no time records are skipped.")
+    stop("Time variable in obs_data not correctly specified. For each individual time records should begin with 0 (or, optionally -i if using i lags) and increase in increments of 1, where no time records are skipped.")
   }
 
-  obs_time_points <- diff(range(obs_data[[time_name]]))+1
+  obs_time_points_pos <- max(obs_data[[time_name]])+1
   if (!is.null(time_points)){
-    if (time_points > obs_time_points){
+    if (time_points > obs_time_points_pos){
       stop("Number of simulated time points desired is set to a value beyond the observed
             follow-up in the data")
     }
@@ -212,7 +208,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
 
   # Check that, for static interventions, a vector of length time_points is given for the treatment values
   if (is.null(time_points)){
-    time_points <- diff(range(obs_data[[time_name]]))+1
+    time_points <- obs_time_points_pos
   }
   if (!is.null(interventions)){
     for (i in 1:length(interventions)){

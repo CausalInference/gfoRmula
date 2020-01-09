@@ -94,11 +94,13 @@
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples.
 #' @param nsimul                  Number of subjects for whom to simulate data. By default, this argument is set
 #'                                equal to the number of subjects in \code{obs_data}.
-#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                                the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                                included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                                of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                                level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                                are set to their values at time 0. The default is \code{FALSE}.
+#' @param below_zero_indicator    Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.
+#' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
 #' @return                        A list with the following components:
 #' \item{Result}{Matrix containing risks over time under the natural course and under each user-specific intervention.}
 #' \item{ResultRatio}{Matrix containing risk ratios over time under the natural course and under each user-specific intervention.}
@@ -115,7 +117,8 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              comprisk, compevent_model,
                              time_name, outcome_name, compevent_name,
                              ranges, yrange, compevent_range, parallel, ncores, max_visits,
-                             hazardratio, intcomp, boot_diag, nsimul, baselags){
+                             hazardratio, intcomp, boot_diag, nsimul, baselags,
+                             below_zero_indicator, min_time){
 
   set.seed(bootseeds[r])
 
@@ -129,13 +132,15 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
   resample_data[, 'newid' := resample_data$bid]
   resample_data[, 'bid' := NULL]
 
+  resample_data_geq_0 <- resample_data[resample_data[[time_name]] >= 0]
+
   # Fit models for covariates, outcome, and competing event (if any)
   fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                          covfits_custom = covfits_custom, restrictions = restrictions,
-                         time_name = time_name, obs_data = resample_data)
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, resample_data)
+                         time_name = time_name, obs_data = resample_data_geq_0)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, resample_data_geq_0)
   if (comprisk){
-    fitD <- pred_fun_D(compevent_model, compevent_restrictions, resample_data)
+    fitD <- pred_fun_D(compevent_model, compevent_restrictions, resample_data_geq_0)
   } else {
     fitD <- NA
   }
@@ -182,7 +187,8 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
              outcome_type = outcome_type,
              subseed = bootseeds[r], time_points = time_points,
              obs_data = resample_data, parallel = FALSE, max_visits = max_visits,
-             baselags = baselags)
+             baselags = baselags, below_zero_indicator = below_zero_indicator,
+             min_time = min_time)
   })
 
   nat_pool <- pools[[1]] # Simulated data under natural course

@@ -5,7 +5,7 @@
 \title{Generates Functions of History of Existing Covariates}
 \usage{
 make_histories(pool, histvars, histvals, histories, time_name, t, id,
-  max_visits, baselags)
+  max_visits, baselags, below_zero_indicator)
 }
 \arguments{
 \item{pool}{Data table containing all information prior to time \eqn{t} (\eqn{t} noninclusive).}
@@ -30,11 +30,13 @@ a visit is forced (in the simulated data). Multiple values exist in the
 vector when the modeling of more than covariate is attached to a visit
 process. A value of \code{NA} should be provided when there is no visit process.}
 
-\item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+\item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 are set to their values at time 0. The default is \code{FALSE}.}
+
+\item{below_zero_indicator}{Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.}
 }
 \value{
 No value is returned. The data table \code{pool} is modified in place.

@@ -85,8 +85,8 @@
 #' @param compevent_model         Model statement for the competing event variable. The default is \code{NA}. Only applicable for survival outcomes.
 #' @param intcomp                 List of two numbers indicating a pair of interventions to be compared by a hazard ratio.
 #'                                The default is \code{NA}, resulting in no hazard ratio calculation.
-#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                                the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                                included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                                of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                                level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                                are set to their values at time 0. The default is \code{FALSE}.
@@ -454,8 +454,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param compevent_model         Model statement for the competing event variable. The default is \code{NA}.
 #' @param intcomp                 List of two numbers indicating a pair of interventions to be compared by a hazard ratio.
 #'                                The default is \code{NA}, resulting in no hazard ratio calculation.
-#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                                the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                                included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                                of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                                level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                                are set to their values at time 0. The default is \code{FALSE}.
@@ -617,6 +617,14 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   outcome_type <- 'survival'
   hazardratio <- !(length(intcomp) == 1 && is.na(intcomp))
 
+  if (missing(time_name)){
+    stop("Missing parameter time_name")
+  } else if (!(time_name %in% colnames(obs_data))){
+    stop(paste('time_name', time_name, 'not found in obs_data'))
+  }
+  min_time <- min(obs_data[[time_name]])
+  below_zero_indicator <- min_time < 0
+
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
               covnames = covnames, covtypes = covtypes, basecovs = basecovs,
@@ -627,7 +635,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals)
+              histvals = histvals, min_time = min_time)
 
 
   obs_data <- copy(obs_data)
@@ -661,12 +669,13 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   for (t in 0:max(obs_data[[time_name]])) {
     make_histories(pool = obs_data, histvars = histvars, histvals = histvals,
                    histories = histories, time_name = time_name, t = t, id = id ,
-                   max_visits = max_visits, baselags = baselags)
+                   max_visits = max_visits, baselags = baselags,
+                   below_zero_indicator = below_zero_indicator)
   }
 
   sample_size <- length(unique(obs_data[[id]]))
   if (is.null(time_points)){
-    time_points <- diff(range(obs_data[[time_name]]))+1
+    time_points <- max(obs_data[[time_name]])+1
   }
 
 
@@ -685,6 +694,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   ids[, 'newid' := seq_len(.N)]
   setkeyv(obs_data, id)
   obs_data <- obs_data[J(ids), allow.cartesian = TRUE]
+  obs_data_geq_0 <- obs_data[obs_data[[time_name]] >= 0]
 
   # Set default number of simulated individuals to equal number of individuals in
   # observed dataset
@@ -703,29 +713,29 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   ranges <- lapply(1:length(covnames), FUN = function(i){
     if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
         covtypes[i] == 'truncated normal') {
-      range(obs_data[[covnames[i]]])
+      range(obs_data_geq_0[[covnames[i]]])
     } else if (covtypes[i] == 'zero-inflated normal'){
-      range(obs_data[obs_data[[covnames[i]]] > 0][[covnames[i]]])
+      range(obs_data_geq_0[obs_data_geq_0[[covnames[i]]] > 0][[covnames[i]]])
     } else {
       NA
     }
   })
-  yrange <- range(obs_data[[outcome_name]])
+  yrange <- range(obs_data_geq_0[[outcome_name]])
 
   # Fit models to covariates and outcome variable
   if (time_points > 1){
     fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                            covfits_custom = covfits_custom, restrictions = restrictions,
-                           time_name = time_name, obs_data = obs_data)
+                           time_name = time_name, obs_data = obs_data_geq_0)
   } else {
     fitcov <- NULL
   }
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0)
 
   # If competing event exists, fit model for competing event variable
   if (comprisk){
-    fitD <- pred_fun_D(compevent_model, compevent_restrictions, obs_data)
-    compevent_range <- range(obs_data[[compevent_name]])
+    fitD <- pred_fun_D(compevent_model, compevent_restrictions, obs_data_geq_0)
+    compevent_range <- range(obs_data_geq_0[[compevent_name]])
   } else {
     fitD <- NA
     compevent_range <- NA
@@ -792,7 +802,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                  outcome_type = outcome_type,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel, max_visits = max_visits,
-                                 baselags = baselags, ...)
+                                 baselags = baselags, below_zero_indicator = below_zero_indicator,
+                                 min_time = min_time, ...)
     parallel::stopCluster(cl)
   } else {
     pools <- lapply(1:length(comb_interventions), FUN = function(i){
@@ -811,7 +822,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                outcome_type = outcome_type,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel, max_visits = max_visits,
-               baselags = baselags, ...)
+               baselags = baselags, below_zero_indicator = below_zero_indicator,
+               min_time = min_time, ...)
     })
   }
 
@@ -895,7 +907,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                       time_name = time_name, outcome_name = outcome_name,
                                       compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
-                                      boot_diag = boot_diag, nsimul = nsimul, baselags = baselags, ...)
+                                      boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+                                      below_zero_indicator = below_zero_indicator, min_time = min_time, ...)
       parallel::stopCluster(cl)
     } else {
       final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
@@ -914,7 +927,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          time_name = time_name, outcome_name = outcome_name,
                          compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
-                         boot_diag = boot_diag, nsimul = nsimul, baselags = baselags, ...)
+                         boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+                         below_zero_indicator = below_zero_indicator, min_time = min_time, ...)
     }
 
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
@@ -1203,8 +1217,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'                                of that covariate given the condition in the second entry is false such that \emph{a priori} knowledge
 #'                                of the covariate distribution is available; and its fourth entry a value used by the function in the
 #'                                third entry. The default is \code{NA}.
-#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                                the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                                included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                                of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                                level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                                are set to their values at time 0. The default is \code{FALSE}.
@@ -1324,6 +1338,14 @@ gformula_continuous_eof <- function(obs_data, id,
   if ('time_points' %in% names(extra_args)){
     stop('Argument time_points cannot be supplied in this function. For end of follow up outcomes, the mean is calculated at the last time point in obs_data')
   }
+  if (missing(time_name)){
+    stop("Missing parameter time_name")
+  } else if (!(time_name %in% colnames(obs_data))){
+    stop(paste('time_name', time_name, 'not found in obs_data'))
+  }
+  min_time <- min(obs_data[[time_name]])
+  below_zero_indicator <- min_time < 0
+
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
               covnames = covnames, covtypes = covtypes, basecovs = basecovs,
@@ -1334,7 +1356,7 @@ gformula_continuous_eof <- function(obs_data, id,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals)
+              histvals = histvals, min_time = min_time)
 
   obs_data <- copy(obs_data)
 
@@ -1370,11 +1392,12 @@ gformula_continuous_eof <- function(obs_data, id,
   for (t in 0:max(obs_data[[time_name]])) {
     make_histories(pool = obs_data, histvars = histvars, histvals = histvals,
                    histories = histories, time_name = time_name, t = t, id = id ,
-                   max_visits = max_visits, baselags = baselags)
+                   max_visits = max_visits, baselags = baselags,
+                   below_zero_indicator = below_zero_indicator)
   }
 
   sample_size <- length(unique(obs_data[[id]]))
-  time_points <- diff(range(obs_data[[time_name]]))+1
+  time_points <- max(obs_data[[time_name]])+1
 
   for (i in 1:length(covnames)){
     if (covtypes[i] == 'absorbing'){
@@ -1390,6 +1413,7 @@ gformula_continuous_eof <- function(obs_data, id,
   ids[, 'newid' := seq_len(.N)]
   setkeyv(obs_data, id)
   obs_data <- obs_data[J(ids), allow.cartesian = TRUE]
+  obs_data_geq_0 <- obs_data[obs_data[[time_name]] >= 0]
 
   # Set default number of simulated individuals to equal number of individuals in
   # observed dataset
@@ -1408,24 +1432,24 @@ gformula_continuous_eof <- function(obs_data, id,
   ranges <- lapply(1:length(covnames), FUN = function(i){
     if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
         covtypes[i] == 'truncated normal') {
-      range(obs_data[[covnames[i]]])
+      range(obs_data_geq_0[[covnames[i]]])
     } else if (covtypes[i] == 'zero-inflated normal'){
-      range(obs_data[obs_data[[covnames[i]]] > 0][[covnames[i]]])
+      range(obs_data_geq_0[obs_data_geq_0[[covnames[i]]] > 0][[covnames[i]]])
     } else {
       NA
     }
   })
-  yrange <- range(obs_data[[outcome_name]])
+  yrange <- range(obs_data_geq_0[[outcome_name]])
 
   # Fit models to covariates and outcome variable
   if (time_points > 1){
     fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                            covfits_custom = covfits_custom, restrictions = restrictions,
-                           time_name = time_name, obs_data = obs_data)
+                           time_name = time_name, obs_data = obs_data_geq_0)
   } else {
     fitcov <- NULL
   }
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0)
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -1485,7 +1509,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                  outcome_type = outcome_type,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel,
-                                 baselags = baselags, ...)
+                                 baselags = baselags, below_zero_indicator = below_zero_indicator,
+                                 min_time = min_time, ...)
     parallel::stopCluster(cl)
   } else {
     pools <- lapply(1:length(comb_interventions), FUN = function(i){
@@ -1503,7 +1528,8 @@ gformula_continuous_eof <- function(obs_data, id,
                outcome_type = outcome_type,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel,
-               baselags = baselags, ...)
+               baselags = baselags, below_zero_indicator = below_zero_indicator,
+               min_time = min_time, ...)
     })
   }
 
@@ -1552,7 +1578,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                       time_name = time_name, outcome_name = outcome_name,
                                       compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
-                                      boot_diag = boot_diag, nsimul = nsimul, baselags = baselags, ...)
+                                      boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+                                      below_zero_indicator = below_zero_indicator, min_time = min_time, ...)
       parallel::stopCluster(cl)
 
     } else {
@@ -1572,7 +1599,8 @@ gformula_continuous_eof <- function(obs_data, id,
                          time_name = time_name, outcome_name = outcome_name,
                          compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
-                         boot_diag = boot_diag, nsimul = nsimul, baselags = baselags)
+                         boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+                         below_zero_indicator = below_zero_indicator, min_time = min_time, ...)
     }
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
       as.data.table(t(m$Result))
@@ -1827,8 +1855,8 @@ gformula_continuous_eof <- function(obs_data, id,
 #'                                of that covariate given the condition in the second entry is false such that \emph{a priori} knowledge
 #'                                of the covariate distribution is available; and its fourth entry a value used by the function in the
 #'                                third entry. The default is \code{NA}.
-#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                                the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                                included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                                of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                                level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                                are set to their values at time 0. The default is \code{FALSE}.
@@ -1949,6 +1977,14 @@ gformula_binary_eof <- function(obs_data, id,
   if ('time_points' %in% names(extra_args)){
     stop('Argument time_points cannot be supplied in this function. For end of follow up outcomes, the mean is calculated at the last time point in obs_data')
   }
+  if (missing(time_name)){
+    stop("Missing parameter time_name")
+  } else if (!(time_name %in% colnames(obs_data))){
+    stop(paste('time_name', time_name, 'not found in obs_data'))
+  }
+  min_time <- min(obs_data[[time_name]])
+  below_zero_indicator <- min_time < 0
+
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
               covnames = covnames, covtypes = covtypes, basecovs = basecovs,
@@ -1959,7 +1995,7 @@ gformula_binary_eof <- function(obs_data, id,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals)
+              histvals = histvals, min_time = min_time)
 
   obs_data <- copy(obs_data)
 
@@ -1992,11 +2028,11 @@ gformula_binary_eof <- function(obs_data, id,
   for (t in 0:max(obs_data[[time_name]])) {
     make_histories(pool = obs_data, histvars = histvars, histvals = histvals,
                    histories = histories, time_name = time_name, t = t, id = id,
-                   baselags = baselags)
+                   baselags = baselags, below_zero_indicator = below_zero_indicator)
   }
 
   sample_size <- length(unique(obs_data[[id]]))
-  time_points <- diff(range(obs_data[[time_name]]))+1
+  time_points <- max(obs_data[[time_name]])+1
 
   for (i in 1:length(covnames)){
     if (covtypes[i] == 'absorbing'){
@@ -2012,6 +2048,7 @@ gformula_binary_eof <- function(obs_data, id,
   ids[, "newid" := seq_len(.N)]
   setkeyv(obs_data, id)
   obs_data <- obs_data[J(ids), allow.cartesian = TRUE]
+  obs_data_geq_0 <- obs_data[obs_data[[time_name]] >= 0]
 
   # Set default number of simulated individuals to equal number of individuals in
   # observed dataset
@@ -2029,24 +2066,24 @@ gformula_binary_eof <- function(obs_data, id,
   ranges <- lapply(1:length(covnames), FUN = function(i){
     if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
         covtypes[i] == 'truncated normal') {
-      range(obs_data[[covnames[i]]])
+      range(obs_data_geq_0[[covnames[i]]])
     } else if (covtypes[i] == 'zero-inflated normal'){
-      range(obs_data[obs_data[[covnames[i]]] > 0][[covnames[i]]])
+      range(obs_data_geq_0[obs_data_geq_0[[covnames[i]]] > 0][[covnames[i]]])
     } else {
       NA
     }
   })
-  yrange <- range(obs_data[[outcome_name]])
+  yrange <- range(obs_data_geq_0[[outcome_name]])
 
   # Fit models to covariates and outcome variable
   if (time_points > 1){
     fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                            covfits_custom = covfits_custom, restrictions = restrictions,
-                           time_name = time_name, obs_data = obs_data)
+                           time_name = time_name, obs_data = obs_data_geq_0)
   } else {
     fitcov <- NULL
   }
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0)
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -2106,7 +2143,8 @@ gformula_binary_eof <- function(obs_data, id,
                                  outcome_type = outcome_type,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel,
-                                 baselags = baselags, ...)
+                                 baselags = baselags, below_zero_indicator = below_zero_indicator,
+                                 min_time = min_time, ...)
     parallel::stopCluster(cl)
 
   } else {
@@ -2125,7 +2163,8 @@ gformula_binary_eof <- function(obs_data, id,
                outcome_type = outcome_type,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel,
-               baselags = baselags, ...)
+               baselags = baselags, below_zero_indicator = below_zero_indicator,
+               min_time = min_time, ...)
     })
   }
 
@@ -2174,7 +2213,8 @@ gformula_binary_eof <- function(obs_data, id,
                                       time_name = time_name, outcome_name = outcome_name,
                                       compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
-                                      boot_diag = boot_diag, nsimul = nsimul, baselags = baselags, ...)
+                                      boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+                                      below_zero_indicator = below_zero_indicator, min_time = min_time, ...)
       parallel::stopCluster(cl)
 
     } else {
@@ -2194,7 +2234,8 @@ gformula_binary_eof <- function(obs_data, id,
                          time_name = time_name, outcome_name = outcome_name,
                          compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
-                         boot_diag = boot_diag, nsimul = nsimul, baselags = baselags)
+                         boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+                         below_zero_indicator = below_zero_indicator, min_time = min_time, ...)
     }
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
       as.data.table(t(m$Result))

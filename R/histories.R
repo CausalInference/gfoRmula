@@ -18,11 +18,12 @@
 #' @param histvars   Vector of character strings specifying the names of the variables for which history functions are to be applied.
 #' @param histvals   For \code{lagged}, this argument is a vector specifying the lags used in the model statements (e.g., if \code{lag1_varname} and \code{lag2_varname} were included in the model statements, this vector would be \code{c(1,2)}). For \code{lagavg}, this argument is a numeric vector specifying the lag averages used in the model statements.
 #' @param id_name    Character string specifying the name of the ID variable in \code{pool}.
-#' @param baselags   Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                   the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags   Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                   included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                   of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                   level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                   are set to their values at time 0. The default is \code{FALSE}.
+#' @param below_zero_indicator Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.
 #' @return No value is returned. The data table \code{pool} is modified in place.
 #'
 #' @examples
@@ -67,34 +68,29 @@
 #'
 #' @import data.table
 #' @export
-lagged <- function(pool, histvars, histvals, time_name, t, id_name, baselags){
+lagged <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
+                   below_zero_indicator){
   for (i in histvals){
-    if (t < i){
-      # At time point less than i, set all lagged variables equal to 0
-      if (baselags){
-        current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
-        lapply(histvars, FUN = function(histvar){
-          classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-          myclass <- paste('as.', classtmp, sep = "")
-          pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) :=
-                 get(myclass)(pool[pool[[time_name]] == 0 & get(id_name) %in% current_ids][[histvar]])]
-        })
-      } else {
-        lapply(histvars, FUN = function(histvar){
-          classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-          myclass <- paste('as.', classtmp, sep = "")
-          if (is.factor(pool[pool[[time_name]] == t][[histvar]])){
-            reflevel <- levels(pool[pool[[time_name]] == t][[histvar]])[1]
-            pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) := reflevel]
-          } else {
-            pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) := get(myclass)(0)]
-          }
-        })
-      }
-
+    if (t < i & baselags & !below_zero_indicator){
+      current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
+      lapply(histvars, FUN = function(histvar){
+        classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
+        myclass <- paste('as.', classtmp, sep = "")
+        pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) :=
+               get(myclass)(pool[pool[[time_name]] == 0 & get(id_name) %in% current_ids][[histvar]])]
+      })
+    } else if (t < i & !below_zero_indicator){
+      lapply(histvars, FUN = function(histvar){
+        classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
+        myclass <- paste('as.', classtmp, sep = "")
+        if (is.factor(pool[pool[[time_name]] == t][[histvar]])){
+          reflevel <- levels(pool[pool[[time_name]] == t][[histvar]])[1]
+          pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) := reflevel]
+        } else {
+          pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) := get(myclass)(0)]
+        }
+      })
     } else {
-      # Create columns for lagged variables by setting equal to the actual variable's value
-      # at t-i
       current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
       lapply(histvars, FUN = function(histvar){
         classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
@@ -108,8 +104,8 @@ lagged <- function(pool, histvars, histvals, time_name, t, id_name, baselags){
 
 #' @rdname lagged
 #' @export
-cumavg <- function(pool, histvars, time_name, t, id_name){
-  if (t == 0){
+cumavg <- function(pool, histvars, time_name, t, id_name, below_zero_indicator){
+  if (t == 0 & !below_zero_indicator){
     # At first time point, set all cumulative averages equal to the actual value of the
     # variable
     lapply(histvars, FUN = function(histvar){
@@ -128,7 +124,7 @@ cumavg <- function(pool, histvars, time_name, t, id_name){
                                        get(time_name) <= t][[histvar]],
                                 droplevels(pool[get(id_name) %in% current_ids &
                                                   get(time_name) <= t][[id_name]]),
-                                FUN = sum) / (t + 1))]
+                                FUN = mean))]
       })
     } else {
       lapply(histvars, FUN = function(histvar){
@@ -136,7 +132,7 @@ cumavg <- function(pool, histvars, time_name, t, id_name){
                as.double(tapply(pool[get(id_name) %in% current_ids &
                                        get(time_name) <= t][[histvar]],
                                 pool[get(id_name) %in% current_ids &
-                                       get(time_name) <= t][[id_name]], FUN = sum) / (t + 1))]
+                                       get(time_name) <= t][[id_name]], FUN = mean))]
       })
     }
   }
@@ -144,9 +140,10 @@ cumavg <- function(pool, histvars, time_name, t, id_name){
 
 #' @rdname lagged
 #' @export
-lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags){
+lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
+                   below_zero_indicator){
   for (i in histvals){
-    if (t < i){
+    if (t < i & !below_zero_indicator){
       if (baselags){
         current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
         lapply(histvars, FUN = function(histvar){
@@ -161,7 +158,7 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags){
         })
       }
 
-    } else if (t == i){
+    } else if (t == i & !below_zero_indicator){
       # At time point i, set all lagged cumulative averages equal to the actual value
       # of the variable
       current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
@@ -261,16 +258,17 @@ visit_sum <- function(pool, histvars, time_name, t, id_name, max_visits){
 #'                   a visit is forced (in the simulated data). Multiple values exist in the
 #'                   vector when the modeling of more than covariate is attached to a visit
 #'                   process. A value of \code{NA} should be provided when there is no visit process.
-#' @param baselags   Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-#'                   the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+#' @param baselags   Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+#'                   included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 #'                   of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 #'                   level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 #'                   are set to their values at time 0. The default is \code{FALSE}.
+#' @param below_zero_indicator Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.
 #' @return No value is returned. The data table \code{pool} is modified in place.
 #' @keywords internal
 
 make_histories <- function(pool, histvars, histvals, histories, time_name, t, id,
-                           max_visits, baselags){
+                           max_visits, baselags, below_zero_indicator){
   if (!is.na(histvars[1]) && !is.na(histories[1])){
     lapply(1:length(histories), FUN = function(i){
       if (isTRUE(all.equal(histories[[i]], visit_sum))){
@@ -280,12 +278,16 @@ make_histories <- function(pool, histvars, histvals, histories, time_name, t, id
         lagged(pool = pool, histvars = histvars[[i]],
                histvals = histvals$lag_indicator,
                time_name = time_name, t = t, id_name = id,
-               baselags = baselags)
+               baselags = baselags, below_zero_indicator = below_zero_indicator)
       } else if (isTRUE(all.equal(histories[[i]], lagavg))){
         lagavg(pool = pool, histvars = histvars[[i]],
                histvals = histvals$lagavg_indicator,
                time_name = time_name, t = t, id_name = id,
-               baselags = baselags)
+               baselags = baselags, below_zero_indicator = below_zero_indicator)
+      } else if (isTRUE(all.equal(histories[[i]], cumavg))){
+        cumavg(pool = pool, histvars = histvars[[i]],
+               time_name = time_name, t = t, id_name = id,
+               below_zero_indicator = below_zero_indicator)
       } else {
         histories[[i]](pool = pool, histvars = histvars[[i]], time_name = time_name,
                        t = t, id_name = id)

@@ -179,7 +179,8 @@ get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
 
   # Calculate mean observed values at each time point for covariates, risk, and survival
   obs_results <- obs_calculate(outcome_name, compevent_name, time_name, covnames, comprisk,
-                               outcome_type, obs_data[obs_data[[time_name]] < time_points])
+                               outcome_type, obs_data[obs_data[[time_name]] < time_points &
+                                                        obs_data[[time_name]] >= 0])
 
   # Calculate mean simulated values at each time point for covariates
   sim_results_cov <- lapply(covnames, FUN = function(covname){

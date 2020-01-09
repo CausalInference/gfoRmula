@@ -9,7 +9,7 @@ simulate(o, fitcov, fitY, fitD, yrestrictions, compevent_restrictions,
   interventions, int_times, histvars, histvals, histories, comprisk,
   ranges, yrange, compevent_range, outcome_type, subseed, obs_data,
   time_points, parallel, covnames, covtypes, covparams, covpredict_custom,
-  basecovs, max_visits, baselags, ...)
+  basecovs, max_visits, baselags, below_zero_indicator, min_time, ...)
 }
 \arguments{
 \item{o}{Integer specifying the index of the current intervention.}
@@ -114,11 +114,15 @@ a visit is forced (in the simulated data). Multiple values exist in the
 vector when the modeling of more than covariate is attached to a visit
 process.}
 
-\item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+\item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 are set to their values at time 0. The default is \code{FALSE}.}
+
+\item{below_zero_indicator}{Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.}
+
+\item{min_time}{Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.}
 
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }

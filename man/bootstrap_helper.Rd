@@ -10,7 +10,8 @@ bootstrap_helper(r, time_points, obs_data, bootseeds, outcome_type,
   histvals, histories, ymodel, yrestrictions, compevent_restrictions,
   restrictions, comprisk, compevent_model, time_name, outcome_name,
   compevent_name, ranges, yrange, compevent_range, parallel, ncores,
-  max_visits, hazardratio, intcomp, boot_diag, nsimul, baselags)
+  max_visits, hazardratio, intcomp, boot_diag, nsimul, baselags,
+  below_zero_indicator, min_time)
 }
 \arguments{
 \item{r}{Integer specifying the index of the current iteration of the bootstrap.}
@@ -139,11 +140,15 @@ The default is \code{NA}, resulting in no hazard ratio calculation.}
 \item{nsimul}{Number of subjects for whom to simulate data. By default, this argument is set
 equal to the number of subjects in \code{obs_data}.}
 
-\item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when
-the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
+\item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
+included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
 of all lagi and lag_cumavgi terms in this context are set to 0 (for non-categorical covariates) or the reference
 level (for categorical covariates). If this argument is set to \code{TRUE}, the value of lagi and lag_cumavgi terms
 are set to their values at time 0. The default is \code{FALSE}.}
+
+\item{below_zero_indicator}{Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.}
+
+\item{min_time}{Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.}
 }
 \value{
 A list with the following components:
