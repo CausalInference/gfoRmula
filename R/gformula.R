@@ -270,7 +270,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                ### rwl paste("visit_sum_", vp[3], "_", vp[1], "!=0", sep = ""),
                                simple_restriction, 1),
                              c(vp[2], paste(vp[1], "==1", sep = ""), carry_forward)))
-      if (is.na(max_visits)){
+      if (is.na(max_visits[1])){
         max_visits <- as.numeric(vp[3])
       } else {
         max_visits <- c(max_visits, as.numeric(vp[3]))
@@ -976,7 +976,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                ### rwl paste("visit_sum_", vp[3], "_", vp[1], "!=0", sep = ""),
                                simple_restriction, 1),
                              c(vp[2], paste(vp[1], "==1", sep = ""), carry_forward)))
-      if (is.na(max_visits)){
+      if (is.na(max_visits[1])){
         max_visits <- as.numeric(vp[3])
       } else {
         max_visits <- c(max_visits, as.numeric(vp[3]))
@@ -1599,7 +1599,7 @@ gformula_binary_eof <- function(obs_data, id,
                                ### rwl paste("visit_sum_", vp[3], "_", vp[1], "!=0", sep = ""),
                                simple_restriction, 1),
                              c(vp[2], paste(vp[1], "==1", sep = ""), carry_forward)))
-      if (is.na(max_visits)){
+      if (is.na(max_visits[1])){
         max_visits <- as.numeric(vp[3])
       } else {
         max_visits <- c(max_visits, as.numeric(vp[3]))
