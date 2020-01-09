@@ -442,23 +442,21 @@ simulate <- function(o, fitcov, fitY, fitD,
                                              condition, covnames[i], ...)))
         }
         if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
-            covtypes[i] == 'truncated normal'){
-
-          if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1]][[covnames[i]]]) != 0){
-            newdf[newdf[[covnames[i]]] < ranges[[i]][1], (covnames[i]) :=
-                    cast(ranges[[i]][1])]
-          }
-          if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
-            newdf[newdf[[covnames[i]]] < ranges[[i]][1], (covnames[i]) :=
-                    cast(ranges[[i]][1])]
-          }
+           covtypes[i] == 'truncated normal'){
+  
+             if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1]][[covnames[i]]]) != 0){
+                newdf[newdf[[covnames[i]]] < ranges[[i]][1], (covnames[i]) := cast(ranges[[i]][1])]
+             }
+             if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
+                newdf[newdf[[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
+             }
         } else if (covtypes[i] == 'zero-inflated normal') {
-          if (length(newdf[newdf[[covnames[i]]] != 0][newdf[newdf[[covnames[i]]] != 0][[covnames[i]]] < ranges[[i]][1]][[covnames[i]]]) != 0){
-            newdf[newdf[[covnames[i]]] != 0][newdf[newdf[[covnames[i]]] != 0][[covnames[i]]] < ranges[[i]][1], (covnames[i]) := cast(ranges[[i]][1])]
-          }
-          if (length(newdf[newdf[[covnames[i]]] != 0][newdf[newdf[[covnames[i]]] != 0][[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
-            newdf[newdf[[covnames[i]]] != 0][newdf[newdf[[covnames[i]]] != 0][[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
-          }
+             if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1] & newdf[[covnames[i]]] > 0][[covnames[i]]]) != 0){
+                newdf[newdf[[covnames[i]]] < ranges[[i]][1] & newdf[[covnames[i]]] > 0, (covnames[i]) := cast(ranges[[i]][1])]
+             }
+             if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
+                newdf[newdf[[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
+             }
         }
         # Check if there are restrictions on covariate simulation
         if (!is.na(restrictions[[1]][[1]])){
