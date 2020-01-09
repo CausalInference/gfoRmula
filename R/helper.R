@@ -145,6 +145,10 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     warning("Number of simulated subjects desired is fewer than number of observed
             subjects", immediate. = TRUE)
   }
+  
+  if(!is.numeric(obs_data[[time_name]])){
+    stop("Time variable in obs_data is not a numeric variable")
+  }
 
   correct_time_indicator <- tapply(obs_data[[time_name]], obs_data[[id]],
                                    FUN = function(x){
