@@ -617,14 +617,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   outcome_type <- 'survival'
   hazardratio <- !(length(intcomp) == 1 && is.na(intcomp))
 
-  if (missing(time_name)){
-    stop("Missing parameter time_name")
-  } else if (!(time_name %in% colnames(obs_data))){
-    stop(paste('time_name', time_name, 'not found in obs_data'))
-  }
-  min_time <- min(obs_data[[time_name]])
-  below_zero_indicator <- min_time < 0
-
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
               covnames = covnames, covtypes = covtypes, basecovs = basecovs,
@@ -635,7 +627,10 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals, min_time = min_time)
+              histvals = histvals)
+
+  min_time <- min(obs_data[[time_name]])
+  below_zero_indicator <- min_time < 0
 
 
   obs_data <- copy(obs_data)
@@ -1338,13 +1333,7 @@ gformula_continuous_eof <- function(obs_data, id,
   if ('time_points' %in% names(extra_args)){
     stop('Argument time_points cannot be supplied in this function. For end of follow up outcomes, the mean is calculated at the last time point in obs_data')
   }
-  if (missing(time_name)){
-    stop("Missing parameter time_name")
-  } else if (!(time_name %in% colnames(obs_data))){
-    stop(paste('time_name', time_name, 'not found in obs_data'))
-  }
-  min_time <- min(obs_data[[time_name]])
-  below_zero_indicator <- min_time < 0
+
 
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
@@ -1357,6 +1346,9 @@ gformula_continuous_eof <- function(obs_data, id,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
               histvals = histvals, min_time = min_time)
+
+  min_time <- min(obs_data[[time_name]])
+  below_zero_indicator <- min_time < 0
 
   obs_data <- copy(obs_data)
 
@@ -1977,13 +1969,7 @@ gformula_binary_eof <- function(obs_data, id,
   if ('time_points' %in% names(extra_args)){
     stop('Argument time_points cannot be supplied in this function. For end of follow up outcomes, the mean is calculated at the last time point in obs_data')
   }
-  if (missing(time_name)){
-    stop("Missing parameter time_name")
-  } else if (!(time_name %in% colnames(obs_data))){
-    stop(paste('time_name', time_name, 'not found in obs_data'))
-  }
-  min_time <- min(obs_data[[time_name]])
-  below_zero_indicator <- min_time < 0
+
 
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
@@ -1996,6 +1982,9 @@ gformula_binary_eof <- function(obs_data, id,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
               histvals = histvals, min_time = min_time)
+
+  min_time <- min(obs_data[[time_name]])
+  below_zero_indicator <- min_time < 0
 
   obs_data <- copy(obs_data)
 

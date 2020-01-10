@@ -76,8 +76,6 @@ simulation.}
 \item{histvals}{List of length 3. First element contains a vector of integers specifying the number of lags back for the lagged function. Second element contains
 a vector of integers indicating the number of lags back for the lagavg function. The last element is an indicator whether a cumavg term
 appears in any of the model statements.}
-
-\item{min_time}{Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.}
 }
 \value{
 No value is returned.

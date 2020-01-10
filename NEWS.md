@@ -13,12 +13,14 @@ Package Updates
 -   Added option for users to pass in “control parameters” (e.g.,
     maximum number of iterations, maxit, in glm.control) when fitting
     models for time-varying covariates via the `covparams$control`
-    argument
+    argument. (Thanks to @jerzEG for the suggestion)
 -   Added simulated data under the natural course to the `sim_data`
     component of the output of the `gformula()` function
 -   Fixed minor bug in the `lagavg()` function
 -   Fixed bug occuring when not using lags of the intervention
     variable(s)
+-   Fixed bug occuring in the truncation beyond covariate ranges.
+    (Thanks to Louisa Smith)
 -   Updates to the documentation
 
 ### Changes in Version 0.2.1 (2019-08-24)

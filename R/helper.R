@@ -74,7 +74,6 @@ hr_helper <- function(i, intcomp, time_name, pools){
 #' @param histvals               List of length 3. First element contains a vector of integers specifying the number of lags back for the lagged function. Second element contains
 #'                               a vector of integers indicating the number of lags back for the lagavg function. The last element is an indicator whether a cumavg term
 #'                               appears in any of the model statements.
-#' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
 #'
 #' @return                       No value is returned.
 #' @keywords internal
@@ -141,11 +140,17 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     warning("Number of simulated subjects desired is fewer than number of observed
             subjects", immediate. = TRUE)
   }
-  
+
+  if (missing(time_name)){
+    stop("Missing parameter time_name")
+  } else if (!(time_name %in% colnames(obs_data))){
+    stop(paste('time_name', time_name, 'not found in obs_data'))
+  }
   if(!is.numeric(obs_data[[time_name]])){
     stop("Time variable in obs_data is not a numeric variable")
   }
 
+  min_time <- min(obs_data[[time_name]])
   correct_time_indicator <- tapply(obs_data[[time_name]], obs_data[[id]],
                                    FUN = function(x){
                                      all(x == min(min_time, 0):(length(x)+min(min_time, 0)-1))
