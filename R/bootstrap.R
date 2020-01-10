@@ -170,7 +170,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
   comb_int_times <- int_times
 
   # Simulate data under different interventions
-  pools <- lapply(1:length(comb_interventions), FUN = function(i){
+  pools <- lapply(seq_along(comb_interventions), FUN = function(i){
     simulate(fitcov = fitcov, fitY = fitY, fitD = fitD,
              yrestrictions = yrestrictions,
              compevent_restrictions = compevent_restrictions,
@@ -254,7 +254,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
   if (hazardratio){
     # Generate dataset containing failure/censor time information for each subject
     # under each intervention
-    pools_hr <- lapply(1:length(intcomp), FUN = hr_helper, intcomp = intcomp,
+    pools_hr <- lapply(seq_along(intcomp), FUN = hr_helper, intcomp = intcomp,
                        time_name = time_name, pools = pools)
     data_hr <- rbindlist(pools_hr)
     names(data_hr)[names(data_hr) == time_name] <- "t0"

@@ -196,7 +196,7 @@ get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
   }
 
   # Generate data tables for plotting each covariate
-  dt_cov_plot <- lapply(1:length(covnames), FUN = function(i){
+  dt_cov_plot <- lapply(seq_along(covnames), FUN = function(i){
     covname <- covnames[i]
     if (covtypes[i] == 'categorical'){
       sub_obs_data <- obs_data[obs_data[[time_name]] < time_points,
@@ -258,7 +258,7 @@ get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
 #' @import ggplot2
 get_cvgrphs <- function(x, covnames, covtypes, xlab, ylab_cov){
 
-  cvgrphs <- lapply(1:length(covnames), FUN = function(i){
+  cvgrphs <- lapply(seq_along(covnames), FUN = function(i){
     covname <- covnames[i]
     covtype <- covtypes[i]
     comb_cov_data <- x$dt_cov_plot[[covname]]

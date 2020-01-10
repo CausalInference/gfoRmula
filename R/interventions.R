@@ -165,7 +165,7 @@ threshold <- function(newdf, pool, intvar, intvals, time_name, t){
 #' @keywords internal
 intfunc <- function(newdf, pool, intervention, intvar, int_time, time_name, t){
   if (t %in% int_time){
-    lapply(1:length(intervention), FUN = function(i) {
+    lapply(seq_along(intervention), FUN = function(i) {
       if (length(intervention[[i]]) == 1){ # Check if intervention contains just function
         intervention[[i]][[1]](newdf, pool, intvar[i], intvals = NULL, time_name, t)
       } else {

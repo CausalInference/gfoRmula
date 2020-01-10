@@ -270,7 +270,7 @@ visit_sum <- function(pool, histvars, time_name, t, id_name, max_visits){
 make_histories <- function(pool, histvars, histvals, histories, time_name, t, id,
                            max_visits, baselags, below_zero_indicator){
   if (!is.na(histvars[1]) && !is.na(histories[1])){
-    lapply(1:length(histories), FUN = function(i){
+    lapply(seq_along(histories), FUN = function(i){
       if (isTRUE(all.equal(histories[[i]], visit_sum))){
         visit_sum(pool = pool, histvars = histvars[[i]], time_name = time_name,
                        t = t, id_name = id, max_visits = max_visits[i])
