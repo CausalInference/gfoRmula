@@ -58,10 +58,12 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
 fit_multinomial <- function(covparams, obs_data, j){
   covmodels <- covparams$covmodels
   if (!is.null(covparams$control) && !is.na(covparams$control[j])){
-    fit <- nnet::multinom(stats::as.formula(paste(covmodels[j])), data = obs_data,
-                          unlist(covparams$control[j]))
+    args <- c(list(formula = stats::as.formula(paste(covmodels[j])),
+                   data = obs_data), trace = FALSE, covparams$control[j])
+    fit <- do.call(nnet::multinom, args = args)
   } else {
-    fit <- nnet::multinom(stats::as.formula(paste(covmodels[j])), data = obs_data)
+    fit <- nnet::multinom(stats::as.formula(paste(covmodels[j])),
+                          data = obs_data, trace = FALSE)
   }
 
   fit$stderr <- add_stderr(fit)
@@ -207,8 +209,10 @@ fit_trunc_normal <- function(covparams, obs_data, j){
   point <- covparams$point[j]
   direction <- covparams$direction[j]
   if (!is.null(covparams$control) && !is.na(covparams$control[j])){
-    fit <- truncreg::truncreg(stats::as.formula(paste(covmodels[j])), data = obs_data, point = point,
-                              direction = direction, y = TRUE, unlist(covparams$control[j]))
+    args <- c(list(formula = stats::as.formula(paste(covmodels[j])),
+                   data = obs_data, point = point, direction = direction,
+                   y = TRUE), covparams$control[j])
+    fit <- do.call(truncreg::truncreg, args = args)
   } else {
     fit <- truncreg::truncreg(stats::as.formula(paste(covmodels[j])), data = obs_data, point = point,
                               direction = direction, y = TRUE)
