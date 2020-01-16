@@ -16,6 +16,9 @@ Package Updates
     argument. (Thanks to @jerzEG for the suggestion)
 -   Added simulated data under the natural course to the `sim_data`
     component of the output of the `gformula()` function
+-   Added a progress bar for the number of bootstrap samples completed.
+    See the `show_progress` argument of the `gformula()` function for
+    further details
 -   Fixed minor bug in the `lagavg()` function
 -   Fixed bug occuring when not using lags of the intervention
     variable(s)

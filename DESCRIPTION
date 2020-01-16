@@ -49,6 +49,7 @@ Imports:
     grDevices,
     nnet,
     parallel,
+    progress,
     stats,
     stringr,
     survival,

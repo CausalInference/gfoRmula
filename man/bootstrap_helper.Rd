@@ -11,7 +11,7 @@ bootstrap_helper(r, time_points, obs_data, bootseeds, outcome_type,
   restrictions, comprisk, compevent_model, time_name, outcome_name,
   compevent_name, ranges, yrange, compevent_range, parallel, ncores,
   max_visits, hazardratio, intcomp, boot_diag, nsimul, baselags,
-  below_zero_indicator, min_time)
+  below_zero_indicator, min_time, show_progress, pb)
 }
 \arguments{
 \item{r}{Integer specifying the index of the current iteration of the bootstrap.}
@@ -149,6 +149,10 @@ are set to their values at time 0. The default is \code{FALSE}.}
 \item{below_zero_indicator}{Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.}
 
 \item{min_time}{Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.}
+
+\item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{FALSE}.}
+
+\item{pb}{Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.}
 }
 \value{
 A list with the following components:

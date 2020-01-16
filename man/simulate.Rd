@@ -9,7 +9,8 @@ simulate(o, fitcov, fitY, fitD, yrestrictions, compevent_restrictions,
   interventions, int_times, histvars, histvals, histories, comprisk,
   ranges, yrange, compevent_range, outcome_type, subseed, obs_data,
   time_points, parallel, covnames, covtypes, covparams, covpredict_custom,
-  basecovs, max_visits, baselags, below_zero_indicator, min_time, ...)
+  basecovs, max_visits, baselags, below_zero_indicator, min_time,
+  show_progress, pb, ...)
 }
 \arguments{
 \item{o}{Integer specifying the index of the current intervention.}
@@ -123,6 +124,10 @@ are set to their values at time 0. The default is \code{FALSE}.}
 \item{below_zero_indicator}{Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.}
 
 \item{min_time}{Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.}
+
+\item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{FALSE}.}
+
+\item{pb}{Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.}
 
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }

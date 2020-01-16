@@ -14,7 +14,7 @@ gformula(obs_data, id, time_points = NULL, time_name, covnames, covtypes,
   compevent_restrictions = NA, baselags = FALSE, nsimul = NA,
   sim_data_b = FALSE, seed, nsamples = 0, parallel = FALSE,
   ncores = NA, ci_method = "percentile", threads, boot_diag = FALSE,
-  ...)
+  show_progress = TRUE, ...)
 }
 \arguments{
 \item{obs_data}{Data table containing the observed data.}
@@ -148,6 +148,8 @@ In many applications, users may wish to set this argument equal to \code{paralle
 \item{threads}{Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.}
 
 \item{boot_diag}{Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.}
+
+\item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{FALSE}.}
 
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }
@@ -299,6 +301,7 @@ gform_cont_eof
 ## Estimating the effect of threshold interventions on the mean of a binary
 ## end of follow-up outcome
 \donttest{
+outcome_type <- 'binary_eof'
 id <- 'id_num'
 time_name <- 'time'
 covnames <- c('cov1', 'cov2', 'treat')
@@ -306,10 +309,10 @@ outcome_name <- 'outcome'
 histories <- c(lagged, cumavg)
 histvars <- list(c('treat', 'cov1', 'cov2'), c('cov1', 'cov2'))
 covtypes <- c('binary', 'zero-inflated normal', 'normal')
-covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3 +
-                                  time,
-                                cov2 ~ lag1_treat + cov1 + lag1_cov1 + lag1_cov2 +
+covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 +
                                   cov3 + time,
+                                cov2 ~ lag1_treat + cov1 + lag1_cov1 +
+                                  lag1_cov2 + cov3 + time,
                                 treat ~ lag1_treat + cumavg_cov1 +
                                   cumavg_cov2 + cov3 + time))
 ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
@@ -320,20 +323,16 @@ int_descript <- c('Never treat', 'Threshold - lower bound 1')
 nsimul <- 10000
 ncores <- 2
 
-gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
-                                     time_name = time_name,
-                                     covnames = covnames,
-                                     outcome_name = outcome_name,
-                                     covtypes = covtypes,
-                                     covparams = covparams,
-                                     ymodel = ymodel,
-                                     intvars = intvars,
-                                     interventions = interventions,
-                                     int_descript = int_descript,
-                                     histories = histories, histvars = histvars,
-                                     basecovs = c("cov3"), seed = 1234,
-                                     parallel = TRUE, nsamples = 5,
-                                     nsimul = nsimul, ncores = ncores)
+gform_bin_eof <- gformula(obs_data = binary_eofdata,
+                          outcome_type = outcome_type, id = id,
+                          time_name = time_name, covnames = covnames,
+                          outcome_name = outcome_name, covtypes = covtypes,
+                          covparams = covparams, ymodel = ymodel,
+                          intvars = intvars, interventions = interventions,
+                          int_descript = int_descript, histories = histories,
+                          histvars = histvars, basecovs = c("cov3"),
+                          seed = 1234, parallel = TRUE, nsamples = 5,
+                          nsimul = nsimul, ncores = ncores)
 gform_bin_eof
 }
 
