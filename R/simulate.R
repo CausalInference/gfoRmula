@@ -207,7 +207,12 @@ simulate <- function(o, fitcov, fitY, fitD,
       # Update datatable with specified treatment regime / intervention for this
       # simulation
       intfunc(newdf, pool = pool, intervention, intvar, unlist(int_time), time_name, t)
-      pool[pool[[time_name]] == t] <- newdf
+      if (ncol(newdf) > ncol(pool)){
+        pool <- rbind(pool[pool[[time_name]] < t], newdf, fill = TRUE)
+        pool <- pool[order(id, get(time_name))]
+      } else {
+        pool[pool[[time_name]] == t] <- newdf
+      }
       # Update datatable with new covariates that are functions of history of existing
       # covariates
       make_histories(pool = pool, histvars = histvars, histvals = histvals,
