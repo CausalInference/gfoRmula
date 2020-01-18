@@ -19,6 +19,7 @@ Package Updates
 -   Added a progress bar for the number of bootstrap samples completed.
     See the `show_progress` argument of the `gformula()` function for
     further details
+-   Added `coef()` S3 method for objects of class ‘gformula’
 -   Fixed minor bug in the `lagavg()` function
 -   Fixed bug occuring when not using lags of the intervention
     variable(s)

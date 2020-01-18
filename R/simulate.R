@@ -129,7 +129,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #'                                are set to their values at time 0. The default is \code{FALSE}.
 #' @param below_zero_indicator    Logical scalar indicating whether the observed data set contains rows for time \eqn{t < 0}.
 #' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
-#' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{FALSE}.
+#' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param pb                      Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        A data table containing simulated data under the specified intervention.

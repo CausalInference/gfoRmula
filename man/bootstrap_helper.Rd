@@ -150,7 +150,7 @@ are set to their values at time 0. The default is \code{FALSE}.}
 
 \item{min_time}{Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.}
 
-\item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{FALSE}.}
+\item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.}
 
 \item{pb}{Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.}
 }

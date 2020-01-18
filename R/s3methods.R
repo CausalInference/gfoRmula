@@ -634,3 +634,77 @@ plot.gformula_binary_eof <- function(x, covnames = NULL, ncol = NULL, nrow = NUL
   ggpubr::ggarrange(plotlist = plotlist, ncol = ncol, nrow = nrow,
                     common.legend = common.legend, legend = legend, ...)
 }
+
+
+
+#' Coefficient method for objects of class "gformula"
+#'
+#' This function extracts the coefficients of the fitted models for the
+#' time-varying covariates and outcome.
+#'
+#' @param object Object of class "gformula".
+#' @param ... Other arguments.
+#' @return If \code{bootdiag} was set to \code{FALSE} in \code{\link{gformula}},
+#' this function returns a list of the coefficients of the fitted models to the
+#' observed data set. If bootstrapping was used and \code{bootdiag} was set to \code{TRUE} in
+#' \code{\link{gformula}}, this function returns a list described as follows.
+#' The first element (named 'Original sample') is a list of the coefficients of
+#' the fitted models to the observed data set. The kth element (named 'Bootstrap
+#' sample k-1') is a list of the coefficients of the fitted models corresponding
+#' to the k-1th bootstrap sample.
+#' @seealso \code{\link{gformula}}
+#'
+#' @examples
+#' ## Estimating the effect of static treatment strategies on risk of a
+#' ## failure event
+#' \donttest{
+#' id <- 'id'
+#' time_points <- 7
+#' time_name <- 't0'
+#' covnames <- c('L1', 'L2', 'A')
+#' outcome_name <- 'Y'
+#' outcome_type <- 'survival'
+#' covtypes <- c('binary', 'bounded normal', 'binary')
+#' histories <- c(lagged, lagavg)
+#' histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
+#' covparams <- list(covmodels = c(L1 ~ lag1_A + lag_cumavg1_L1 + lag_cumavg1_L2 +
+#'                                   L3 + t0,
+#'                                 L2 ~ lag1_A + L1 + lag_cumavg1_L1 +
+#'                                   lag_cumavg1_L2 + L3 + t0,
+#'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
+#'                                   lag_cumavg1_L2 + L3 + t0))
+#' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
+#' intvars <- list('A', 'A')
+#' interventions <- list(list(c(static, rep(0, time_points))),
+#'                       list(c(static, rep(1, time_points))))
+#' int_descript <- c('Never treat', 'Always treat')
+#' nsimul <- 10000
+#'
+#' gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
+#'                         time_points = time_points,
+#'                         time_name = time_name, covnames = covnames,
+#'                         outcome_name = outcome_name,
+#'                         outcome_type = outcome_type, covtypes = covtypes,
+#'                         covparams = covparams, ymodel = ymodel,
+#'                         intvars = intvars,
+#'                         interventions = interventions,
+#'                         int_descript = int_descript,
+#'                         histories = histories, histvars = histvars,
+#'                         basecovs = c('L3'), nsimul = nsimul,
+#'                         seed = 1234)
+#' coefs(gform_basic)
+#' }
+#'
+#' @export
+coef.gformula <- function(object, ...){
+  if (!inherits(object, "gformula")){
+    stop("Argument 'object' must be an object of class \"gformula\".")
+  }
+  res <- object$coeffs
+  if (!is.null(object$bootcoeffs)){
+    res <- c(list(res), object$bootcoeffs)
+    names(res)[1] <- c('Original sample')
+    names(res)[2:length(res)] <- c(paste('Bootstrap sample', 1:length(object$bootcoeffs)))
+  }
+  return(res)
+}
