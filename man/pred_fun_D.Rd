@@ -4,7 +4,7 @@
 \alias{pred_fun_D}
 \title{Fit Competing Event Model}
 \usage{
-pred_fun_D(model, compevent_restrictions, obs_data)
+pred_fun_D(model, compevent_restrictions, obs_data, model_fits)
 }
 \arguments{
 \item{model}{Model statement for competing event variable.}
@@ -17,6 +17,8 @@ the competing event variable takes on the value in the
 second entry.}
 
 \item{obs_data}{Data on which the model is fit.}
+
+\item{model_fits}{Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.}
 }
 \value{
 Fitted model for the competing event variable.

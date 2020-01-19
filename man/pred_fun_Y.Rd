@@ -5,7 +5,7 @@
 \title{Fit Outcome Model}
 \usage{
 pred_fun_Y(model, yrestrictions, outcome_type, outcome_name, time_name,
-  obs_data)
+  obs_data, model_fits)
 }
 \arguments{
 \item{model}{Model statement for the outcome variable.}
@@ -23,6 +23,8 @@ the outcome variable takes on the value in the second entry.}
 \item{time_name}{Character string specifying the name of the time variable in \code{obs_data}.}
 
 \item{obs_data}{Data on which the model is fit.}
+
+\item{model_fits}{Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.}
 }
 \value{
 Fitted model for the outcome variable.

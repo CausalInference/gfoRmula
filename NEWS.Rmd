@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 *  Added wrapper function called `gformula()` for the `gformula_survival()`, `gformula_continuous_eof()`, and `gformula_binary_eof()` functions. Users should now use the more general `gformula()` function to apply the g-formula.
 *  Added option for users to specify the values for lags at pre-baseline times by including rows at time t = -1, t = -2, ..., t = -i.
 *  Added option for users to pass in "control parameters" (e.g., maximum number of iterations, maxit, in glm.control) when fitting models for time-varying covariates via the `covparams$control` argument. (Thanks to @jerzEG for the suggestion)
+*  Added option for users to access the fitted models for the time-varying covariates, outcome, and competing event (if applicable). See `model_fits` argument of the `gformula()` function
 *  Added simulated data under the natural course to the `sim_data` component of the output of the `gformula()` function
 *  Added a progress bar for the number of bootstrap samples completed. See the `show_progress` argument of the `gformula()` function for further details
 *  Added `coef()` S3 method for objects of class 'gformula'

@@ -10,11 +10,12 @@
 #'                    used for fitting the GLM.
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
+#' @param model_fits  Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #'
 #' @return            Fitted model for the covariate at index \eqn{j}.
 #' @keywords internal
 
-fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
+fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j, model_fits){
   # Get model parameters
   covmodels <- covparams$covmodels
   if (!is.null(covparams$covlink)){
@@ -38,7 +39,9 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
 
   fit$rmse <- add_rmse(fit)
   fit$stderrs <- add_stderr(fit)
-  fit <- trim_glm(fit)
+  if (!model_fits){
+    fit <- trim_glm(fit)
+  }
   return (fit)
 }
 
@@ -51,11 +54,12 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j){
 #'                    model statement, family, link function, etc.).
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
+#' @param model_fits  Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #'
 #' @return            Fitted model for the covariate at index \eqn{j}.
 #' @keywords internal
 
-fit_multinomial <- function(covparams, obs_data, j){
+fit_multinomial <- function(covparams, obs_data, j, model_fits){
   covmodels <- covparams$covmodels
   if (!is.null(covparams$control) && !is.na(covparams$control[j])){
     args <- c(list(formula = stats::as.formula(paste(covmodels[j])),
@@ -67,7 +71,9 @@ fit_multinomial <- function(covparams, obs_data, j){
   }
 
   fit$stderr <- add_stderr(fit)
-  fit <- trim_multinom(fit)
+  if (!model_fits){
+    fit <- trim_multinom(fit)
+  }
   return (fit)
 }
 
@@ -84,11 +90,13 @@ fit_multinomial <- function(covparams, obs_data, j){
 #' @param covname     Name of the covariate at index \eqn{j}.
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
+#' @param model_fits  Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #' @return            Fitted model for the covariate at index \eqn{j}.
 #' @keywords internal
 #' @import data.table
 
-fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j){
+fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j,
+                                model_fits){
   covmodels <- covparams$covmodels
   if (!is.null(covparams$covlink)){
     covlink <- covparams$covlink
@@ -135,8 +143,10 @@ fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j){
   fit2$rmse <- add_rmse(fit2)
   fit1$stderr <- add_stderr(fit1)
   fit2$stderr <- add_stderr(fit2)
-  fit1 <- trim_glm(fit1)
-  fit2 <- trim_glm(fit2)
+  if (!model_fits){
+    fit1 <- trim_glm(fit1)
+    fit2 <- trim_glm(fit2)
+  }
 
   return (list(fit1, fit2))
 }
@@ -154,11 +164,13 @@ fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j){
 #' @param covname     Name of the covariate at index \eqn{j}.
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
+#' @param model_fits  Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #' @return            Fitted model for the covariate at index \eqn{j}.
 #' @keywords internal
 #' @import data.table
 
-fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data, j){
+fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data,
+                                   j, model_fits){
 
   covmodels <- covparams$covmodels
   if (!is.null(covparams$covlink)){
@@ -187,7 +199,9 @@ fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data, j
   }
   fit$rmse <- add_rmse(fit)
   fit$stderr <- add_stderr(fit)
-  fit <- trim_glm(fit)
+  if (!model_fits){
+    fit <- trim_glm(fit)
+  }
   return (fit)
 }
 
@@ -201,10 +215,11 @@ fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data, j
 #'                    model statement, family, link function, etc.).
 #' @param obs_data    Data on which the model is fit.
 #' @param j           Integer specifying the index of the covariate.
+#' @param model_fits  Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #' @return            Fitted model for the covariate at index \eqn{j}.
 #' @keywords internal
 
-fit_trunc_normal <- function(covparams, obs_data, j){
+fit_trunc_normal <- function(covparams, obs_data, j, model_fits){
   covmodels <- covparams$covmodels
   point <- covparams$point[j]
   direction <- covparams$direction[j]
@@ -220,7 +235,9 @@ fit_trunc_normal <- function(covparams, obs_data, j){
 
   fit$rmse <- add_rmse(fit)
   fit$stderr <- add_stderr(fit)
-  fit <- trim_truncreg(fit)
+  if (!model_fits){
+    fit <- trim_truncreg(fit)
+  }
   return (fit)
 }
 
@@ -250,12 +267,13 @@ fit_trunc_normal <- function(covparams, obs_data, j){
 #'                        third entry. The default is \code{NA}.
 #' @param time_name       Character string specifying the name of the time variable in \code{obs_data}.
 #' @param obs_data        Data on which the models are fit.
+#' @param model_fits      Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #' @return                A list of fitted models, one for each covariate in \code{covnames}.
 #' @keywords internal
 #' @import data.table
 
 pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
-                         restrictions, time_name, obs_data){
+                         restrictions, time_name, obs_data, model_fits){
   if (!is.na(restrictions[[1]][[1]])){ # Check for restrictions
     # Create list of covariates whose modeling is affected by restrictions
     restrictnames <- lapply(seq_along(restrictions), FUN = function(r){
@@ -311,19 +329,26 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
       }
     }
     if (covtypes[j] == 'binary'){
-      fit_glm(covparams = covparams, covfam = 'binomial', obs_data = subdata, j = j)
+      fit_glm(covparams = covparams, covfam = 'binomial', obs_data = subdata,
+              j = j, model_fits = model_fits)
     } else if (covtypes[j] == 'normal'){
-      fit_glm(covparams = covparams, covfam = 'gaussian', obs_data = subdata, j = j)
+      fit_glm(covparams = covparams, covfam = 'gaussian', obs_data = subdata,
+              j = j, model_fits = model_fits)
     } else if (covtypes[j] == 'categorical'){
-      fit_multinomial(covparams, obs_data = subdata, j = j)
+      fit_multinomial(covparams, obs_data = subdata, j = j,
+                      model_fits = model_fits)
     } else if (covtypes[j] == 'zero-inflated normal'){
-      fit_zeroinfl_normal(covparams, covname = covnames[j], obs_data = subdata, j = j)
+      fit_zeroinfl_normal(covparams, covname = covnames[j], obs_data = subdata,
+                          j = j, model_fits = model_fits)
     } else if (covtypes[j] == 'bounded normal'){
-      fit_bounded_continuous(covparams, covname = covnames[j], obs_data = subdata, j = j)
+      fit_bounded_continuous(covparams, covname = covnames[j],
+                             obs_data = subdata, j = j, model_fits = model_fits)
     } else if (covtypes[j] == 'truncated normal'){
-      fit_trunc_normal(covparams = covparams, obs_data = subdata, j = j)
+      fit_trunc_normal(covparams = covparams, obs_data = subdata, j = j,
+                       model_fits = model_fits)
     } else if (covtypes[j] == 'custom'){
-      covfits_custom[[j]](covparams, covname = covnames[j], obs_data = subdata, j = j)
+      covfits_custom[[j]](covparams, covname = covnames[j], obs_data = subdata,
+                          j = j, model_fits = model_fits)
     }
   })
   return (fits)
@@ -343,11 +368,13 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
 #' @param outcome_name   Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param time_name      Character string specifying the name of the time variable in \code{obs_data}.
 #' @param obs_data       Data on which the model is fit.
+#' @param model_fits     Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #' @return               Fitted model for the outcome variable.
 #' @keywords internal
 #' @import data.table
 
-pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name, time_name, obs_data){
+pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name,
+                       time_name, obs_data, model_fits){
   if (outcome_type == 'continuous' || outcome_type == 'continuous_eof'){
     outcome_fam <- stats::gaussian()
   } else if (outcome_type == 'survival' || outcome_type == 'binary_eof'){
@@ -382,7 +409,9 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name, time_na
   }
   fitY$rmse <- add_rmse(fitY)
   fitY$stderr <- add_stderr(fitY)
-  fitY <- trim_glm(fitY)
+  if (!model_fits){
+    fitY <- trim_glm(fitY)
+  }
   return (fitY)
 }
 
@@ -398,11 +427,12 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name, time_na
 #'                               the competing event variable takes on the value in the
 #'                               second entry.
 #' @param obs_data               Data on which the model is fit.
+#' @param model_fits             Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
 #' @return                       Fitted model for the competing event variable.
 #' @keywords internal
 #' @import data.table
 
-pred_fun_D <- function(model, compevent_restrictions, obs_data){
+pred_fun_D <- function(model, compevent_restrictions, obs_data, model_fits){
   if (!is.na(compevent_restrictions[[1]][[1]])){ # Check for restrictions on compevent event variable modeling
     # Set condition where competing event variable is modeled
     condition <- compevent_restrictions[[1]][1]
@@ -423,6 +453,8 @@ pred_fun_D <- function(model, compevent_restrictions, obs_data){
   }
   fitD$rmse <- add_rmse(fitD)
   fitD$stderr <- add_stderr(fitD)
-  fitD <- trim_glm(fitD)
+  if (!model_fits){
+    fitD <- trim_glm(fitD)
+  }
   return (fitD)
 }

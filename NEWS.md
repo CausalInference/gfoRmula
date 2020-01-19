@@ -14,6 +14,9 @@ Package Updates
     maximum number of iterations, maxit, in glm.control) when fitting
     models for time-varying covariates via the `covparams$control`
     argument. (Thanks to @jerzEG for the suggestion)
+-   Added option for users to access the fitted models for the
+    time-varying covariates, outcome, and competing event (if
+    applicable). See `model_fits` argument of the `gformula()` function
 -   Added simulated data under the natural course to the `sim_data`
     component of the output of the `gformula()` function
 -   Added a progress bar for the number of bootstrap samples completed.

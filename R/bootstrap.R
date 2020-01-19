@@ -139,10 +139,12 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
   # Fit models for covariates, outcome, and competing event (if any)
   fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                          covfits_custom = covfits_custom, restrictions = restrictions,
-                         time_name = time_name, obs_data = resample_data_geq_0)
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, resample_data_geq_0)
+                         time_name = time_name, obs_data = resample_data_geq_0,
+                         model_fits = FALSE)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, resample_data_geq_0,
+                     model_fits = FALSE)
   if (comprisk){
-    fitD <- pred_fun_D(compevent_model, compevent_restrictions, resample_data_geq_0)
+    fitD <- pred_fun_D(compevent_model, compevent_restrictions, resample_data_geq_0, model_fits = FALSE)
   } else {
     fitD <- NA
   }

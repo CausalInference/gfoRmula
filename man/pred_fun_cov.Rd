@@ -5,7 +5,7 @@
 \title{Fit Covariate Models}
 \usage{
 pred_fun_cov(covparams, covnames, covtypes, covfits_custom, restrictions,
-  time_name, obs_data)
+  time_name, obs_data, model_fits)
 }
 \arguments{
 \item{covparams}{List of vectors, where each vector contains information for
@@ -36,6 +36,8 @@ third entry. The default is \code{NA}.}
 \item{time_name}{Character string specifying the name of the time variable in \code{obs_data}.}
 
 \item{obs_data}{Data on which the models are fit.}
+
+\item{model_fits}{Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.}
 }
 \value{
 A list of fitted models, one for each covariate in \code{covnames}.

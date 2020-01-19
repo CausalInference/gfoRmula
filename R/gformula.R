@@ -100,6 +100,7 @@
 #' @param sim_data_b              Logical scalar indicating whether to return the simulated data set. If bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0), this argument must be set to \code{FALSE}. The default is \code{FALSE}.
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
+#' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
@@ -109,6 +110,7 @@
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
+#' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -296,7 +298,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                      baselags = FALSE,
                      nsimul = NA, sim_data_b = FALSE, seed,
                      nsamples = 0, parallel = FALSE, ncores = NA,
-                     ci_method = 'percentile', threads,
+                     ci_method = 'percentile', threads, model_fits = FALSE,
                      boot_diag = FALSE, show_progress = TRUE, ...){
   if (! outcome_type %in% c('survival', 'continuous_eof', 'binary_eof')){
     stop("outcome_type must be 'survival', 'continuous_eof', or 'binary_eof', but outcome_type was set to", outcome_type)
@@ -322,7 +324,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                       nsimul = nsimul, sim_data_b = sim_data_b, seed = seed,
                       nsamples = nsamples, parallel = parallel, ncores = ncores,
                       ci_method = ci_method, threads = threads,
-                      boot_diag = boot_diag, show_progress = show_progress, ...)
+                      model_fits = model_fits, boot_diag = boot_diag,
+                      show_progress = show_progress, ...)
   } else if (outcome_type == 'continuous_eof'){
     gformula_continuous_eof(obs_data = obs_data, id = id,
                             time_name = time_name, covnames = covnames,
@@ -343,7 +346,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                             seed = seed, nsamples = nsamples,
                             parallel = parallel, ncores = ncores,
                             ci_method = ci_method, threads = threads,
-                            boot_diag = boot_diag,
+                            model_fits = model_fits, boot_diag = boot_diag,
                             show_progress = show_progress, ...)
   } else if (outcome_type == 'binary_eof'){
     gformula_binary_eof(obs_data = obs_data, id = id,
@@ -363,7 +366,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                         nsamples = nsamples, parallel = parallel,
                         ncores = ncores,
                         ci_method = ci_method, threads = threads,
-                        boot_diag = boot_diag, show_progress = show_progress,
+                        model_fits = model_fits, boot_diag = boot_diag,
+                        show_progress = show_progress,
                         ...)
   }
 }
@@ -469,6 +473,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param sim_data_b              Logical scalar indicating whether to return the simulated data set. If bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0), this argument must be set to \code{FALSE}. The default is \code{FALSE}.
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
+#' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
@@ -478,6 +483,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
+#' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -588,7 +594,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               nsimul = NA, sim_data_b = FALSE, seed,
                               nsamples = 0, parallel = FALSE, ncores = NA,
                               ci_method = 'percentile', threads,
-                              boot_diag = FALSE, show_progress = TRUE, ...){
+                              model_fits = FALSE, boot_diag = FALSE,
+                              show_progress = TRUE, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -722,15 +729,19 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   if (time_points > 1){
     fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                            covfits_custom = covfits_custom, restrictions = restrictions,
-                           time_name = time_name, obs_data = obs_data_geq_0)
+                           time_name = time_name, obs_data = obs_data_geq_0,
+                           model_fits = model_fits)
+    names(fitcov) <- covnames
   } else {
     fitcov <- NULL
   }
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
+                     model_fits = model_fits)
 
   # If competing event exists, fit model for competing event variable
   if (comprisk){
-    fitD <- pred_fun_D(compevent_model, compevent_restrictions, obs_data_geq_0)
+    fitD <- pred_fun_D(compevent_model, compevent_restrictions, obs_data_geq_0,
+                       model_fits = model_fits)
     compevent_range <- range(obs_data_geq_0[[compevent_name]])
   } else {
     fitD <- NA
@@ -1077,11 +1088,13 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   if (time_points > 1){
     fits <- fitcov
     fits[[length(fits) + 1]] <- fitY
+    names(fits)[length(fits)] <- outcome_name
   } else {
     fits <- list(fitY)
   }
   if (!is.na(fitD)[[1]]){
     fits[[length(fits) + 1]] <- fitD
+    names(fits)[length(fits)] <- compevent_name
   }
 
   # Add list of coefficients for covariates, outcome variable, and competing event
@@ -1123,6 +1136,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   } else {
     sim_data <- NA
   }
+  if (!model_fits){
+    fits <- NULL
+  }
 
   res <- list(
     result = resultdf,
@@ -1130,6 +1146,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     stderrs = stderrs,
     rmses = rmses,
     hazardratio_val = hr_res,
+    fits = fits,
     sim_data = sim_data,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
@@ -1235,6 +1252,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param sim_data_b              Logical scalar indicating whether to return the simulated data set. If bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0), this argument must be set to \code{FALSE}. The default is \code{FALSE}.
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
+#' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
@@ -1244,6 +1262,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
+#' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -1309,8 +1328,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                     sim_data_b = FALSE,  seed, nsamples = 0,
                                     parallel = FALSE, ncores = NA,
                                     ci_method = 'percentile', threads,
-                                    boot_diag = FALSE, show_progress = TRUE,
-                                    ...){
+                                    model_fits = FALSE, boot_diag = FALSE,
+                                    show_progress = TRUE, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -1447,11 +1466,14 @@ gformula_continuous_eof <- function(obs_data, id,
   if (time_points > 1){
     fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                            covfits_custom = covfits_custom, restrictions = restrictions,
-                           time_name = time_name, obs_data = obs_data_geq_0)
+                           time_name = time_name, obs_data = obs_data_geq_0,
+                           model_fits = model_fits)
+    names(fitcov) <- covnames
   } else {
     fitcov <- NULL
   }
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
+                     model_fits = model_fits)
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -1734,6 +1756,7 @@ gformula_continuous_eof <- function(obs_data, id,
   if (time_points > 1){
     fits <- fitcov
     fits[[length(fits) + 1]] <- fitY
+    names(fits)[length(fits)] <- outcome_name
   } else {
     fits <- list(fitY)
   }
@@ -1771,12 +1794,16 @@ gformula_continuous_eof <- function(obs_data, id,
   } else {
     sim_data <- NA
   }
+  if (!model_fits){
+    fits <- NULL
+  }
 
   res <- list(
     result = resultdf,
     coeffs = coeffs,
     stderrs = stderrs,
     rmses = rmses,
+    fits = fits,
     sim_data = sim_data,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
@@ -1879,6 +1906,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param sim_data_b              Logical scalar indicating whether to return the simulated data set. If bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0), this argument must be set to \code{FALSE}. The default is \code{FALSE}.
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
+#' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
@@ -1888,6 +1916,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
+#' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -1954,7 +1983,8 @@ gformula_binary_eof <- function(obs_data, id,
                                 nsimul = NA, sim_data_b = FALSE, seed,
                                 nsamples = 0, parallel = FALSE, ncores = NA,
                                 ci_method = 'percentile', threads,
-                                boot_diag = FALSE, show_progress = TRUE, ...){
+                                model_fits = FALSE, boot_diag = FALSE,
+                                show_progress = TRUE, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -2086,11 +2116,14 @@ gformula_binary_eof <- function(obs_data, id,
   if (time_points > 1){
     fitcov <- pred_fun_cov(covparams = covparams, covnames = covnames, covtypes = covtypes,
                            covfits_custom = covfits_custom, restrictions = restrictions,
-                           time_name = time_name, obs_data = obs_data_geq_0)
+                           time_name = time_name, obs_data = obs_data_geq_0,
+                           model_fits = model_fits)
+    names(fitcov) <- covnames
   } else {
     fitcov <- NULL
   }
-  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0)
+  fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
+                     model_fits = model_fits)
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -2374,6 +2407,7 @@ gformula_binary_eof <- function(obs_data, id,
   if (time_points > 1){
     fits <- fitcov
     fits[[length(fits) + 1]] <- fitY
+    names(fits)[length(fits)] <- outcome_name
   } else {
     fits <- list(fitY)
   }
@@ -2411,12 +2445,16 @@ gformula_binary_eof <- function(obs_data, id,
   } else {
     sim_data <- NA
   }
+  if (!model_fits){
+    fits <- NULL
+  }
 
   res <- list(
     result = resultdf,
     coeffs = coeffs,
     stderrs = stderrs,
     rmses = rmses,
+    fits = fits,
     sim_data = sim_data,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
