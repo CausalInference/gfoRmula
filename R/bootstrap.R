@@ -91,7 +91,7 @@
 #' @param hazardratio             Logical scalar indicating whether the hazard ratio should be computed between two interventions.
 #' @param intcomp                 List of two numbers indicating a pair of interventions to be compared by a hazard ratio.
 #'                                The default is \code{NA}, resulting in no hazard ratio calculation.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples.
+#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param nsimul                  Number of subjects for whom to simulate data. By default, this argument is set
 #'                                equal to the number of subjects in \code{obs_data}.
 #' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
@@ -297,13 +297,17 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
     bootstderrs <- get_stderrs(fits = fits, fitD = fitD, time_points = time_points,
                                outcome_name = outcome_name, compevent_name = compevent_name,
                                covnames = covnames)
+    bootvcovs <- get_vcovs(fits = fits, fitD = fitD, time_points = time_points,
+                           outcome_name = outcome_name, compevent_name = compevent_name,
+                           covnames = covnames)
   } else {
     bootcoeffs <- NA
     bootstderrs <- NA
+    bootvcovs <- NA
   }
 
 
   final <- list(Result = int_result, ResultRatio = result_ratio, ResultDiff = result_diff, ResultHR = hr_res,
-                bootcoeffs = bootcoeffs, bootstderrs = bootstderrs)
+                bootcoeffs = bootcoeffs, bootstderrs = bootstderrs, bootvcovs = bootvcovs)
   return (final)
 }

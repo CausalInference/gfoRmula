@@ -101,19 +101,21 @@
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
 #' \item{result}{Results table. For survival outcomes, this contains the estimated risk, risk difference, and risk ratio for all interventions (inculding the natural course) at each time point. For continuous end-of-follow-up outcomes, this contains estimated mean outcome, mean difference, and mean ratio for all interventions (inculding natural course) at the last time point. For binary end-of-follow-up outcomes, this contains the estimated outcome probability, probability difference, and probability ratio for all interventions (inculding natural course) at the last time point. If bootstrapping was used, the results table includes the bootstrap risk / mean / probability difference, ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
+#' \item{vcovs}{A list of the variance-covariance matrices of the parameters of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
 #' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
 #'
 #' The results for the g-formula simulation are printed with the \code{\link{print.gformula_survival}}, \code{\link{print.gformula_continuous_eof}}, and \code{\link{print.gformula_binary_eof}} functions. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}}, \code{\link{plot.gformula_continuous_eof}}, and \code{\link{plot.gformula_binary_eof}} functions.
@@ -474,19 +476,21 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
 #' \item{result}{Results table containing the estimated risk and risk ratio for all interventions (inculding the natural course) at each time point. If bootstrapping was used, the results table includes the bootstrap mean risk ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
+#' \item{vcovs}{A list of the variance-covariance matrices of the parameters of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
 #' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
 #'
 #' The results for the g-formula simulation under various interventions only for the first and last time points are printed with the \code{\link{print.gformula_survival}} function. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}} function.
@@ -996,9 +1000,11 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   if (nsamples > 0 & boot_diag){
     bootcoeffs <- lapply(final_bs, "[[", 'bootcoeffs')
     bootstderrs <- lapply(final_bs, "[[", 'bootstderrs')
+    bootvcovs <- lapply(final_bs, "[[", 'bootvcovs')
   } else {
     bootcoeffs <- NULL
     bootstderrs <- NULL
+    bootvcovs <- NULL
   }
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
@@ -1105,6 +1111,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   stderrs <- get_stderrs(fits = fits, fitD = fitD, time_points = time_points,
                          outcome_name = outcome_name, compevent_name = compevent_name,
                          covnames = covnames)
+  vcovs <- get_vcovs(fits = fits, fitD = fitD, time_points = time_points,
+                     outcome_name = outcome_name, compevent_name = compevent_name,
+                     covnames = covnames)
 
   rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
                   covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
@@ -1144,12 +1153,14 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     result = resultdf,
     coeffs = coeffs,
     stderrs = stderrs,
+    vcovs = vcovs,
     rmses = rmses,
     hazardratio_val = hr_res,
     fits = fits,
     sim_data = sim_data,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
+    bootvcovs = bootvcovs,
     time_name = time_name,
     time_points = time_points,
     covnames = covnames,
@@ -1253,7 +1264,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #'
@@ -1261,11 +1272,13 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' \item{result}{Results table containing the estimated mean outcome for all interventions (inculding natural course) at the last time point. If bootstrapping was used, the results table includes the bootstrap end-of-follow-up mean ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
+#' \item{vcovs}{A list of the variance-covariance matrices of the parameters of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
 #'
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_continuous_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{print.gformula_continuous_eof}} function.
@@ -1669,9 +1682,11 @@ gformula_continuous_eof <- function(obs_data, id,
   if (nsamples > 0 & boot_diag){
     bootcoeffs <- lapply(final_bs, "[[", 'bootcoeffs')
     bootstderrs <- lapply(final_bs, "[[", 'bootstderrs')
+    bootvcovs <- lapply(final_bs, "[[", 'bootvcovs')
   } else {
     bootcoeffs <- NULL
     bootstderrs <- NULL
+    bootvcovs <- NULL
   }
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
@@ -1769,6 +1784,9 @@ gformula_continuous_eof <- function(obs_data, id,
   stderrs <- get_stderrs(fits = fits, fitD = NA, time_points = time_points,
                          outcome_name = outcome_name, compevent_name = compevent_name,
                          covnames = covnames)
+  vcovs <- get_vcovs(fits = fits, fitD = NA, time_points = time_points,
+                     outcome_name = outcome_name, compevent_name = compevent_name,
+                     covnames = covnames)
 
 
   rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
@@ -1802,11 +1820,13 @@ gformula_continuous_eof <- function(obs_data, id,
     result = resultdf,
     coeffs = coeffs,
     stderrs = stderrs,
+    vcovs = vcovs,
     rmses = rmses,
     fits = fits,
     sim_data = sim_data,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
+    bootvcovs = bootvcovs,
     time_name = time_name,
     time_points = time_points,
     covnames = covnames,
@@ -1907,7 +1927,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #'
@@ -1915,11 +1935,13 @@ gformula_continuous_eof <- function(obs_data, id,
 #' \item{result}{Results table containing the estimated outcome probability for all interventions (inculding natural course) at the last time point. If bootstrapping was used, the results table includes the bootstrap end-of-follow-up mean ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
+#' \item{vcovs}{A list of the variance-covariance matrices of the parameters of the fitted models.}
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
 #'
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_binary_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{plot.gformula_binary_eof}} function.
@@ -2320,9 +2342,11 @@ gformula_binary_eof <- function(obs_data, id,
   if (nsamples > 0 & boot_diag){
     bootcoeffs <- lapply(final_bs, "[[", 'bootcoeffs')
     bootstderrs <- lapply(final_bs, "[[", 'bootstderrs')
+    bootvcovs <- lapply(final_bs, "[[", 'bootvcovs')
   } else {
     bootcoeffs <- NULL
     bootstderrs <- NULL
+    bootvcovs <- NULL
   }
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
@@ -2420,6 +2444,9 @@ gformula_binary_eof <- function(obs_data, id,
   stderrs <- get_stderrs(fits = fits, fitD = NA, time_points = time_points,
                          outcome_name = outcome_name, compevent_name = compevent_name,
                          covnames = covnames)
+  vcovs <- get_vcovs(fits = fits, fitD = NA, time_points = time_points,
+                     outcome_name = outcome_name, compevent_name = compevent_name,
+                     covnames = covnames)
 
 
   rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
@@ -2453,11 +2480,13 @@ gformula_binary_eof <- function(obs_data, id,
     result = resultdf,
     coeffs = coeffs,
     stderrs = stderrs,
+    vcovs = vcovs,
     rmses = rmses,
     fits = fits,
     sim_data = sim_data,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
+    bootvcovs = bootvcovs,
     time_name = time_name,
     time_points = time_points,
     covnames = covnames,

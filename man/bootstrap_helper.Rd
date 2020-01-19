@@ -135,7 +135,7 @@ process. A value of \code{NA} should be provided when there is no visit process.
 \item{intcomp}{List of two numbers indicating a pair of interventions to be compared by a hazard ratio.
 The default is \code{NA}, resulting in no hazard ratio calculation.}
 
-\item{boot_diag}{Logical scalar indicating whether to return the coefficients of the fitted models and their standard errors in the bootstrap samples.}
+\item{boot_diag}{Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.}
 
 \item{nsimul}{Number of subjects for whom to simulate data. By default, this argument is set
 equal to the number of subjects in \code{obs_data}.}

@@ -362,6 +362,10 @@ add_stderr <- function(fit){
   }
 }
 
+add_vcov <- function(fit){
+  return(stats::vcov(fit))
+}
+
 get_header <- function(int_descript, sample_size, nsimul, nsamples, ref_int){
   header <- paste0("PREDICTED RISK UNDER MULTIPLE INTERVENTIONS\n\n",
                    "Intervention \t Description\n",
@@ -486,4 +490,31 @@ get_stderrs <- function(fits, fitD, time_points, outcome_name, compevent_name,
     }
   }
   return(stderrs)
+}
+
+get_vcovs <- function(fits, fitD, time_points, outcome_name, compevent_name,
+                      covnames){
+  vcovs <- lapply(fits, FUN = function(fit){
+    if (length(fit) == 2){
+      return (list(fit[[1]]$vcov, fit[[2]]$vcov))
+    } else {
+      return (fit$vcov)
+    }
+  })
+
+  if (!is.na(fitD)[[1]]){
+    if (time_points == 1){
+      vcovs <- stats::setNames(vcovs, c(outcome_name, compevent_name))
+    } else {
+      vcovs <- stats::setNames(vcovs, c(covnames, outcome_name, compevent_name))
+    }
+  }
+  else {
+    if (time_points == 1){
+      vcovs <- stats::setNames(vcovs, outcome_name)
+    } else {
+      vcovs <- stats::setNames(vcovs, c(covnames, outcome_name))
+    }
+  }
+  return(vcovs)
 }

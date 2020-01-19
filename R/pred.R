@@ -39,6 +39,7 @@ fit_glm <- function(covparams, covlink = NA, covfam, obs_data, j, model_fits){
 
   fit$rmse <- add_rmse(fit)
   fit$stderrs <- add_stderr(fit)
+  fit$vcov <- add_vcov(fit)
   if (!model_fits){
     fit <- trim_glm(fit)
   }
@@ -71,6 +72,7 @@ fit_multinomial <- function(covparams, obs_data, j, model_fits){
   }
 
   fit$stderr <- add_stderr(fit)
+  fit$vcov <- add_vcov(fit)
   if (!model_fits){
     fit <- trim_multinom(fit)
   }
@@ -143,6 +145,8 @@ fit_zeroinfl_normal <- function(covparams, covlink = NA, covname, obs_data, j,
   fit2$rmse <- add_rmse(fit2)
   fit1$stderr <- add_stderr(fit1)
   fit2$stderr <- add_stderr(fit2)
+  fit1$vcov <- add_vcov(fit1)
+  fit2$vcov <- add_vcov(fit2)
   if (!model_fits){
     fit1 <- trim_glm(fit1)
     fit2 <- trim_glm(fit2)
@@ -199,6 +203,7 @@ fit_bounded_continuous <- function(covparams, covlink = NA, covname, obs_data,
   }
   fit$rmse <- add_rmse(fit)
   fit$stderr <- add_stderr(fit)
+  fit$vcov <- add_vcov(fit)
   if (!model_fits){
     fit <- trim_glm(fit)
   }
@@ -235,6 +240,7 @@ fit_trunc_normal <- function(covparams, obs_data, j, model_fits){
 
   fit$rmse <- add_rmse(fit)
   fit$stderr <- add_stderr(fit)
+  fit$vcov <- add_vcov(fit)
   if (!model_fits){
     fit <- trim_truncreg(fit)
   }
@@ -348,7 +354,7 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
                        model_fits = model_fits)
     } else if (covtypes[j] == 'custom'){
       covfits_custom[[j]](covparams, covname = covnames[j], obs_data = subdata,
-                          j = j, model_fits = model_fits)
+                          j = j)
     }
   })
   return (fits)
@@ -409,6 +415,7 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name,
   }
   fitY$rmse <- add_rmse(fitY)
   fitY$stderr <- add_stderr(fitY)
+  fitY$vcov <- add_vcov(fitY)
   if (!model_fits){
     fitY <- trim_glm(fitY)
   }
@@ -453,6 +460,7 @@ pred_fun_D <- function(model, compevent_restrictions, obs_data, model_fits){
   }
   fitD$rmse <- add_rmse(fitD)
   fitD$stderr <- add_stderr(fitD)
+  fitD$vcov <- add_vcov(fitD)
   if (!model_fits){
     fitD <- trim_glm(fitD)
   }

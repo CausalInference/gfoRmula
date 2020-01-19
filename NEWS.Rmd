@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 *  Added option for users to access the fitted models for the time-varying covariates, outcome, and competing event (if applicable). See `model_fits` argument of the `gformula()` function
 *  Added simulated data under the natural course to the `sim_data` component of the output of the `gformula()` function
 *  Added a progress bar for the number of bootstrap samples completed. See the `show_progress` argument of the `gformula()` function for further details
-*  Added `coef()` S3 method for objects of class 'gformula'
+*  Added `coef()` and `vcov()` S3 methods for objects of class 'gformula'
 *  Fixed minor bug in the `lagavg()` function
 *  Fixed bug occuring when not using lags of the intervention variable(s)
 *  Fixed bug occuring in the truncation beyond covariate ranges. (Thanks to Louisa Smith)
