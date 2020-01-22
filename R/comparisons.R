@@ -199,7 +199,8 @@ get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
   dt_cov_plot <- lapply(seq_along(covnames), FUN = function(i){
     covname <- covnames[i]
     if (covtypes[i] == 'categorical'){
-      sub_obs_data <- obs_data[obs_data[[time_name]] < time_points,
+      sub_obs_data <- obs_data[obs_data[[time_name]] < time_points &
+                                 obs_data[[time_name]] >= 0,
                                summary(eval(parse(text = covname))), by = time_name]
       sub_obs_data[, (covname) := rep(levels(obs_data[[covname]]), time_points)]
       sub_obs_data[, 'legend' := 'nonparametric estimates']

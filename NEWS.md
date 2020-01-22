@@ -24,6 +24,8 @@ Package Updates
     further details
 -   Added `coef()` and `vcov()` S3 methods for objects of class
     ‘gformula’
+-   Added an example data set called `continuous_eofdata_pb`, which
+    illustrates how to prepare a data set with pre-baseline times
 -   Fixed minor bug in the `lagavg()` function
 -   Fixed bug occuring when not using lags of the intervention
     variable(s)
