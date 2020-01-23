@@ -1,15 +1,18 @@
-#' Print method for objects of class "gformula_survival"
+#' Print and summary methods for "gformula" objects
 #'
-#' Print method for objects of class "gformula_survival".
+#' Print and summary method for objects of class "gformula_survival", "gformula_continuous_eof", or "gformula_binary_eof".
 #'
-#' @param x Object of class "gformula_survival".
+#' @param x Object of class "gformula_survival", "gformula_continuous_eof", "gformula_binary_eof", or "summary.gformula" (for \code{print}).
+#' @param object Object of class "gformula" (for \code{summary}).
+#' @param all_times Logical scalar indicating whether to print the results for all time points. This argument is only applicable to objects of class "gformula_survival". If this argument is set to \code{FALSE}, the results are only shown for the final time point. The default is \code{FALSE} for \code{print} and \code{TRUE} for \code{summary}.
 #' @param coefficients Logical scalar indicating whether to print the model coefficients. The default is \code{FALSE}.
 #' @param stderrs Logical scalar indicating whether to print the standard error of the model coefficients. The default is \code{FALSE}.
 #' @param rmses Logical scalar indicating whether to print the model root mean square errors (RMSEs). The default is \code{FALSE}.
-#' @param hazardratio Logical scalar indicating whether to print the hazard ratio between two interventions (if computed). If bootstrapping was used in \code{\link{gformula_survival}}, 95\% confidence intervals will be given. The default is \code{FALSE}.
+#' @param hazardratio Logical scalar indicating whether to print the hazard ratio between two interventions (if computed). If bootstrapping was used, 95\% confidence intervals will be given. This argument is only applicable to objects of class "gformula_survival". The default is \code{FALSE}.
+#' @param fits Logical scalar indicating whether to print summaries of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). This argument is only effective if the argument \code{model_fits} was set to \code{TRUE} in \code{gformula}. The default is \code{FALSE} for \code{print} and \code{TRUE} for \code{summary}.
 #' @param ... Other arguments.
-#' @return No value is returned.
-#' @seealso \code{\link{gformula_survival}}
+#' @return No value is returned for the \code{print} functions. The \code{summary} function returns the object passed to it and adds the class "summary.gformula" to it.
+#' @seealso \code{\link{gformula}}
 #'
 #' @examples
 #' ## Estimating the effect of static treatment strategies on risk of a
@@ -20,6 +23,7 @@
 #' time_name <- 't0'
 #' covnames <- c('L1', 'L2', 'A')
 #' outcome_name <- 'Y'
+#' outcome_type <- 'survival'
 #' covtypes <- c('binary', 'bounded normal', 'binary')
 #' histories <- c(lagged, lagavg)
 #' histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
@@ -36,31 +40,37 @@
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
-#' gform_basic <- gformula_survival(obs_data = basicdata_nocomp, id = id,
-#'                                  time_points = time_points,
-#'                                  time_name = time_name, covnames = covnames,
-#'                                  outcome_name = outcome_name,
-#'                                  covtypes = covtypes,
-#'                                  covparams = covparams, ymodel = ymodel,
-#'                                  intvars = intvars,
-#'                                  interventions = interventions,
-#'                                  int_descript = int_descript,
-#'                                  histories = histories, histvars = histvars,
-#'                                  basecovs = c('L3'), nsimul = nsimul,
-#'                                  seed = 1234)
-#' print(gform_basic)
+#' gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
+#'                         time_points = time_points,
+#'                         time_name = time_name, covnames = covnames,
+#'                         outcome_name = outcome_name,
+#'                         outcome_type = outcome_type, covtypes = covtypes,
+#'                         covparams = covparams, ymodel = ymodel,
+#'                         intvars = intvars,
+#'                         interventions = interventions,
+#'                         int_descript = int_descript,
+#'                         histories = histories, histvars = histvars,
+#'                         basecovs = c('L3'), nsimul = nsimul,
+#'                         seed = 1234)
+#' summary(gform_basic)
 #' }
 #'
 #' @export
 
-print.gformula_survival <- function(x, coefficients = FALSE, stderrs = FALSE,
-                                    rmses = FALSE, hazardratio = FALSE, ...) {
+print.gformula_survival <- function(x, all_times = FALSE, coefficients = FALSE,
+                                    stderrs = FALSE, rmses = FALSE,
+                                    hazardratio = FALSE, fits = FALSE, ...) {
   if (!inherits(x, "gformula_survival")){
     stop("Argument 'x' must be an object of class \"gformula_survival\".")
   }
 
   cat(x$header, '\n\n')
-  print(x$result[k == max(k)], row.names = FALSE, col.names='top')
+  if (all_times){
+    print(x$result, row.names = FALSE, col.names='top')
+  } else {
+    print(x$result[k == max(k)], row.names = FALSE, col.names='top')
+  }
+
 
   if (rmses){
     cat('\n\n RMSE Values\n')
@@ -78,65 +88,21 @@ print.gformula_survival <- function(x, coefficients = FALSE, stderrs = FALSE,
     cat('\n\n Hazard ratio\n')
     print(x$hazardratio_val)
   }
+  if (fits & !is.null(x$fits)) {
+    cat('\n\n SUMMARY OF FITTED MODELS\n')
+    for (i in 1:length(x$fits)){
+      cat('\n MODEL FOR', names(x$fits)[i], '\n')
+      print(summary(x$fits[[i]]))
+    }
+  }
 }
 
 
-
-#' Print method for objects of class "gformula_continuous_eof"
-#'
-#' Print method for objects of class "gformula_continuous_eof".
-#'
-#' @param x Object of class "gformula_continuous_eof".
-#' @param coefficients Logical scalar indicating whether to  print the model coefficients. The default is \code{FALSE}.
-#' @param stderrs Logical scalar indicating whether to print the standard error of the model coefficients. The default is \code{FALSE}.
-#' @param rmses Logical scalar indicating whether to print the model root mean square errors (RMSEs). The default is \code{FALSE}.
-#' @param ... Other arguments.
-#' @return No value is returned.
-#' @seealso \code{\link{gformula_continuous_eof}}
-#'
-#' @examples
-#' ## Estimating the effect of treatment strategies on the mean of a continuous
-#' ## end of follow-up outcome
-#' \donttest{
-#' library('Hmisc')
-#' id <- 'id'
-#' time_name <- 't0'
-#' covnames <- c('L1', 'L2', 'A')
-#' outcome_name <- 'Y'
-#' covtypes <- c('categorical', 'normal', 'binary')
-#' histories <- c(lagged)
-#' histvars <- list(c('A', 'L1', 'L2'))
-#' covparams <- list(covmodels = c(L1 ~ lag1_A + lag1_L1 + L3 + t0 +
-#'                                   rcspline.eval(lag1_L2, knots = c(-1, 0, 1)),
-#'                                 L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
-#'                                 A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
-#' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(static, rep(1, 7))))
-#' int_descript <- c('Never treat', 'Always treat')
-#' nsimul <- 10000
-#'
-#' gform_cont_eof <- gformula_continuous_eof(obs_data = continuous_eofdata,
-#'                                           id = id,
-#'                                           time_name = time_name,
-#'                                           covnames = covnames,
-#'                                           outcome_name = outcome_name,
-#'                                           covtypes = covtypes,
-#'                                           covparams = covparams, ymodel = ymodel,
-#'                                           intvars = intvars,
-#'                                           interventions = interventions,
-#'                                           int_descript = int_descript,
-#'                                           histories = histories, histvars = histvars,
-#'                                           basecovs = c("L3"),
-#'                                           nsimul = nsimul, seed = 1234)
-#' print(gform_cont_eof)
-#' }
-#'
+#' @rdname print.gformula_survival
 #' @export
-
 print.gformula_continuous_eof <- function(x, coefficients = FALSE,
-                                          stderrs = FALSE, rmses = FALSE, ...) {
+                                          stderrs = FALSE, rmses = FALSE,
+                                          fits = FALSE, ...) {
   if (!inherits(x, "gformula_continuous_eof")){
     stop("Argument 'x' must be an object of class \"gformula_continuous_eof\".")
   }
@@ -156,68 +122,20 @@ print.gformula_continuous_eof <- function(x, coefficients = FALSE,
     cat('\n\n Standard Errors\n')
     print(x$stderrs)
   }
+  if (fits & !is.null(x$fits)) {
+    cat('\n\n SUMMARY OF FITTED MODELS\n')
+    for (i in 1:length(x$fits)){
+      cat('\n MODEL FOR', names(x$fits)[i], '\n')
+      print(summary(x$fits[[i]]))
+    }
+  }
 }
 
 
-
-#' Print method for objects of class "gformula_binary_eof"
-#'
-#' Print method for objects of class "gformula_binary_eof".
-#'
-#' @param x Object of class "gformula_binary_eof".
-#' @param coefficients Logical scalar indicating whether to  print the model coefficients. The default is \code{FALSE}.
-#' @param stderrs Logical scalar indicating whether to print the standard error of the model coefficients. The default is \code{FALSE}.
-#' @param rmses Logical scalar indicating whether to print the model root mean square errors (RMSEs). The default is \code{FALSE}.
-#' @param ... Other arguments.
-#' @return No value is returned.
-#' @seealso \code{\link{gformula_binary_eof}}
-#'
-#' @examples
-#' ## Estimating the effect of threshold interventions on the mean of a binary
-#' ## end of follow-up outcome
-#' \donttest{
-#' id <- 'id_num'
-#' time_name <- 'time'
-#' covnames <- c('cov1', 'cov2', 'treat')
-#' outcome_name <- 'outcome'
-#' histories <- c(lagged, cumavg)
-#' histvars <- list(c('treat', 'cov1', 'cov2'), c('cov1', 'cov2'))
-#' covtypes <- c('binary', 'zero-inflated normal', 'normal')
-#' covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3 +
-#'                                   time,
-#'                                 cov2 ~ lag1_treat + cov1 + lag1_cov1 + lag1_cov2 +
-#'                                   cov3 + time,
-#'                                 treat ~ lag1_treat + cumavg_cov1 +
-#'                                   cumavg_cov2 + cov3 + time))
-#' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-#' intvars <- list('treat', 'treat')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(threshold, 1, Inf)))
-#' int_descript <- c('Never treat', 'Threshold - lower bound 1')
-#' nsimul <- 10000
-#' ncores <- 2
-#'
-#' gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
-#'                                      time_name = time_name,
-#'                                      covnames = covnames,
-#'                                      outcome_name = outcome_name,
-#'                                      covtypes = covtypes,
-#'                                      covparams = covparams,
-#'                                      ymodel = ymodel,
-#'                                      intvars = intvars,
-#'                                      interventions = interventions,
-#'                                      int_descript = int_descript,
-#'                                      histories = histories, histvars = histvars,
-#'                                      basecovs = c("cov3"), seed = 1234,
-#'                                      parallel = TRUE, nsamples = 5,
-#'                                      nsimul = nsimul, ncores = ncores)
-#' print(gform_bin_eof)
-#' }
-#'
+#' @rdname print.gformula_survival
 #' @export
-
 print.gformula_binary_eof <- function(x, coefficients = FALSE, stderrs = FALSE,
-                                      rmses = FALSE, ...) {
+                                      rmses = FALSE, fits = FALSE, ...) {
   if (!inherits(x, "gformula_binary_eof")){
     stop("Argument 'x' must be an object of class \"gformula_binary_eof\".")
   }
@@ -237,9 +155,40 @@ print.gformula_binary_eof <- function(x, coefficients = FALSE, stderrs = FALSE,
     cat('\n\n Standard Errors\n')
     print(x$stderrs)
   }
+  if (fits & !is.null(x$fits)) {
+    cat('\n\n SUMMARY OF FITTED MODELS\n')
+    for (i in 1:length(x$fits)){
+      cat('\n MODEL FOR', names(x$fits)[i], '\n')
+      print(summary(x$fits[[i]]))
+    }
+  }
 }
 
 
+#' @rdname print.gformula_survival
+#' @export
+summary.gformula <- function(object, ...){
+  if (!inherits(object, "gformula")){
+    stop("Argument 'object' must be an object of class \"gformula\".")
+  }
+  class(object) <- c("summary.gformula", class(object))
+  return (object)
+}
+
+
+#' @rdname print.gformula_survival
+#' @export
+print.summary.gformula <- function(x, all_times = TRUE, coefficients = FALSE,
+                                   stderrs = FALSE, rmses = FALSE,
+                                   hazardratio = FALSE, fits = TRUE, ...){
+  if (!inherits(x, "summary.gformula")){
+    stop("Argument 'x' must be an object of class \"summary.gformula\".")
+  }
+  class(x) <- class(x)[-1]
+  print(x, all_times = all_times, coefficients = coefficients,
+        stderrs = stderrs, rmses = rmses, hazardratio = hazardratio,
+        fits = fits, ...)
+}
 
 #' Plot method for objects of class "gformula_survival"
 #'
@@ -785,3 +734,4 @@ vcov.gformula <- function(object, ...){
   }
   return(res)
 }
+

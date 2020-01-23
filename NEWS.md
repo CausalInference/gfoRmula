@@ -22,8 +22,12 @@ Package Updates
 -   Added a progress bar for the number of bootstrap samples completed.
     See the `show_progress` argument of the `gformula()` function for
     further details
--   Added `coef()` and `vcov()` S3 methods for objects of class
-    ‘gformula’
+-   Added `summary()`, `coef()`, and `vcov()` S3 methods for objects of
+    class ‘gformula’
+-   Added argument `fits` in the `print.gformula_survival()`,
+    `print.gformula_continuous_eof()`, and `print.gformula_binary_eof()`
+    functions. Added argument `all_times` in the
+    `print.gformula_survival()` function
 -   Added an example data set called `continuous_eofdata_pb`, which
     illustrates how to prepare a data set with pre-baseline times
 -   Fixed minor bug in the `lagavg()` function
