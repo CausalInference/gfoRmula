@@ -1,15 +1,16 @@
 Package Updates
 ---------------
 
-### Changes in Version 0.3.0 (TBD)
+### Changes in Version 0.3.0 (2020-01-30)
 
 -   Added wrapper function called `gformula()` for the
     `gformula_survival()`, `gformula_continuous_eof()`, and
     `gformula_binary_eof()` functions. Users should now use the more
     general `gformula()` function to apply the g-formula.
 -   Added option for users to specify the values for lags at
-    pre-baseline times by including rows at time t = -1, t = -2, …, t =
-    -i.
+    pre-baseline times by including rows at time -1, -2, …, -i.
+-   Added an example data set called `continuous_eofdata_pb`, which
+    illustrates how to prepare a data set with pre-baseline times
 -   Added option for users to pass in “control parameters” (e.g.,
     maximum number of iterations, maxit, in glm.control) when fitting
     models for time-varying covariates via the `covparams$control`
@@ -28,8 +29,6 @@ Package Updates
     `print.gformula_continuous_eof()`, and `print.gformula_binary_eof()`
     functions. Added argument `all_times` in the
     `print.gformula_survival()` function
--   Added an example data set called `continuous_eofdata_pb`, which
-    illustrates how to prepare a data set with pre-baseline times
 -   Fixed minor bug in the `lagavg()` function
 -   Fixed bug occuring when not using lags of the intervention
     variable(s)
@@ -40,7 +39,7 @@ Package Updates
 ### Changes in Version 0.2.1 (2019-08-24)
 
 -   First version released on CRAN
-    (<https://cran.r-project.org/web/packages/gfoRmula/index.html>)
+    (<https://CRAN.R-project.org/package=gfoRmula>)
 -   Updates to the documentation
 
 ### Changes in Version 0.2.0 (2019-08-22)
