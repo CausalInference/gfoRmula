@@ -63,7 +63,7 @@ gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
                         histories = histories, histvars = histvars,
                         basecovs = c('L3'), nsimul = nsimul,
                         seed = 1234)
-coefs(gform_basic)
+coef(gform_basic)
 }
 
 }

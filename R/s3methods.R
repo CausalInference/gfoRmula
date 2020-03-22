@@ -641,7 +641,7 @@ plot.gformula_binary_eof <- function(x, covnames = NULL, ncol = NULL, nrow = NUL
 #'                         histories = histories, histvars = histvars,
 #'                         basecovs = c('L3'), nsimul = nsimul,
 #'                         seed = 1234)
-#' coefs(gform_basic)
+#' coef(gform_basic)
 #' }
 #'
 #' @export

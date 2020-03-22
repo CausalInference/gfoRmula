@@ -1,6 +1,10 @@
 Package Updates
 ---------------
 
+### Changes in Version 0.3.1 (2020-03-22)
+
+-   Fixed error in the `coef.gformula()` example
+
 ### Changes in Version 0.3.0 (2020-01-30)
 
 -   Added wrapper function called `gformula()` for the

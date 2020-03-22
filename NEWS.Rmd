@@ -8,6 +8,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Package Updates
 
+### Changes in Version 0.3.1 (2020-03-22)
+*  Fixed error in the `coef.gformula()` example
+
 ### Changes in Version 0.3.0 (2020-01-30)
 *  Added wrapper function called `gformula()` for the `gformula_survival()`, `gformula_continuous_eof()`, and `gformula_binary_eof()` functions. Users should now use the more general `gformula()` function to apply the g-formula.
 *  Added option for users to specify the values for lags at pre-baseline times by including rows at time -1, -2, ..., -i.
