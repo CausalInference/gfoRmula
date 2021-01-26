@@ -4,15 +4,42 @@
 \alias{gformula_continuous_eof}
 \title{Estimation of Continuous End-of-Follow-Up Outcome Under the Parametric G-Formula}
 \usage{
-gformula_continuous_eof(obs_data, id, time_name, covnames, covtypes,
-  covparams, covfits_custom = NA, covpredict_custom = NA,
-  histvars = NULL, histories = NA, basecovs = NA, outcome_name,
-  ymodel, intvars = NULL, interventions = NULL, int_times = NULL,
-  int_descript = NULL, ref_int = 0, visitprocess = NA,
-  restrictions = NA, yrestrictions = NA, baselags = FALSE,
-  nsimul = NA, sim_data_b = FALSE, seed, nsamples = 0,
-  parallel = FALSE, ncores = NA, ci_method = "percentile", threads,
-  model_fits = FALSE, boot_diag = FALSE, show_progress = TRUE, ...)
+gformula_continuous_eof(
+  obs_data,
+  id,
+  time_name,
+  covnames,
+  covtypes,
+  covparams,
+  covfits_custom = NA,
+  covpredict_custom = NA,
+  histvars = NULL,
+  histories = NA,
+  basecovs = NA,
+  outcome_name,
+  ymodel,
+  intvars = NULL,
+  interventions = NULL,
+  int_times = NULL,
+  int_descript = NULL,
+  ref_int = 0,
+  visitprocess = NA,
+  restrictions = NA,
+  yrestrictions = NA,
+  baselags = FALSE,
+  nsimul = NA,
+  sim_data_b = FALSE,
+  seed,
+  nsamples = 0,
+  parallel = FALSE,
+  ncores = NA,
+  ci_method = "percentile",
+  threads,
+  model_fits = FALSE,
+  boot_diag = FALSE,
+  show_progress = TRUE,
+  ...
+)
 }
 \arguments{
 \item{obs_data}{Data table containing the observed data.}

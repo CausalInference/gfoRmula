@@ -4,14 +4,50 @@
 \alias{bootstrap_helper}
 \title{Bootstrap Observed Data and Simulate Under All Interventions}
 \usage{
-bootstrap_helper(r, time_points, obs_data, bootseeds, outcome_type,
-  intvars, interventions, int_times, ref_int, covparams, covnames,
-  covtypes, covfits_custom, covpredict_custom, basecovs, histvars,
-  histvals, histories, ymodel, yrestrictions, compevent_restrictions,
-  restrictions, comprisk, compevent_model, time_name, outcome_name,
-  compevent_name, ranges, yrange, compevent_range, parallel, ncores,
-  max_visits, hazardratio, intcomp, boot_diag, nsimul, baselags,
-  below_zero_indicator, min_time, show_progress, pb)
+bootstrap_helper(
+  r,
+  time_points,
+  obs_data,
+  bootseeds,
+  outcome_type,
+  intvars,
+  interventions,
+  int_times,
+  ref_int,
+  covparams,
+  covnames,
+  covtypes,
+  covfits_custom,
+  covpredict_custom,
+  basecovs,
+  histvars,
+  histvals,
+  histories,
+  ymodel,
+  yrestrictions,
+  compevent_restrictions,
+  restrictions,
+  comprisk,
+  compevent_model,
+  time_name,
+  outcome_name,
+  compevent_name,
+  ranges,
+  yrange,
+  compevent_range,
+  parallel,
+  ncores,
+  max_visits,
+  hazardratio,
+  intcomp,
+  boot_diag,
+  nsimul,
+  baselags,
+  below_zero_indicator,
+  min_time,
+  show_progress,
+  pb
+)
 }
 \arguments{
 \item{r}{Integer specifying the index of the current iteration of the bootstrap.}

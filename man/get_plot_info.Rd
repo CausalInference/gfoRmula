@@ -4,9 +4,19 @@
 \alias{get_plot_info}
 \title{Get Plotting Information}
 \usage{
-get_plot_info(outcome_name, compevent_name, time_name, time_points,
-  covnames, covtypes, nat_pool, nat_result, comprisk, outcome_type,
-  obs_data)
+get_plot_info(
+  outcome_name,
+  compevent_name,
+  time_name,
+  time_points,
+  covnames,
+  covtypes,
+  nat_pool,
+  nat_result,
+  comprisk,
+  outcome_type,
+  obs_data
+)
 }
 \arguments{
 \item{outcome_name}{Character string specifying the name of the outcome variable in \code{obs_data}.}

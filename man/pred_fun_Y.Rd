@@ -4,8 +4,15 @@
 \alias{pred_fun_Y}
 \title{Fit Outcome Model}
 \usage{
-pred_fun_Y(model, yrestrictions, outcome_type, outcome_name, time_name,
-  obs_data, model_fits)
+pred_fun_Y(
+  model,
+  yrestrictions,
+  outcome_type,
+  outcome_name,
+  time_name,
+  obs_data,
+  model_fits
+)
 }
 \arguments{
 \item{model}{Model statement for the outcome variable.}

@@ -8,21 +8,47 @@
 \alias{print.summary.gformula}
 \title{Print and summary methods for "gformula" objects}
 \usage{
-\method{print}{gformula_survival}(x, all_times = FALSE,
-  coefficients = FALSE, stderrs = FALSE, rmses = FALSE,
-  hazardratio = FALSE, fits = FALSE, ...)
+\method{print}{gformula_survival}(
+  x,
+  all_times = FALSE,
+  coefficients = FALSE,
+  stderrs = FALSE,
+  rmses = FALSE,
+  hazardratio = FALSE,
+  fits = FALSE,
+  ...
+)
 
-\method{print}{gformula_continuous_eof}(x, coefficients = FALSE,
-  stderrs = FALSE, rmses = FALSE, fits = FALSE, ...)
+\method{print}{gformula_continuous_eof}(
+  x,
+  coefficients = FALSE,
+  stderrs = FALSE,
+  rmses = FALSE,
+  fits = FALSE,
+  ...
+)
 
-\method{print}{gformula_binary_eof}(x, coefficients = FALSE,
-  stderrs = FALSE, rmses = FALSE, fits = FALSE, ...)
+\method{print}{gformula_binary_eof}(
+  x,
+  coefficients = FALSE,
+  stderrs = FALSE,
+  rmses = FALSE,
+  fits = FALSE,
+  ...
+)
 
 \method{summary}{gformula}(object, ...)
 
-\method{print}{summary.gformula}(x, all_times = TRUE,
-  coefficients = FALSE, stderrs = FALSE, rmses = FALSE,
-  hazardratio = FALSE, fits = TRUE, ...)
+\method{print}{summary.gformula}(
+  x,
+  all_times = TRUE,
+  coefficients = FALSE,
+  stderrs = FALSE,
+  rmses = FALSE,
+  hazardratio = FALSE,
+  fits = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{Object of class "gformula_survival", "gformula_continuous_eof", "gformula_binary_eof", or "summary.gformula" (for \code{print}).}

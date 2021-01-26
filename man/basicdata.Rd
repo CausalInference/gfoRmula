@@ -4,7 +4,8 @@
 \name{basicdata}
 \alias{basicdata}
 \title{Example Dataset for a Survival Outcome with Censoring}
-\format{A data table with 11,332 rows and 8 variables:
+\format{
+A data table with 11,332 rows and 8 variables:
 \describe{
   \item{t0}{Time index.}
   \item{id}{Unique identifier for each individual.}
@@ -14,7 +15,8 @@
   \item{A}{Binary treatment variable.}
   \item{D}{Competing event; time-varying indicator of failure.}
   \item{Y}{Outcome of interest; time-varying indicator of failure.}
-}}
+}
+}
 \usage{
 basicdata
 }

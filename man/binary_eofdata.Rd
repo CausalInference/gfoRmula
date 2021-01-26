@@ -4,7 +4,8 @@
 \name{binary_eofdata}
 \alias{binary_eofdata}
 \title{Example Dataset for a Binary Outcome at End of Follow-Up}
-\format{A data table with 17,500 rows and 7 variables:
+\format{
+A data table with 17,500 rows and 7 variables:
 \describe{
   \item{time}{Time index.}
   \item{id_num}{Unique identifier for each individual.}
@@ -13,7 +14,8 @@
   \item{cov3}{Continuous baseline covariate. For each individual, the baseline values are repeated at each time point.}
   \item{treat}{Binary treatment variable.}
   \item{outcome}{Binary outcome of interest. Because this outcome is only defined at the end of follow-up, values of \code{NA} are given in all other time points.}
-}}
+}
+}
 \usage{
 binary_eofdata
 }

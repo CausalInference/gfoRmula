@@ -4,8 +4,18 @@
 \alias{rmse_calculate}
 \title{Calculate RMSE for Covariate, Outcome, and Competing Risk Models}
 \usage{
-rmse_calculate(i, fits, covnames, covtypes, obs_data, outcome_name,
-  time_name, restrictions, yrestrictions, compevent_restrictions)
+rmse_calculate(
+  i,
+  fits,
+  covnames,
+  covtypes,
+  obs_data,
+  outcome_name,
+  time_name,
+  restrictions,
+  yrestrictions,
+  compevent_restrictions
+)
 }
 \arguments{
 \item{i}{Integer specifying the index of \code{fits}.}

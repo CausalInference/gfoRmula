@@ -4,9 +4,17 @@
 \alias{plot.gformula_continuous_eof}
 \title{Plot method for objects of class "gformula_continuous_eof"}
 \usage{
-\method{plot}{gformula_continuous_eof}(x, covnames = NULL, ncol = NULL,
-  nrow = NULL, common.legend = TRUE, legend = "bottom",
-  xlab = NULL, ylab_cov = NULL, ...)
+\method{plot}{gformula_continuous_eof}(
+  x,
+  covnames = NULL,
+  ncol = NULL,
+  nrow = NULL,
+  common.legend = TRUE,
+  legend = "bottom",
+  xlab = NULL,
+  ylab_cov = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{Object of class "gformula_continuous_eof".}

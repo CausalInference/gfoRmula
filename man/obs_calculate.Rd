@@ -4,8 +4,15 @@
 \alias{obs_calculate}
 \title{Calculate Observed Covariate Means and Risk}
 \usage{
-obs_calculate(outcome_name, compevent_name, time_name, covnames, comprisk,
-  outcome_type, obs_data)
+obs_calculate(
+  outcome_name,
+  compevent_name,
+  time_name,
+  covnames,
+  comprisk,
+  outcome_type,
+  obs_data
+)
 }
 \arguments{
 \item{outcome_name}{Character string specifying the name of the outcome variable in \code{obs_data}.}

@@ -6,13 +6,29 @@
 \alias{lagavg}
 \title{History functions}
 \usage{
-lagged(pool, histvars, histvals, time_name, t, id_name, baselags,
-  below_zero_indicator)
+lagged(
+  pool,
+  histvars,
+  histvals,
+  time_name,
+  t,
+  id_name,
+  baselags,
+  below_zero_indicator
+)
 
 cumavg(pool, histvars, time_name, t, id_name, below_zero_indicator)
 
-lagavg(pool, histvars, histvals, time_name, t, id_name, baselags,
-  below_zero_indicator)
+lagavg(
+  pool,
+  histvars,
+  histvals,
+  time_name,
+  t,
+  id_name,
+  baselags,
+  below_zero_indicator
+)
 }
 \arguments{
 \item{pool}{Data table containing all information prior to time \eqn{t} (\eqn{t} noninclusive).}

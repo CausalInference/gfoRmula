@@ -4,8 +4,18 @@
 \alias{make_histories}
 \title{Generates Functions of History of Existing Covariates}
 \usage{
-make_histories(pool, histvars, histvals, histories, time_name, t, id,
-  max_visits, baselags, below_zero_indicator)
+make_histories(
+  pool,
+  histvars,
+  histvals,
+  histories,
+  time_name,
+  t,
+  id,
+  max_visits,
+  baselags,
+  below_zero_indicator
+)
 }
 \arguments{
 \item{pool}{Data table containing all information prior to time \eqn{t} (\eqn{t} noninclusive).}

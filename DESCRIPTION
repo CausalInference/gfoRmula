@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula
-Version: 0.3.1
+Version: 0.3.2
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
@@ -41,7 +41,7 @@ Depends: R (>= 3.4.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Imports: 
     data.table,
     ggplot2,

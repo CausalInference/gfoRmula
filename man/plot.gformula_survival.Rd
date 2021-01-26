@@ -4,11 +4,24 @@
 \alias{plot.gformula_survival}
 \title{Plot method for objects of class "gformula_survival"}
 \usage{
-\method{plot}{gformula_survival}(x, covnames = NULL, risk = TRUE,
-  survival = FALSE, ncol = NULL, nrow = NULL, common.legend = TRUE,
-  legend = "bottom", xlab = NULL, ylab_cov = NULL,
-  ylab_risk = "risk", ylab_surv = "survival", pos_risk = NULL,
-  pos_surv = NULL, ci_risk = FALSE, ...)
+\method{plot}{gformula_survival}(
+  x,
+  covnames = NULL,
+  risk = TRUE,
+  survival = FALSE,
+  ncol = NULL,
+  nrow = NULL,
+  common.legend = TRUE,
+  legend = "bottom",
+  xlab = NULL,
+  ylab_cov = NULL,
+  ylab_risk = "risk",
+  ylab_surv = "survival",
+  pos_risk = NULL,
+  pos_surv = NULL,
+  ci_risk = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{Object of class "gformula_survival".}

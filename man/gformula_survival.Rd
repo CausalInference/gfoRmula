@@ -4,17 +4,47 @@
 \alias{gformula_survival}
 \title{Estimation of Survival Outcome Under the Parametric G-Formula}
 \usage{
-gformula_survival(obs_data, id, time_points = NULL, time_name, covnames,
-  covtypes, covparams, covfits_custom = NA, covpredict_custom = NA,
-  histvars = NULL, histories = NA, basecovs = NA, outcome_name,
-  ymodel, compevent_name = NULL, compevent_model = NA,
-  intvars = NULL, interventions = NULL, int_times = NULL,
-  int_descript = NULL, ref_int = 0, intcomp = NA,
-  visitprocess = NA, restrictions = NA, yrestrictions = NA,
-  compevent_restrictions = NA, baselags = FALSE, nsimul = NA,
-  sim_data_b = FALSE, seed, nsamples = 0, parallel = FALSE,
-  ncores = NA, ci_method = "percentile", threads, model_fits = FALSE,
-  boot_diag = FALSE, show_progress = TRUE, ...)
+gformula_survival(
+  obs_data,
+  id,
+  time_points = NULL,
+  time_name,
+  covnames,
+  covtypes,
+  covparams,
+  covfits_custom = NA,
+  covpredict_custom = NA,
+  histvars = NULL,
+  histories = NA,
+  basecovs = NA,
+  outcome_name,
+  ymodel,
+  compevent_name = NULL,
+  compevent_model = NA,
+  intvars = NULL,
+  interventions = NULL,
+  int_times = NULL,
+  int_descript = NULL,
+  ref_int = 0,
+  intcomp = NA,
+  visitprocess = NA,
+  restrictions = NA,
+  yrestrictions = NA,
+  compevent_restrictions = NA,
+  baselags = FALSE,
+  nsimul = NA,
+  sim_data_b = FALSE,
+  seed,
+  nsamples = 0,
+  parallel = FALSE,
+  ncores = NA,
+  ci_method = "percentile",
+  threads,
+  model_fits = FALSE,
+  boot_diag = FALSE,
+  show_progress = TRUE,
+  ...
+)
 }
 \arguments{
 \item{obs_data}{Data table containing the observed data.}

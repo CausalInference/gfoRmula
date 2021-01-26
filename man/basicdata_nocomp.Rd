@@ -4,7 +4,8 @@
 \name{basicdata_nocomp}
 \alias{basicdata_nocomp}
 \title{Example Dataset for a Survival Outcome without Censoring}
-\format{A data table with 13,170 rows and 7 variables:
+\format{
+A data table with 13,170 rows and 7 variables:
 \describe{
   \item{t0}{Time index.}
   \item{id}{Unique identifier for each individual.}
@@ -13,7 +14,8 @@
   \item{L3}{Continuous baseline covariate. For each individual, the baseline values are repeated at each time point.}
   \item{A}{Binary treatment variable.}
   \item{Y}{Outcome of interest; time-varying indicator of failure.}
-}}
+}
+}
 \usage{
 basicdata_nocomp
 }

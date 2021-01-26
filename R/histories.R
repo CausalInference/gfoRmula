@@ -105,6 +105,11 @@ lagged <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
 #' @rdname lagged
 #' @export
 cumavg <- function(pool, histvars, time_name, t, id_name, below_zero_indicator){
+  if (below_zero_indicator){
+    denom <- t + 1 - min(pool[[time_name]])
+  } else {
+    denom <- t + 1
+  }
   if (t == 0 & !below_zero_indicator){
     # At first time point, set all cumulative averages equal to the actual value of the
     # variable
@@ -116,24 +121,40 @@ cumavg <- function(pool, histvars, time_name, t, id_name, below_zero_indicator){
     # At subsequent time points, create new column containing calculated cumulative
     # average until that time point
     current_ids <- unique(pool[get(time_name) == t][[id_name]])
-    id_factor <- is.factor(pool[[id_name]])
-    if (id_factor){
-      lapply(histvars, FUN = function(histvar){
-        pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
-               as.double(tapply(pool[get(id_name) %in% current_ids &
-                                       get(time_name) <= t][[histvar]],
-                                droplevels(pool[get(id_name) %in% current_ids &
-                                                  get(time_name) <= t][[id_name]]),
-                                FUN = mean))]
-      })
+    colnam <- colnames(pool)
+    if (!(paste("cumavg_", "_", histvars[1], sep = "") %in% colnam)){
+      # The cumulative average variable was not created yet
+      # Therefore, cannot use recursive formula
+      id_factor <- is.factor(pool[[id_name]])
+      if (id_factor){
+        lapply(histvars, FUN = function(histvar){
+          pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
+                 as.double(tapply(pool[get(id_name) %in% current_ids &
+                                         get(time_name) <= t][[histvar]],
+                                  droplevels(pool[get(id_name) %in% current_ids &
+                                                    get(time_name) <= t][[id_name]]),
+                                  FUN = mean))]
+        })
+      } else {
+        lapply(histvars, FUN = function(histvar){
+          pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
+                 as.double(tapply(pool[get(id_name) %in% current_ids &
+                                         get(time_name) <= t][[histvar]],
+                                  pool[get(id_name) %in% current_ids &
+                                         get(time_name) <= t][[id_name]], FUN = mean))]
+        })
+      }
     } else {
-      lapply(histvars, FUN = function(histvar){
+      # The cumulative average variable was already created
+      # Therefore, can use recursive formula
+      for (histvar in histvars){
         pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
-               as.double(tapply(pool[get(id_name) %in% current_ids &
-                                       get(time_name) <= t][[histvar]],
-                                pool[get(id_name) %in% current_ids &
-                                       get(time_name) <= t][[id_name]], FUN = mean))]
-      })
+               as.double(
+                 (pool[get(id_name) %in% current_ids & get(time_name) == (t-1)][[paste("cumavg_", histvar, sep = "")]] * (denom - 1)
+                  + pool[get(id_name) %in% current_ids & get(time_name) == t][[histvar]]) / denom
+               )
+        ]
+      }
     }
   }
 }
@@ -167,26 +188,42 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
                as.double(pool[pool[[time_name]] == t - i & get(id_name) %in% current_ids, ][[histvar]])]
       })
     } else {
+      if (below_zero_indicator){
+        denom <- t - i + 1 - min(pool[[time_name]])
+      } else {
+        denom <- t - i + 1
+      }
+
       # At time points after i, create new column containing calculated lagged cumulative
       # average until that time point
       current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
-      id_factor <- is.factor(pool[[id_name]])
-      if (id_factor){
-        lapply(histvars, FUN = function(histvar){
-          classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-          myclass <- paste('as.', classtmp, sep = "")
-          pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-                 as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
-                                  droplevels(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]]), FUN = mean))]
-        })
+      colnam <- colnames(pool)
+      if (!(paste("lag_cumavg", i, "_", histvars[1], sep = "") %in% colnam)){
+        # The lagged cumulative average variable was not created yet
+        # Therefore, cannot use recursive formula
+        id_factor <- is.factor(pool[[id_name]])
+        if (id_factor){
+          lapply(histvars, FUN = function(histvar){
+            pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
+                   as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
+                                    droplevels(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]]), FUN = mean))]
+          })
+        } else {
+          lapply(histvars, FUN = function(histvar){
+            pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
+                   as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
+                                    pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]], FUN = mean))]
+          })
+        }
       } else {
-        lapply(histvars, FUN = function(histvar){
-          classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-          myclass <- paste('as.', classtmp, sep = "")
-          pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-                 as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
-                                  pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]], FUN = mean))]
-        })
+        # The lagged cumulative average variable was already created
+        # Therefore, can use recursive formula
+        for (histvar in histvars){
+          pool[get(time_name) == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
+                 as.double((pool[get(id_name) %in% current_ids & get(time_name) == (t-1)][[paste("lag_cumavg", i, "_", histvar, sep = "")]] * (denom - 1)
+                            + pool[get(id_name) %in% current_ids & get(time_name) == (t - i)][[histvar]]) / denom)
+          ]
+        }
       }
     }
   }

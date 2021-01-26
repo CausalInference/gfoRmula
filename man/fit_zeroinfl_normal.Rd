@@ -4,8 +4,7 @@
 \alias{fit_zeroinfl_normal}
 \title{Fit Zero-Inflated Normal Model on Covariate}
 \usage{
-fit_zeroinfl_normal(covparams, covlink = NA, covname, obs_data, j,
-  model_fits)
+fit_zeroinfl_normal(covparams, covlink = NA, covname, obs_data, j, model_fits)
 }
 \arguments{
 \item{covparams}{List of vectors, where each vector contains information for

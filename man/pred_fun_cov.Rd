@@ -4,8 +4,16 @@
 \alias{pred_fun_cov}
 \title{Fit Covariate Models}
 \usage{
-pred_fun_cov(covparams, covnames, covtypes, covfits_custom, restrictions,
-  time_name, obs_data, model_fits)
+pred_fun_cov(
+  covparams,
+  covnames,
+  covtypes,
+  covfits_custom,
+  restrictions,
+  time_name,
+  obs_data,
+  model_fits
+)
 }
 \arguments{
 \item{covparams}{List of vectors, where each vector contains information for

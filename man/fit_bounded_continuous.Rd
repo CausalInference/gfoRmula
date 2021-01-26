@@ -4,8 +4,14 @@
 \alias{fit_bounded_continuous}
 \title{Fit Bounded Normal Model on Covariate}
 \usage{
-fit_bounded_continuous(covparams, covlink = NA, covname, obs_data, j,
-  model_fits)
+fit_bounded_continuous(
+  covparams,
+  covlink = NA,
+  covname,
+  obs_data,
+  j,
+  model_fits
+)
 }
 \arguments{
 \item{covparams}{List of vectors, where each vector contains information for

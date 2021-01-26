@@ -4,13 +4,45 @@
 \alias{simulate}
 \title{Simulate Counterfactual Outcomes Under Intervention}
 \usage{
-simulate(o, fitcov, fitY, fitD, yrestrictions, compevent_restrictions,
-  restrictions, outcome_name, compevent_name, time_name, intvars,
-  interventions, int_times, histvars, histvals, histories, comprisk,
-  ranges, yrange, compevent_range, outcome_type, subseed, obs_data,
-  time_points, parallel, covnames, covtypes, covparams, covpredict_custom,
-  basecovs, max_visits, baselags, below_zero_indicator, min_time,
-  show_progress, pb, ...)
+simulate(
+  o,
+  fitcov,
+  fitY,
+  fitD,
+  yrestrictions,
+  compevent_restrictions,
+  restrictions,
+  outcome_name,
+  compevent_name,
+  time_name,
+  intvars,
+  interventions,
+  int_times,
+  histvars,
+  histvals,
+  histories,
+  comprisk,
+  ranges,
+  yrange,
+  compevent_range,
+  outcome_type,
+  subseed,
+  obs_data,
+  time_points,
+  parallel,
+  covnames,
+  covtypes,
+  covparams,
+  covpredict_custom,
+  basecovs,
+  max_visits,
+  baselags,
+  below_zero_indicator,
+  min_time,
+  show_progress,
+  pb,
+  ...
+)
 }
 \arguments{
 \item{o}{Integer specifying the index of the current intervention.}
