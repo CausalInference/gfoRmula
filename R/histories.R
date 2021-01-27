@@ -179,7 +179,7 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
         })
       }
 
-    } else if (t == i & !below_zero_indicator){
+    } else if (t == (i + min(pool[[time_name]]))){
       # At time point i, set all lagged cumulative averages equal to the actual value
       # of the variable
       current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
@@ -187,12 +187,7 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
         pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
                as.double(pool[pool[[time_name]] == t - i & get(id_name) %in% current_ids, ][[histvar]])]
       })
-    } else {
-      if (below_zero_indicator){
-        denom <- t - i + 1 - min(pool[[time_name]])
-      } else {
-        denom <- t - i + 1
-      }
+    } else if (t > (i + min(pool[[time_name]]))) {
 
       # At time points after i, create new column containing calculated lagged cumulative
       # average until that time point
@@ -216,6 +211,11 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
           })
         }
       } else {
+        if (below_zero_indicator){
+          denom <- t - i + 1 - min(pool[[time_name]])
+        } else {
+          denom <- t - i + 1
+        }
         # The lagged cumulative average variable was already created
         # Therefore, can use recursive formula
         for (histvar in histvars){
