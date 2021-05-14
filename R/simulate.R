@@ -42,7 +42,7 @@ predict_normal <- function(x, mean, est_sd = NA){
 #' @keywords internal
 #'
 predict_trunc_normal <- function(x, mean, est_sd, a, b){
-  return (truncnorm::rtruncnorm(x = x, mean = mean, sd = est_sd, a = a, b = b))
+  return (truncnorm::rtruncnorm(n = x, mean = mean, sd = est_sd, a = a, b = b))
 }
 
 #' Simulate Counterfactual Outcomes Under Intervention

@@ -1,12 +1,14 @@
 Package Updates
 ---------------
 
-### Changes in Version 0.3.2 (2021-01-25)
+### Changes in Version 0.3.2 (2021-05-13)
 
 -   Updated computation of (lagged) cumulative averages to use the
     recursive formula. There should be a noticeable improvement in the
     computation time when using several (lagged) cumulative average
     terms and when the number of time points is large.
+-   Fixed an error for covariates of type `truncated normal` (Thanks to
+    @publichealthstudent)
 
 ### Changes in Version 0.3.1 (2020-03-22)
 
