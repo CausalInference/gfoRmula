@@ -58,5 +58,5 @@ Imports:
     utils
 Suggests: Hmisc
 URL: https://github.com/CausalInference/gfoRmula, 
-    https://arxiv.org/abs/1908.07072
+    https://www.cell.com/patterns/fulltext/S2666-3899(20)30008-8
 BugReports: https://github.com/CausalInference/gfoRmula/issues
