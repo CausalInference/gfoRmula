@@ -120,7 +120,7 @@
 #'
 #' The results for the g-formula simulation are printed with the \code{\link{print.gformula_survival}}, \code{\link{print.gformula_continuous_eof}}, and \code{\link{print.gformula_binary_eof}} functions. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}}, \code{\link{plot.gformula_continuous_eof}}, and \code{\link{plot.gformula_binary_eof}} functions.
 #'
-#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
+#' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #' ## Estimating the effect of static treatment strategies on risk of a
@@ -496,7 +496,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' The results for the g-formula simulation under various interventions only for the first and last time points are printed with the \code{\link{print.gformula_survival}} function. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}} function.
 #'
 #' @seealso \code{\link{gformula}}
-#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
+#' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #' ## Estimating the effect of static treatment strategies on risk of a
@@ -1284,7 +1284,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_continuous_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{print.gformula_continuous_eof}} function.
 #'
 #' @seealso \code{\link{gformula}}
-#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
+#' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #'
@@ -1947,7 +1947,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_binary_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{plot.gformula_binary_eof}} function.
 #'
 #' @seealso \code{\link{gformula}}
-#' @references Lin V, McGrath S, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating effects of general time-varying treatment interventions via the parametric g-formula. arXiv e-prints. 2019. \url{https://arxiv.org/abs/1908.07072}.
+#' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
 #'

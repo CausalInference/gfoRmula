@@ -28,5 +28,6 @@ devtools::install_github("CausalInference/gfoRmula")
 
 ## Usage
 
-Please refer to [Lin et al. (2019)](https://arxiv.org/abs/1908.07072)
+Please refer to [McGrath et
+al. (2020)](https://www.cell.com/patterns/fulltext/S2666-3899\(20\)30008-8)
 for a detailed guide to the `gfoRmula` package.
