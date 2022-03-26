@@ -293,6 +293,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                      histvars = NULL, histories = NA, basecovs = NA,
                      outcome_name, outcome_type, ymodel,
                      compevent_name = NULL, compevent_model = NA,
+                     compevent2_name = NULL, compevent2_model = NA,
+                     censor_name = NULL, censor_model = NA,
                      intvars = NULL, interventions = NULL,
                      int_times = NULL, int_descript = NULL, ref_int = 0, intcomp = NA,
                      visitprocess = NA, restrictions = NA,
@@ -301,7 +303,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                      nsimul = NA, sim_data_b = FALSE, seed,
                      nsamples = 0, parallel = FALSE, ncores = NA,
                      ci_method = 'percentile', threads, model_fits = FALSE,
-                     boot_diag = FALSE, show_progress = TRUE, ...){
+                     boot_diag = FALSE, show_progress = TRUE, ipw_cutoff = NULL, ...){
   if (! outcome_type %in% c('survival', 'continuous_eof', 'binary_eof')){
     stop("outcome_type must be 'survival', 'continuous_eof', or 'binary_eof', but outcome_type was set to", outcome_type)
   }
@@ -316,6 +318,10 @@ gformula <- function(obs_data, id, time_points = NULL,
                       ymodel = ymodel,
                       compevent_name = compevent_name,
                       compevent_model = compevent_model,
+                      compevent2_name = compevent2_name,
+                      compevent2_model = compevent2_model,
+                      censor_name = censor_name,
+                      censor_model = censor_model,
                       intvars = intvars, interventions = interventions,
                       int_times = int_times, int_descript = int_descript,
                       ref_int = ref_int, intcomp = intcomp,
@@ -327,7 +333,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                       nsamples = nsamples, parallel = parallel, ncores = ncores,
                       ci_method = ci_method, threads = threads,
                       model_fits = model_fits, boot_diag = boot_diag,
-                      show_progress = show_progress, ...)
+                      show_progress = show_progress, ipw_cutoff = ipw_cutoff, ...)
   } else if (outcome_type == 'continuous_eof'){
     gformula_continuous_eof(obs_data = obs_data, id = id,
                             time_name = time_name, covnames = covnames,
@@ -590,6 +596,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               histvars = NULL, histories = NA, basecovs = NA,
                               outcome_name, ymodel,
                               compevent_name = NULL, compevent_model = NA,
+                              compevent2_name = NULL, compevent2_model = NA,
+                              censor_name = NULL, censor_model = NA,
                               intvars = NULL, interventions = NULL,
                               int_times = NULL, int_descript = NULL, ref_int = 0, intcomp = NA,
                               visitprocess = NA, restrictions = NA,
@@ -599,7 +607,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               nsamples = 0, parallel = FALSE, ncores = NA,
                               ci_method = 'percentile', threads,
                               model_fits = FALSE, boot_diag = FALSE,
-                              show_progress = TRUE, ...){
+                              show_progress = TRUE, ipw_cutoff = NULL, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -616,10 +624,18 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     lagavg_indicator <- update_lagavg_indicator(compevent_model, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(compevent_model, cumavg_indicator)
   }
+  if (!(length(censor_model) == 1 && is.na(censor_model))){
+    lag_indicator <- update_lag_indicator(censor_model, lag_indicator)
+    lagavg_indicator <- update_lagavg_indicator(censor_model, lagavg_indicator)
+    cumavg_indicator <- update_cumavg_indicator(censor_model, cumavg_indicator)
+  }
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
 
   comprisk <- !(length(compevent_model) == 1 && is.na(compevent_model))
+  comprisk2 <- !(length(compevent2_model) == 1 && is.na(compevent2_model))
+  censor <- !(length(censor_model) == 1 && is.na(censor_model))
+
   if (!missing(threads)){
     setDTthreads(threads = threads)
   }
@@ -751,6 +767,18 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     fitD <- NA
     compevent_range <- NA
   }
+  if (comprisk2){
+    fitD2 <- pred_fun_D(compevent2_model, NA, obs_data_geq_0,
+                        model_fits = model_fits)
+  } else {
+    fitD2 <- NA
+  }
+  if (censor){
+    fitC <- pred_fun_D(censor_model, NA, obs_data_geq_0, model_fits = model_fits)
+  } else {
+    fitC <- NA
+  }
+
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -1009,6 +1037,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
                              compevent_name = compevent_name,
+                             compevent2_name = compevent2_name,
+                             censor_name = censor_name,
                              time_name = time_name,
                              time_points = time_points,
                              covnames = covnames,
@@ -1016,8 +1046,13 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                              nat_pool = nat_pool,
                              nat_result = nat_result,
                              comprisk = comprisk,
+                             comprisk2 = comprisk2,
+                             censor = censor,
+                             fitD2 = fitD2,
+                             fitC = fitC,
                              outcome_type = outcome_type,
-                             obs_data = obs_data_noresample)
+                             obs_data = obs_data_noresample,
+                             ipw_cutoff = ipw_cutoff)
   obs_results <- plot_info$obs_results
 
   # Generate results table
@@ -1101,6 +1136,14 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   if (!is.na(fitD)[[1]]){
     fits[[length(fits) + 1]] <- fitD
     names(fits)[length(fits)] <- compevent_name
+  }
+  if (!is.na(fitC)[[1]]){
+    fits[[length(fits) + 1]] <- fitC
+    names(fits)[length(fits)] <- censor_name
+  }
+  if (!is.na(fitD2)[[1]]){
+    fits[[length(fits) + 1]] <- fitD2
+    names(fits)[length(fits)] <- compevent2_name
   }
 
   # Add list of coefficients for covariates, outcome variable, and competing event
@@ -1357,6 +1400,7 @@ gformula_continuous_eof <- function(obs_data, id,
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
   comprisk = FALSE
+  censor <- FALSE
 
   if (!missing(threads)){
     setDTthreads(threads = threads)
@@ -1368,6 +1412,8 @@ gformula_continuous_eof <- function(obs_data, id,
   compevent_model <- NA
   compevent_name <- NULL
   compevent_restrictions <- NA
+  censor_model <- NA
+  censor_name <- NULL
   hazardratio <- FALSE
   intcomp <- NA
 
@@ -1691,6 +1737,7 @@ gformula_continuous_eof <- function(obs_data, id,
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
                              compevent_name = compevent_name,
+                             censor_name = censor_name,
                              time_name = time_name,
                              time_points = time_points,
                              covnames = covnames,
@@ -1698,6 +1745,7 @@ gformula_continuous_eof <- function(obs_data, id,
                              nat_pool = nat_pool,
                              nat_result = nat_result,
                              comprisk = comprisk,
+                             censor = censor,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample)
   obs_results <- plot_info$obs_results
@@ -2021,6 +2069,7 @@ gformula_binary_eof <- function(obs_data, id,
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
   comprisk = FALSE
+  comprisk <- FALSE
 
   if (!missing(threads)){
     setDTthreads(threads = threads)
@@ -2032,6 +2081,8 @@ gformula_binary_eof <- function(obs_data, id,
   compevent_model <- NA
   compevent_name <- NULL
   compevent_restrictions <- NA
+  censor_model <- NA
+  censor_name <- NULL
   hazardratio <- FALSE
   intcomp <- NA
 
@@ -2351,6 +2402,7 @@ gformula_binary_eof <- function(obs_data, id,
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
                              compevent_name = compevent_name,
+                             censor_name = censor_name,
                              time_name = time_name,
                              time_points = time_points,
                              covnames = covnames,
@@ -2358,6 +2410,7 @@ gformula_binary_eof <- function(obs_data, id,
                              nat_pool = nat_pool,
                              nat_result = nat_result,
                              comprisk = comprisk,
+                             censor = censor,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample)
   obs_results <- plot_info$obs_results

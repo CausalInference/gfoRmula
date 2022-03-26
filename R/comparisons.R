@@ -17,50 +17,105 @@
 #'                        third entry is a vector of mean observed survival.
 #' @keywords internal
 #' @import data.table
-obs_calculate <- function(outcome_name, compevent_name, time_name, covnames, comprisk,
-                          outcome_type, obs_data){
+obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, covnames, comprisk,
+                          comprisk2, censor, fitD2, fitC, outcome_type, obs_data, ipw_cutoff){
   obs_means <- lapply(covnames, FUN = function(covname){
     tapply(as.numeric(obs_data[[covname]]), obs_data[[time_name]], FUN = mean,
            na.rm = TRUE)
   })
   names(obs_means) <- covnames
   if (outcome_type == 'survival'){
-    # Calculate mean observed outcome probability at each time point
-    meanPy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
-                     na.rm = TRUE)
-    if (comprisk){
-      # Calculate mean observed competing event probability at each time point
-      meanPd <- tapply(obs_data[[compevent_name]], obs_data[[time_name]], FUN = mean,
+    if (!censor){
+      # Calculate mean observed outcome probability at each time point
+      meanPy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
                        na.rm = TRUE)
-    }
-    # Initialize
-    obs_prodp0 <- rep(NA, length(meanPy))
-    obs_prodp1 <- rep(NA, length(meanPy))
-    # Calculate mean observed probability of death from main event at first time point
-    if (comprisk){
-      obs_prodp1[1] <- meanPy[1] * (1 - meanPd[1])
-    } else {
-      obs_prodp1[1] <- meanPy[1]
-    }
-    # Calculate mean observed probability of survival at first time point
-    obs_prodp0[1] <- 1 - obs_prodp1[1]
-    if (length(meanPy) > 1){
-      for (k in 2:length(meanPy)){
-        # Calculate mean observed probability of survival at time k - 1
-        obs_prodp0[k] <- 1 - meanPy[k]
-        # Calculated mean observed probability of death from main event at time k - 1
-        if (comprisk){
-          obs_prodp1[k] <- meanPy[k] * (cumprod(obs_prodp0[1:(k - 1)] * (1-meanPd[k]))[k - 1])
-        }
-        else {
-          obs_prodp1[k] <- meanPy[k] * (cumprod(obs_prodp0[1:(k - 1)])[k - 1])
+      if (comprisk){
+        # Calculate mean observed competing event probability at each time point
+        meanPd <- tapply(obs_data[[compevent_name]], obs_data[[time_name]], FUN = mean,
+                         na.rm = TRUE)
+      }
+      # Initialize
+      obs_prodp0 <- 1 - meanPy
+      obs_prodp1 <- rep(NA, length(meanPy))
+      # Calculate mean observed probability of death from main event at first time point
+      if (comprisk){
+        obs_prodp1[1] <- meanPy[1] * (1 - meanPd[1])
+      } else {
+        obs_prodp1[1] <- meanPy[1]
+      }
+      # Calculate mean observed probability of survival at first time point
+      if (length(meanPy) > 1){
+        for (k in 2:length(meanPy)){
+          # Calculated mean observed probability of death from main event at time k - 1
+          if (comprisk){
+            obs_prodp1[k] <- meanPy[k] * (1 - meanPd[k]) * prod((1 - meanPy[1:(k-1)]) * (1-meanPd[1:(k-1)]))
+          }
+          else {
+            obs_prodp1[k] <- meanPy[k] * prod(obs_prodp0[1:(k - 1)])
+          }
         }
       }
+      # Calculate observed probability of death at or before each time point
+      obs_risk <- cumsum(obs_prodp1)
+      obs_survival <- 1 - obs_risk
+      return (list(obs_means, obs_risk, obs_survival))
+    } else {
+      censor_p0_inv <- 1 / (1 - stats::predict(fitC, type = 'response'))
+      censor_inv_cum <- unlist(tapply(censor_p0_inv, obs_data[['id']], FUN = cumprod))
+      w_c <- ifelse(obs_data[[censor_name]] == 1, 0, censor_inv_cum)
+
+      if (comprisk2){
+        comprisk_p0_inv <- rep(0, length = nrow(obs_data))
+        comprisk_p0_inv[!is.na(obs_data[[compevent2_name]])] <- 1 / (1 - stats::predict(fitD2, type = 'response'))
+        comprisk_inv_cum <- unlist(tapply(comprisk_p0_inv, obs_data[['id']], FUN = cumprod))
+        w_d <- ifelse(obs_data[[compevent2_name]] == 1 | is.na(obs_data[[compevent2_name]]), 0, comprisk_inv_cum)
+        w <- w_c * w_d
+      } else {
+        w <- w_c
+      }
+      if (is.null(ipw_cutoff)){
+        ipw_cutoff <- 1
+      }
+      cutoff_w <- quantile(w, probs = ipw_cutoff)
+      w <- pmin(w, cutoff_w)
+
+      time_points <- max(obs_data[[time_name]])
+      h_k <- obs_risk_temp <- obs_survival <- rep(NA, times = time_points + 1)
+      if (comprisk){
+        compevent_risk_temp <- h_k2 <- rep(NA, times = time_points + 1)
+      }
+      for (i in 0:time_points){
+        cur_time_ind <- obs_data[[time_name]] == i
+        w_cur <- w[cur_time_ind]
+
+        if (comprisk2 | !comprisk){
+          # Scenario 1 and 3
+          h_k[i + 1] <- weighted.mean(x = obs_data[cur_time_ind][[outcome_name]], w = w_cur, na.rm = TRUE)
+          if (i == 0){
+            obs_risk_temp[i + 1] <- h_k[i + 1]
+          } else {
+            obs_risk_temp[i + 1] <- h_k[i + 1] * prod(1 - h_k[1:i])
+          }
+        } else if (comprisk){
+          # Scenario 2
+          w_cur_elimD <- ifelse(obs_data[cur_time_ind][[compevent_name]] == 1, 0, w_cur)
+          h_k[i + 1] <- weighted.mean(x = obs_data[cur_time_ind][[outcome_name]], w = w_cur_elimD, na.rm = TRUE)
+          h_k2[i + 1] <- weighted.mean(x = obs_data[cur_time_ind][[compevent_name]], w = w_cur, na.rm = TRUE)
+          if (i == 0){
+            obs_risk_temp[i + 1] <- h_k[i + 1] * (1 - h_k2[i + 1])
+            compevent_risk_temp[i + 1] <- h_k2[i + 1]
+          } else {
+            obs_risk_temp[i + 1] <- h_k[i + 1] * (1 - h_k2[i + 1]) * prod((1 - h_k[1:i]) * (1 - h_k2[1:i]))
+            compevent_risk_temp[i + 1] <- h_k2[i + 1] * prod((1 - h_k[1:i]) * (1 - h_k2[1:i]))
+          }
+        }
+      }
+
+      obs_risk <- cumsum(obs_risk_temp)
+      obs_survival <- 1 - obs_risk
+      return (list(obs_means, obs_risk, obs_survival))
     }
-    # Calculate observed probability of death at or before each time point
-    obs_risk <- cumsum(obs_prodp1)
-    obs_survival <- cumprod(obs_prodp0)
-    return (list(obs_means, obs_risk, obs_survival))
+
   } else if (outcome_type == 'continuous_eof' || outcome_type == 'binary_eof'){
     meanEy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
                      na.rm = TRUE)
@@ -173,14 +228,20 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 #' @keywords internal
 #' @import data.table
 #' @import ggplot2
-get_plot_info <- function(outcome_name, compevent_name, time_name, time_points,
-                          covnames, covtypes, nat_pool, nat_result, comprisk,
-                          outcome_type, obs_data){
+get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, time_points,
+                          covnames, covtypes, nat_pool, nat_result, comprisk, comprisk2, censor,
+                          fitD2, fitC, outcome_type, obs_data, ipw_cutoff){
 
   # Calculate mean observed values at each time point for covariates, risk, and survival
-  obs_results <- obs_calculate(outcome_name, compevent_name, time_name, covnames, comprisk,
-                               outcome_type, obs_data[obs_data[[time_name]] < time_points &
-                                                        obs_data[[time_name]] >= 0])
+  obs_results <- obs_calculate(outcome_name = outcome_name, compevent_name = compevent_name,
+                               compevent2_name = compevent2_name, censor_name = censor_name,
+                               time_name = time_name,
+                               covnames = covnames, comprisk = comprisk,
+                               comprisk2 = comprisk2, censor = censor,
+                               fitD2 = fitD2, fitC = fitC, outcome_type = outcome_type,
+                               obs_data = obs_data[obs_data[[time_name]] < time_points &
+                                          obs_data[[time_name]] >= 0],
+                               ipw_cutoff = ipw_cutoff)
 
   # Calculate mean simulated values at each time point for covariates
   sim_results_cov <- lapply(covnames, FUN = function(covname){
