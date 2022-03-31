@@ -41,7 +41,7 @@ An object of class "ggarrange". See documentation of \code{\link[ggpubr]{ggarran
 \description{
 This function generates graphs of the mean simulated vs. observed values at each time point of the
 time-varying covariates under the natural course. For categorical covariates,
-the observed and simulated counts of the levels of the factors are plotted at each time point.
+the observed and simulated probability of each level are plotted at each time point.
 }
 \examples{
 ## Estimating the effect of threshold interventions on the mean of a binary

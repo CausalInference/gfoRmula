@@ -7,11 +7,19 @@
 obs_calculate(
   outcome_name,
   compevent_name,
+  compevent2_name,
+  censor_name,
   time_name,
   covnames,
+  covtypes,
   comprisk,
+  comprisk2,
+  censor,
+  fitD2,
+  fitC,
   outcome_type,
-  obs_data
+  obs_data,
+  ipw_cutoff
 )
 }
 \arguments{

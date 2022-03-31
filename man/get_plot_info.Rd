@@ -7,6 +7,8 @@
 get_plot_info(
   outcome_name,
   compevent_name,
+  compevent2_name,
+  censor_name,
   time_name,
   time_points,
   covnames,
@@ -14,8 +16,13 @@ get_plot_info(
   nat_pool,
   nat_result,
   comprisk,
+  comprisk2,
+  censor,
+  fitD2,
+  fitC,
   outcome_type,
-  obs_data
+  obs_data,
+  ipw_cutoff
 )
 }
 \arguments{
@@ -48,6 +55,6 @@ A list with the following components:
 \item{dt_obs_plot}{For outcomes of type \code{"survival"}, a list of data tables. The data tables contain the observed and simulated risks and survival under each time point. For other outcomes, a value of \code{NA} is given.}
 }
 \description{
-This internal function obtains the data tables necessary for plotting. For continuous and binary covariates, the mean observed and simulated values are obtained for each time point. For categorical covariates, the observed and simulated counts of the levels of the factors are obtained for each time point.  When the outcome is of type \code{"survival"}, the observed and simulated risk and survival are obtained for each time point.
+This internal function obtains the data tables necessary for plotting. For continuous and binary covariates, the mean observed and simulated values are obtained for each time point. For categorical covariates, the observed and simulated means of the levels of the factors are obtained for each time point.  When the outcome is of type \code{"survival"}, the observed and simulated risk and survival are obtained for each time point.
 }
 \keyword{internal}

@@ -607,7 +607,7 @@ simulate <- function(o, fitcov, fitY, fitD,
   pool <- pool[pool[[time_name]] >= 0]
   if (outcome_type == 'survival'){
     pool[, 'poprisk' := stats::ave(pool$prodp1, by = pool$id, FUN = cumsum)]
-    pool[, 'survival' := stats::ave(pool$prodp0, by = pool$id, FUN = cumprod)]
+    pool[, 'survival' := 1 - pool$poprisk]
   }
   pool2 <- copy(pool)
   if (show_progress){

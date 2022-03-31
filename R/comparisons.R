@@ -17,15 +17,114 @@
 #'                        third entry is a vector of mean observed survival.
 #' @keywords internal
 #' @import data.table
-obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, covnames, comprisk,
+obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, covnames, covtypes, comprisk,
                           comprisk2, censor, fitD2, fitC, outcome_type, obs_data, ipw_cutoff){
-  obs_means <- lapply(covnames, FUN = function(covname){
-    tapply(as.numeric(obs_data[[covname]]), obs_data[[time_name]], FUN = mean,
-           na.rm = TRUE)
-  })
-  names(obs_means) <- covnames
-  if (outcome_type == 'survival'){
-    if (!censor){
+
+  time_points <- max(obs_data[[time_name]]) + 1
+  get_obs_cov_means <- function(weights = FALSE){
+    if (!weights){
+      w <- rep(1, nrow(obs_data))
+    }
+    obs_means <- vector(mode = 'list', length = length(covnames))
+    names(obs_means) <- covnames
+    for (covname in covnames){
+      covtype <- covtypes[which(covname == covnames)]
+      if (covtype != 'categorical'){
+        cov_means <- rep(NA, length = time_points)
+        for (i in 0:(time_points-1)){
+          cur_time_ind <- obs_data[[time_name]] == i
+          cov_means[i+1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]], w = w[cur_time_ind], na.rm = TRUE)
+        }
+      } else {
+        all_levels <- levels(obs_data[[covname]])
+        cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
+                                V1 = rep(-1, length = time_points * length(all_levels)))
+        cov_means[, (covname)] <- rep(all_levels, times = time_points)
+        cov_means$legend <- 'nonparametric estimates'
+        row_ind <- 1
+        for (i in 0:(time_points - 1)){
+          cur_time_ind <- obs_data[[time_name]] == i
+          for (level in all_levels){
+            cov_means[row_ind, 'V1'] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]] == level, w = w[cur_time_ind], na.rm = TRUE)
+            row_ind <- row_ind + 1
+          }
+        }
+      }
+      obs_means[[covname]] <- cov_means
+    }
+    return(obs_means)
+  }
+
+  if (censor){
+    # Step 1: Compute weights
+    censor_p0_inv <- 1 / (1 - stats::predict(fitC, type = 'response', newdata = obs_data))
+    censor_inv_cum <- unlist(tapply(censor_p0_inv, obs_data[['id']], FUN = cumprod))
+    w_c <- ifelse(obs_data[[censor_name]] == 1, 0, censor_inv_cum)
+    if (outcome_type == 'survival' & comprisk2){
+      comprisk_p0_inv <- rep(0, length = nrow(obs_data))
+      row_ind <- !is.na(obs_data[[compevent2_name]])
+      comprisk_p0_inv[row_ind] <- 1 / (1 - stats::predict(fitD2, type = 'response', newdata = obs_data[row_ind]))
+      comprisk_inv_cum <- unlist(tapply(comprisk_p0_inv, obs_data[['id']], FUN = cumprod))
+      w_d <- ifelse(obs_data[[compevent2_name]] == 1 | is.na(obs_data[[compevent2_name]]), 0, comprisk_inv_cum)
+      w <- w_c * w_d
+    } else {
+      w <- w_c
+    }
+    if (is.null(ipw_cutoff)){
+      ipw_cutoff <- 1
+    }
+    cutoff_w <- stats::quantile(w, probs = ipw_cutoff)
+    w <- pmin(w, cutoff_w)
+
+    # Step 2: Compute weighted mean of covariates
+    obs_means <- get_obs_cov_means(weights = TRUE)
+
+    # Step 3: Compute weighted mean of outcome
+    if (outcome_type == 'continuous_eof' || outcome_type == 'binary_eof'){
+      meanEy <- rep(NA, length = time_points)
+      cur_time_ind <- obs_data[[time_name]] == (time_points-1)
+      meanEy[time_points + 1] <- stats::weighted.mean(obs_data[cur_time_ind][[outcome_name]], w[cur_time_ind], na.rm = TRUE)
+      res <- list(obs_means, meanEy)
+
+    } else if  (outcome_type == 'survival'){
+      h_k <- obs_risk_temp <- obs_survival <- rep(NA, times = time_points)
+      if (comprisk){
+        compevent_risk_temp <- h_k2 <- rep(NA, times = time_points)
+      }
+      for (i in 0:(time_points - 1)){
+        cur_time_ind <- obs_data[[time_name]] == i
+        w_cur <- w[cur_time_ind]
+
+        if (comprisk2 | !comprisk){
+          # Scenario 1 and 3
+          h_k[i + 1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[outcome_name]], w = w_cur, na.rm = TRUE)
+          if (i == 0){
+            obs_risk_temp[i + 1] <- h_k[i + 1]
+          } else {
+            obs_risk_temp[i + 1] <- h_k[i + 1] * prod(1 - h_k[1:i])
+          }
+        } else if (comprisk){
+          # Scenario 2
+          w_cur_elimD <- ifelse(obs_data[cur_time_ind][[compevent_name]] == 1, 0, w_cur)
+          h_k[i + 1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[outcome_name]], w = w_cur_elimD, na.rm = TRUE)
+          h_k2[i + 1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[compevent_name]], w = w_cur, na.rm = TRUE)
+          if (i == 0){
+            obs_risk_temp[i + 1] <- h_k[i + 1] * (1 - h_k2[i + 1])
+            compevent_risk_temp[i + 1] <- h_k2[i + 1]
+          } else {
+            obs_risk_temp[i + 1] <- h_k[i + 1] * (1 - h_k2[i + 1]) * prod((1 - h_k[1:i]) * (1 - h_k2[1:i]))
+            compevent_risk_temp[i + 1] <- h_k2[i + 1] * prod((1 - h_k[1:i]) * (1 - h_k2[1:i]))
+          }
+        }
+      }
+      obs_risk <- cumsum(obs_risk_temp)
+      obs_survival <- 1 - obs_risk
+      res <- list(obs_means, obs_risk, obs_survival)
+    }
+  } else {
+    obs_means <- get_obs_cov_means(weights = FALSE)
+
+    if (outcome_type == 'survival'){
       # Calculate mean observed outcome probability at each time point
       meanPy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
                        na.rm = TRUE)
@@ -58,69 +157,16 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
       # Calculate observed probability of death at or before each time point
       obs_risk <- cumsum(obs_prodp1)
       obs_survival <- 1 - obs_risk
-      return (list(obs_means, obs_risk, obs_survival))
-    } else {
-      censor_p0_inv <- 1 / (1 - stats::predict(fitC, type = 'response'))
-      censor_inv_cum <- unlist(tapply(censor_p0_inv, obs_data[['id']], FUN = cumprod))
-      w_c <- ifelse(obs_data[[censor_name]] == 1, 0, censor_inv_cum)
+      res <- list(obs_means, obs_risk, obs_survival)
 
-      if (comprisk2){
-        comprisk_p0_inv <- rep(0, length = nrow(obs_data))
-        comprisk_p0_inv[!is.na(obs_data[[compevent2_name]])] <- 1 / (1 - stats::predict(fitD2, type = 'response'))
-        comprisk_inv_cum <- unlist(tapply(comprisk_p0_inv, obs_data[['id']], FUN = cumprod))
-        w_d <- ifelse(obs_data[[compevent2_name]] == 1 | is.na(obs_data[[compevent2_name]]), 0, comprisk_inv_cum)
-        w <- w_c * w_d
-      } else {
-        w <- w_c
-      }
-      if (is.null(ipw_cutoff)){
-        ipw_cutoff <- 1
-      }
-      cutoff_w <- quantile(w, probs = ipw_cutoff)
-      w <- pmin(w, cutoff_w)
-
-      time_points <- max(obs_data[[time_name]])
-      h_k <- obs_risk_temp <- obs_survival <- rep(NA, times = time_points + 1)
-      if (comprisk){
-        compevent_risk_temp <- h_k2 <- rep(NA, times = time_points + 1)
-      }
-      for (i in 0:time_points){
-        cur_time_ind <- obs_data[[time_name]] == i
-        w_cur <- w[cur_time_ind]
-
-        if (comprisk2 | !comprisk){
-          # Scenario 1 and 3
-          h_k[i + 1] <- weighted.mean(x = obs_data[cur_time_ind][[outcome_name]], w = w_cur, na.rm = TRUE)
-          if (i == 0){
-            obs_risk_temp[i + 1] <- h_k[i + 1]
-          } else {
-            obs_risk_temp[i + 1] <- h_k[i + 1] * prod(1 - h_k[1:i])
-          }
-        } else if (comprisk){
-          # Scenario 2
-          w_cur_elimD <- ifelse(obs_data[cur_time_ind][[compevent_name]] == 1, 0, w_cur)
-          h_k[i + 1] <- weighted.mean(x = obs_data[cur_time_ind][[outcome_name]], w = w_cur_elimD, na.rm = TRUE)
-          h_k2[i + 1] <- weighted.mean(x = obs_data[cur_time_ind][[compevent_name]], w = w_cur, na.rm = TRUE)
-          if (i == 0){
-            obs_risk_temp[i + 1] <- h_k[i + 1] * (1 - h_k2[i + 1])
-            compevent_risk_temp[i + 1] <- h_k2[i + 1]
-          } else {
-            obs_risk_temp[i + 1] <- h_k[i + 1] * (1 - h_k2[i + 1]) * prod((1 - h_k[1:i]) * (1 - h_k2[1:i]))
-            compevent_risk_temp[i + 1] <- h_k2[i + 1] * prod((1 - h_k[1:i]) * (1 - h_k2[1:i]))
-          }
-        }
-      }
-
-      obs_risk <- cumsum(obs_risk_temp)
-      obs_survival <- 1 - obs_risk
-      return (list(obs_means, obs_risk, obs_survival))
+    } else if (outcome_type == 'continuous_eof' || outcome_type == 'binary_eof'){
+      meanEy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
+                       na.rm = TRUE)
+      res <- list(obs_means, meanEy)
     }
-
-  } else if (outcome_type == 'continuous_eof' || outcome_type == 'binary_eof'){
-    meanEy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
-                     na.rm = TRUE)
-    return (list(obs_means, meanEy))
   }
+
+  return(res)
 }
 
 #' Calculate RMSE for Covariate, Outcome, and Competing Risk Models
@@ -208,7 +254,7 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 
 #' Get Plotting Information
 #'
-#' This internal function obtains the data tables necessary for plotting. For continuous and binary covariates, the mean observed and simulated values are obtained for each time point. For categorical covariates, the observed and simulated counts of the levels of the factors are obtained for each time point.  When the outcome is of type \code{"survival"}, the observed and simulated risk and survival are obtained for each time point.
+#' This internal function obtains the data tables necessary for plotting. For continuous and binary covariates, the mean observed and simulated values are obtained for each time point. For categorical covariates, the observed and simulated means of the levels of the factors are obtained for each time point.  When the outcome is of type \code{"survival"}, the observed and simulated risk and survival are obtained for each time point.
 #'
 #' @param outcome_name    Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param compevent_name  Character string specifying the name of the competing event variable in \code{obs_data}.
@@ -236,19 +282,74 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
   obs_results <- obs_calculate(outcome_name = outcome_name, compevent_name = compevent_name,
                                compevent2_name = compevent2_name, censor_name = censor_name,
                                time_name = time_name,
-                               covnames = covnames, comprisk = comprisk,
+                               covnames = covnames, covtypes = covtypes, comprisk = comprisk,
                                comprisk2 = comprisk2, censor = censor,
                                fitD2 = fitD2, fitC = fitC, outcome_type = outcome_type,
                                obs_data = obs_data[obs_data[[time_name]] < time_points &
                                           obs_data[[time_name]] >= 0],
                                ipw_cutoff = ipw_cutoff)
 
-  # Calculate mean simulated values at each time point for covariates
-  sim_results_cov <- lapply(covnames, FUN = function(covname){
-    tapply(as.numeric(nat_pool[[covname]]), nat_pool[[time_name]], FUN = mean,
-           na.rm = TRUE)
-  })
-  names(sim_results_cov) <- covnames
+  get_sim_cov_means <- function(weights = FALSE){
+    get_weights <- function(weights, cur_time_ind){
+      if (weights){
+        if (i == 0){
+          psurv <- rep(1, sum(cur_time_ind))
+        } else {
+          temp_rows <- nat_pool[[time_name]] < i & nat_pool[[time_name]] >= 0
+          if (comprisk){
+            psurv <- tapply(nat_pool[temp_rows]$prodp0, nat_pool[temp_rows]$id, FUN = prod) *
+              tapply(1 - nat_pool[temp_rows]$Pd, nat_pool[temp_rows]$id, FUN = prod)
+          } else {
+            #psurv <- nat_pool[nat_pool[[time_name]] == i - 1]$survival
+            psurv <- tapply(nat_pool[temp_rows]$prodp0, nat_pool[temp_rows]$id, FUN = prod)
+          }
+        }
+      } else {
+        psurv <- rep(1, sum(cur_time_ind))
+      }
+      return(psurv)
+    }
+
+    sim_results_cov <- vector(mode = 'list', length = length(covnames))
+    names(sim_results_cov) <- covnames
+    for (covname in covnames){
+      covtype <- covtypes[which(covname == covnames)]
+      if (covtype != 'categorical'){
+        cov_means <- rep(NA, length = time_points)
+        for (i in 0:(time_points - 1)){
+          cur_time_ind <- nat_pool[[time_name]] == i
+          psurv <- get_weights(weights = weights, cur_time_ind = cur_time_ind)
+          cov_means[i+1] <- mean(nat_pool[cur_time_ind][[covname]] * psurv) / mean(psurv)
+        }
+      } else {
+        all_levels <- levels(obs_data[[covname]])
+        cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
+                                V1 = rep(-1, length = time_points * length(all_levels)))
+        cov_means[, (covname)] <- rep(all_levels, times = time_points)
+        cov_means$legend <- 'parametric g-formula estimates'
+        row_ind <- 1
+        for (i in 0:(time_points - 1)){
+          cur_time_ind <- nat_pool[[time_name]] == i
+          psurv <- get_weights(weights = weights, cur_time_ind = cur_time_ind)
+          for (level in all_levels){
+            cov_means[row_ind, 'V1'] <- mean((nat_pool[cur_time_ind][[covname]] == level) * psurv) / mean(psurv)
+            row_ind <- row_ind + 1
+          }
+        }
+      }
+      sim_results_cov[[covname]] <- cov_means
+    }
+    return(sim_results_cov)
+  }
+
+  if (censor & outcome_type == 'survival'){
+    # Calculate weighted mean simulated values at each time point for covariates
+    sim_results_cov <- get_sim_cov_means(weights = TRUE)
+  } else {
+    # Calculate mean simulated values at each time point for covariates
+    sim_results_cov <- get_sim_cov_means(weights = FALSE)
+  }
+
   if (outcome_type == 'survival'){
     sim_results_surv <- tapply(nat_pool$survival, nat_pool[[time_name]], FUN = mean)
     sim_results <- list(sim_results_cov, nat_result, sim_results_surv)
@@ -256,19 +357,12 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
     sim_results <- list(sim_results_cov)
   }
 
+
   # Generate data tables for plotting each covariate
   dt_cov_plot <- lapply(seq_along(covnames), FUN = function(i){
     covname <- covnames[i]
     if (covtypes[i] == 'categorical'){
-      sub_obs_data <- obs_data[obs_data[[time_name]] < time_points &
-                                 obs_data[[time_name]] >= 0,
-                               summary(eval(parse(text = covname))), by = time_name]
-      sub_obs_data[, (covname) := rep(levels(obs_data[[covname]]), time_points)]
-      sub_obs_data[, 'legend' := 'nonparametric estimates']
-      sub_est_data <- nat_pool[, summary(eval(parse(text = covname))), by = time_name]
-      sub_est_data[, (covname) := rep(levels(nat_pool[[covname]]), time_points)]
-      sub_est_data[, 'legend' := 'parametric g-formula estimates']
-      comb_data <- rbind(sub_est_data, sub_obs_data)
+      comb_data <- rbind(sim_results[[1]][[covname]], obs_results[[1]][[covname]])
       names(comb_data)[names(comb_data) == time_name] <- "t0"
       comb_data
     } else if (covtypes[i] == 'categorical time'){

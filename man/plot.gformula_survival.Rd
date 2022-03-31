@@ -62,7 +62,7 @@ An object of class "ggarrange". See documentation of \code{\link[ggpubr]{ggarran
 \description{
 This function generates graphs of the mean simulated vs. observed values at each time point of the
 time-varying covariates, risk, and survival under the natural course. For categorical covariates,
-the observed and simulated counts of the levels of the factors are plotted at each time point.
+the observed and simulated probability of each level are plotted at each time point.
 }
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a

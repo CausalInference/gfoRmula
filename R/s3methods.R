@@ -194,7 +194,7 @@ print.summary.gformula <- function(x, all_times = TRUE, coefficients = FALSE,
 #'
 #' This function generates graphs of the mean simulated vs. observed values at each time point of the
 #' time-varying covariates, risk, and survival under the natural course. For categorical covariates,
-#' the observed and simulated counts of the levels of the factors are plotted at each time point.
+#' the observed and simulated probability of each level are plotted at each time point.
 #'
 #' @param x Object of class "gformula_survival".
 #' @param covnames Vector of character strings specifying the names of the time-varying covariates to be plotted. The ordering of covariates given here is used in the plot grid. Time-varying covariates of type \code{"categorical time"} cannot be included. To plot none of the time-varying covariates, set this argument to \code{NA}. By default, this argument is set equal to the \code{covnames} argument used in \code{\link{gformula_survival}}, where covariates of type 'categorical time' are removed.
@@ -293,7 +293,7 @@ plot.gformula_survival <- function(x, covnames = NULL, risk = TRUE,
     xlab <- x$time_name
   }
   if (is.null(ylab_cov)){
-    ylab_cov <- ifelse(covtypes == 'categorical', paste(covnames, "counts"), paste(covnames))
+    ylab_cov <- ifelse(covtypes == 'categorical', paste(covnames, "means"), paste(covnames))
   }
 
   if (length(covnames)>1 || !is.na(covnames)){
@@ -352,7 +352,7 @@ plot.gformula_survival <- function(x, covnames = NULL, risk = TRUE,
 #'
 #' This function generates graphs of the mean simulated vs. observed values at each time point of the
 #' time-varying covariates under the natural course. For categorical covariates,
-#' the observed and simulated counts of the levels of the factors are plotted at each time point.
+#' the observed and simulated probability of each level are plotted at each time point.
 #'
 #'
 #' @param x Object of class "gformula_continuous_eof".
@@ -441,7 +441,7 @@ plot.gformula_continuous_eof <- function(x, covnames = NULL, ncol = NULL, nrow =
     xlab <- x$time_name
   }
   if (is.null(ylab_cov)){
-    ylab_cov <- ifelse(covtypes == 'categorical', paste(covnames, "counts"), paste(covnames))
+    ylab_cov <- ifelse(covtypes == 'categorical', paste(covnames, "means"), paste(covnames))
   }
 
   plotlist <- get_cvgrphs(x, covnames, covtypes, xlab, ylab_cov)
@@ -470,7 +470,7 @@ plot.gformula_continuous_eof <- function(x, covnames = NULL, ncol = NULL, nrow =
 #'
 #' This function generates graphs of the mean simulated vs. observed values at each time point of the
 #' time-varying covariates under the natural course. For categorical covariates,
-#' the observed and simulated counts of the levels of the factors are plotted at each time point.
+#' the observed and simulated probability of each level are plotted at each time point.
 #'
 #' @param x Object of class "gformula_binary_eof".
 #' @param covnames Vector of character strings specifying the names of the time-varying covariates to be plotted. The ordering of covariates given here is used in the plot grid. Time-varying covariates of type \code{"categorical time"} cannot be included. By default, this argument is set equal to the \code{covnames} argument used in \code{\link{gformula_binary_eof}}, where covariates of type \code{"categorical time"} are removed.
@@ -561,7 +561,7 @@ plot.gformula_binary_eof <- function(x, covnames = NULL, ncol = NULL, nrow = NUL
     xlab <- x$time_name
   }
   if (is.null(ylab_cov)){
-    ylab_cov <- ifelse(covtypes == 'categorical', paste(covnames, "counts"), paste(covnames))
+    ylab_cov <- ifelse(covtypes == 'categorical', paste(covnames, "means"), paste(covnames))
   }
 
   plotlist <- get_cvgrphs(x, covnames, covtypes, xlab, ylab_cov)

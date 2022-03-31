@@ -3,12 +3,24 @@
 #' Based on an observed data set, this function estimates the risk over time (for survival outcomes),
 #' outcome mean at end-of-follow-up (for continuous end-of-follow-up outcomes), or outcome probability at
 #' end-of-follow-up (for binary end-of-follow-up outcomes) under multiple user-specified interventions using
-#' the parametric g-formula. See Lin et al. (2019) for further details concerning the application and
+#' the parametric g-formula. See McGrath et al. (2020) for further details concerning the application and
 #' implementation of the parametric g-formula.
+#'
+#' The natural course estimates can be used to assess model misspecification of the parametric g-formula.
+#' Specifically, analysts can use inverse probability (IP) weighting to estimate the natural course risk and/or means of the time-varying covariates from the observed data and compare these IP-weighted estimates with the parametric g-formula estimates.
+#' Large differences between the natural course estimates by IP weighting and those by the parametric g-formula suggest serious model misspecification—either (i) models used for the parametric g-formula or (ii) the censoring model used for IP weighting.
+#' See Chiu et al. (2022) for details.
+#'
+#' To obtain IP-weighted estimates of the natural course risk and/or means of the time-varying covariates from the observed data, the following additions (beyond those described in McGrath et al. (2020)) to the input data set and the call to the \code{gformula} function are needed.
+#' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
+#' Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
+#' When competing events are present, users need to include a column in \code{obs_data} with a time-varying indicator of the competing event variable and need to indicate the name of the competing event variable and the corresponding model statement with parameters \code{compevent_name} and \code{compevent_model}, respectively.
+#' Users can indicate whether to treat competing events as censoring events with the \code{eliminate_compevent} parameter.
+#' Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
 #' @param time_points             Number of time points to simulate. By default, this argument is set equal to the maximum
-#'                                number of records that \code{obs_data} contains for any individual.
+#'                                number of records that \code{obs_data} contains for any individual plus 1.
 #' @param obs_data                Data table containing the observed data.
 #' @param seed                    Starting seed for simulations and bootstrapping.
 #' @param nsimul                  Number of subjects for whom to simulate data. By default, this argument is set
@@ -16,6 +28,8 @@
 #' @param time_name               Character string specifying the name of the time variable in \code{obs_data}.
 #' @param outcome_name            Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param compevent_name          Character string specifying the name of the competing event variable in \code{obs_data}. Only applicable for survival outcomes.
+#' @param censor_name             Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
+#' @param censor_model            Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param outcome_type            Character string specifying the "type" of outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
 #' @param intvars                 List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 #'                                on in each round of the simulation under the kth intervention in \code{interventions}.
@@ -83,6 +97,10 @@
 #'                                of consecutive visits that can be missed before an
 #'                                individual is censored. The default is \code{NA}.
 #' @param compevent_model         Model statement for the competing event variable. The default is \code{NA}. Only applicable for survival outcomes.
+#' @param eliminate_compevent     Logical scalar indicating whether to estimate the counterfactual risk by eliminating competing events.
+#'                                This argument is only applicable for survival outcomes and when a competing even model is supplied (i.e., \code{compevent_name} and \code{compevent_model} are specified).
+#'                                If this argument is set to \code{TRUE}, the competing event model will only be used to construct inverse probability weights to estimate the natural course means / risk from the observed data.
+#'                                If this argument is set to \code{FALSE}, the competing event model will be used in the parametric g-formula estimates of the risk and will not be used to construct inverse probability weights. See "Details". The default is \code{FALSE}.
 #' @param intcomp                 List of two numbers indicating a pair of interventions to be compared by a hazard ratio.
 #'                                The default is \code{NA}, resulting in no hazard ratio calculation.
 #' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
@@ -103,6 +121,7 @@
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
+#' @param ipw_cutoff              Percentile by which to truncate inverse probability weights. The default is \code{1} (i.e., no truncation). See "Details".
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
 #' \item{result}{Results table. For survival outcomes, this contains the estimated risk, risk difference, and risk ratio for all interventions (inculding the natural course) at each time point. For continuous end-of-follow-up outcomes, this contains estimated mean outcome, mean difference, and mean ratio for all interventions (inculding natural course) at the last time point. For binary end-of-follow-up outcomes, this contains the estimated outcome probability, probability difference, and probability ratio for all interventions (inculding natural course) at the last time point. If bootstrapping was used, the results table includes the bootstrap risk / mean / probability difference, ratio, standard error, and 95\% confidence interval.}
@@ -120,6 +139,7 @@
 #'
 #' The results for the g-formula simulation are printed with the \code{\link{print.gformula_survival}}, \code{\link{print.gformula_continuous_eof}}, and \code{\link{print.gformula_binary_eof}} functions. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}}, \code{\link{plot.gformula_continuous_eof}}, and \code{\link{plot.gformula_binary_eof}} functions.
 #'
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -293,7 +313,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                      histvars = NULL, histories = NA, basecovs = NA,
                      outcome_name, outcome_type, ymodel,
                      compevent_name = NULL, compevent_model = NA,
-                     compevent2_name = NULL, compevent2_model = NA,
+                     eliminate_compevent = FALSE,
                      censor_name = NULL, censor_model = NA,
                      intvars = NULL, interventions = NULL,
                      int_times = NULL, int_descript = NULL, ref_int = 0, intcomp = NA,
@@ -318,8 +338,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                       ymodel = ymodel,
                       compevent_name = compevent_name,
                       compevent_model = compevent_model,
-                      compevent2_name = compevent2_name,
-                      compevent2_model = compevent2_model,
+                      eliminate_compevent = eliminate_compevent,
                       censor_name = censor_name,
                       censor_model = censor_model,
                       intvars = intvars, interventions = interventions,
@@ -385,7 +404,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' Estimation of Survival Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this internal function estimates the risk over time under multiple
-#' user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
+#' user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -398,6 +417,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param time_name               Character string specifying the name of the time variable in \code{obs_data}.
 #' @param outcome_name            Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param compevent_name          Character string specifying the name of the competing event variable in \code{obs_data}.
+#' @param censor_name             Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
+#' @param censor_model            Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param intvars                 List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 #'                                on in each round of the simulation under the kth intervention in \code{interventions}.
 #' @param interventions           List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
@@ -464,6 +485,10 @@ gformula <- function(obs_data, id, time_points = NULL,
 #'                                of consecutive visits that can be missed before an
 #'                                individual is censored. The default is \code{NA}.
 #' @param compevent_model         Model statement for the competing event variable. The default is \code{NA}.
+#' @param eliminate_compevent     Logical scalar indicating whether to estimate the counterfactual risk by eliminating competing events.
+#'                                This argument is only applicable for survival outcomes and when a competing even model is supplied (i.e., \code{compevent_name} and \code{compevent_model} are specified).
+#'                                If this argument is set to \code{TRUE}, the competing event model will only be used to construct inverse probability weights to estimate the natural course means / risk from the observed data.
+#'                                If this argument is set to \code{FALSE}, the competing event model will be used in the parametric g-formula estimates of the risk and will not be used to construct inverse probability weights. See "Details".
 #' @param intcomp                 List of two numbers indicating a pair of interventions to be compared by a hazard ratio.
 #'                                The default is \code{NA}, resulting in no hazard ratio calculation.
 #' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
@@ -484,6 +509,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
+#' @param ipw_cutoff              Percentile by which to truncate inverse probability weights. When censoring models are provided (i.e., \code{censor_name} and \code{censor_model} are provided), the inverse probability weights are used to estimate the natural course means / risk from the observed data. The default is \code{1} (i.e., no truncation).
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
 #' \item{result}{Results table containing the estimated risk and risk ratio for all interventions (inculding the natural course) at each time point. If bootstrapping was used, the results table includes the bootstrap mean risk ratio, standard error, and 95\% confidence interval.}
@@ -502,6 +528,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' The results for the g-formula simulation under various interventions only for the first and last time points are printed with the \code{\link{print.gformula_survival}} function. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}} function.
 #'
 #' @seealso \code{\link{gformula}}
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -596,7 +623,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               histvars = NULL, histories = NA, basecovs = NA,
                               outcome_name, ymodel,
                               compevent_name = NULL, compevent_model = NA,
-                              compevent2_name = NULL, compevent2_model = NA,
+                              eliminate_compevent = FALSE,
                               censor_name = NULL, censor_model = NA,
                               intvars = NULL, interventions = NULL,
                               int_times = NULL, int_descript = NULL, ref_int = 0, intcomp = NA,
@@ -633,7 +660,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                    cumavg_indicator = cumavg_indicator)
 
   comprisk <- !(length(compevent_model) == 1 && is.na(compevent_model))
-  comprisk2 <- !(length(compevent2_model) == 1 && is.na(compevent2_model))
   censor <- !(length(censor_model) == 1 && is.na(censor_model))
 
   if (!missing(threads)){
@@ -656,6 +682,14 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, covmodels = covparams$covmodels,
               histvals = histvals)
+
+
+  if (comprisk & eliminate_compevent){
+    comprisk2 <- TRUE; compevent2_name <- compevent_name; compevent2_model <- compevent_model
+    comprisk <- FALSE; compevent_name <- NULL; compevent_model <- NA
+  } else {
+    comprisk2 <- FALSE; compevent2_name <- NULL; compevent2_model <- NA
+  }
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0
@@ -1222,7 +1256,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' Estimation of Continuous End-of-Follow-Up Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this internal function estimates the outcome mean at end-of-follow-up under
-#' multiple user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
+#' multiple user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -1327,6 +1361,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_continuous_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{print.gformula_continuous_eof}} function.
 #'
 #' @seealso \code{\link{gformula}}
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -1399,7 +1434,8 @@ gformula_continuous_eof <- function(obs_data, id,
   }
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
-  comprisk = FALSE
+
+  comprisk <- FALSE; comprisk2 <- FALSE
   censor <- FALSE
 
   if (!missing(threads)){
@@ -1409,8 +1445,8 @@ gformula_continuous_eof <- function(obs_data, id,
     threads <- getDTthreads()
   }
   outcome_type <- 'continuous_eof'
-  compevent_model <- NA
-  compevent_name <- NULL
+  compevent_model <- NA; compevent2_model <- NA
+  compevent_name <- NULL; compevent2_name <- NULL
   compevent_restrictions <- NA
   censor_model <- NA
   censor_name <- NULL
@@ -1737,6 +1773,7 @@ gformula_continuous_eof <- function(obs_data, id,
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
                              compevent_name = compevent_name,
+                             compevent2_name = compevent2_name,
                              censor_name = censor_name,
                              time_name = time_name,
                              time_points = time_points,
@@ -1745,6 +1782,7 @@ gformula_continuous_eof <- function(obs_data, id,
                              nat_pool = nat_pool,
                              nat_result = nat_result,
                              comprisk = comprisk,
+                             comprisk2 = comprisk2,
                              censor = censor,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample)
@@ -1890,7 +1928,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' Estimation of Binary End-of-Follow-Up Outcome Under the Parametric G-Formula
 #'
 #' Based on an observed data set, this internal function estimates the outcome probability at
-#' end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
+#' end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -1995,6 +2033,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_binary_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{plot.gformula_binary_eof}} function.
 #'
 #' @seealso \code{\link{gformula}}
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -2068,8 +2107,8 @@ gformula_binary_eof <- function(obs_data, id,
   }
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
-  comprisk = FALSE
-  comprisk <- FALSE
+  comprisk <- FALSE; comprisk2 <- FALSE
+  censor <- FALSE
 
   if (!missing(threads)){
     setDTthreads(threads = threads)
@@ -2078,8 +2117,8 @@ gformula_binary_eof <- function(obs_data, id,
     threads <- getDTthreads()
   }
   outcome_type <- 'binary_eof'
-  compevent_model <- NA
-  compevent_name <- NULL
+  compevent_model <- NA; compevent2_model <- NA
+  compevent_name <- NULL; compevent2_name <- NULL
   compevent_restrictions <- NA
   censor_model <- NA
   censor_name <- NULL
@@ -2402,6 +2441,7 @@ gformula_binary_eof <- function(obs_data, id,
 
   plot_info <- get_plot_info(outcome_name = outcome_name,
                              compevent_name = compevent_name,
+                             compevent2_name = compevent2_name,
                              censor_name = censor_name,
                              time_name = time_name,
                              time_points = time_points,
@@ -2410,6 +2450,7 @@ gformula_binary_eof <- function(obs_data, id,
                              nat_pool = nat_pool,
                              nat_result = nat_result,
                              comprisk = comprisk,
+                             comprisk2 = comprisk2,
                              censor = censor,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample)

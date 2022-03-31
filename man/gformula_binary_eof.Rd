@@ -179,7 +179,7 @@ The results for the g-formula simulation under various interventions for the las
 }
 \description{
 Based on an observed data set, this internal function estimates the outcome probability at
-end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
+end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 further details concerning the application and implementation of the parametric g-formula.
 }
 \examples{
@@ -227,6 +227,8 @@ gform_bin_eof
 
 }
 \references{
+Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
+
 McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 
 Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].

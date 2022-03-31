@@ -21,6 +21,9 @@ gformula_survival(
   ymodel,
   compevent_name = NULL,
   compevent_model = NA,
+  eliminate_compevent = FALSE,
+  censor_name = NULL,
+  censor_model = NA,
   intvars = NULL,
   interventions = NULL,
   int_times = NULL,
@@ -43,6 +46,7 @@ gformula_survival(
   model_fits = FALSE,
   boot_diag = FALSE,
   show_progress = TRUE,
+  ipw_cutoff = NULL,
   ...
 )
 }
@@ -94,6 +98,15 @@ in \code{histories} is to be applied.}
 \item{compevent_name}{Character string specifying the name of the competing event variable in \code{obs_data}.}
 
 \item{compevent_model}{Model statement for the competing event variable. The default is \code{NA}.}
+
+\item{eliminate_compevent}{Logical scalar indicating whether to estimate the counterfactual risk by eliminating competing events.
+This argument is only applicable for survival outcomes and when a competing even model is supplied (i.e., \code{compevent_name} and \code{compevent_model} are specified).
+If this argument is set to \code{TRUE}, the competing event model will only be used to construct inverse probability weights to estimate the natural course means / risk from the observed data.
+If this argument is set to \code{FALSE}, the competing event model will be used in the parametric g-formula estimates of the risk and will not be used to construct inverse probability weights. See "Details".}
+
+\item{censor_name}{Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".}
+
+\item{censor_model}{Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".}
 
 \item{intvars}{List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 on in each round of the simulation under the kth intervention in \code{interventions}.}
@@ -181,6 +194,8 @@ In many applications, users may wish to set this argument equal to \code{paralle
 
 \item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.}
 
+\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights. When censoring models are provided (i.e., \code{censor_name} and \code{censor_model} are provided), the inverse probability weights are used to estimate the natural course means / risk from the observed data. The default is \code{1} (i.e., no truncation).}
+
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }
 \value{
@@ -202,7 +217,7 @@ The results for the g-formula simulation under various interventions only for th
 }
 \description{
 Based on an observed data set, this internal function estimates the risk over time under multiple
-user-specified interventions using the parametric g-formula. See Lin et al. (2019) for
+user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 further details concerning the application and implementation of the parametric g-formula.
 }
 \examples{
@@ -291,6 +306,8 @@ gform_basic
 
 }
 \references{
+Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
+
 McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 
 Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
