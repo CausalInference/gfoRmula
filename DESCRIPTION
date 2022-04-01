@@ -37,7 +37,7 @@ Description: Implements the parametric g-formula algorithm of Robins (1986)
     survival outcomes; 5) a random measurement/visit process; 6) joint 
     interventions on multiple treatments; and 7) general incorporation of a 
     priori knowledge of the data structure.
-Depends: R (>= 3.4.0)
+Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

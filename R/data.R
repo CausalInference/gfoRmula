@@ -91,3 +91,20 @@
 #'   \item{Y}{Continuous outcome of interest. Because this outcome is only defined at the end of follow-up, values of \code{NA} are given in all other time points.}
 #' }
 "continuous_eofdata_pb"
+
+#' Example Dataset for a Survival Outcome with an Indicator of Censoring Variable
+#'
+#' A dataset consisting of 118,725 observations on 20,000 individuals over 10 time points. Each row in the dataset corresponds to the record of one individual at one time point.
+#'
+#' @docType data
+#'
+#' @format A data table with 22,500 rows and 7 variables:
+#' \describe{
+#'   \item{t0}{Time index.}
+#'   \item{id}{Unique identifier for each individual.}
+#'   \item{L}{Binary time-varying covariate.}
+#'   \item{A}{Continuous treatment variable.}
+#'   \item{C}{Censoring indicator.}
+#'   \item{Y}{Outcome of interest; time-varying indicator of failure.}
+#' }
+"censor_data"

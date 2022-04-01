@@ -316,6 +316,30 @@ gform_basic <- gformula_survival(obs_data = basicdata, id = id,
 gform_basic
 }
 
+## Using IP weighting to estimate natural course risk
+## Only the natural course intervention is included for simplicity
+\donttest{
+covnames <- c('L', 'A')
+histories <- c(lagged)
+histvars <- list(c('A', 'L'))
+ymodel <- Y ~ L + A
+covtypes <- c('binary', 'normal')
+covparams <- list(covmodels = c(L ~ lag1_L + lag1_A,
+                                A ~ lag1_L + L + lag1_A))
+censor_name <- 'C'
+censor_model <- C ~ L
+res_censor <- gformula(obs_data = censor_data, id = 'id',
+                       time_name = 't0', covnames = covnames,
+                       outcome_name = 'Y', outcome_type = 'survival',
+                       censor_name = censor_name, censor_model = censor_model,
+                       covtypes = covtypes,
+                       covparams = covparams, ymodel = ymodel,
+                       intvars = NULL, interventions = NULL, int_descript = NULL,
+                       histories = histories, histvars = histvars,
+                       seed = 1234)
+plot(res_censor)
+}
+
 }
 \references{
 Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
