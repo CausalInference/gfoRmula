@@ -363,6 +363,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                             histvars = histvars,
                             histories = histories, basecovs = basecovs,
                             outcome_name = outcome_name, ymodel = ymodel,
+                            censor_name = censor_name,
+                            censor_model = censor_model,
                             intvars = intvars, interventions = interventions,
                             int_times = int_times, int_descript = int_descript,
                             ref_int = ref_int,
@@ -374,7 +376,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                             parallel = parallel, ncores = ncores,
                             ci_method = ci_method, threads = threads,
                             model_fits = model_fits, boot_diag = boot_diag,
-                            show_progress = show_progress, ...)
+                            show_progress = show_progress, ipw_cutoff = ipw_cutoff, ...)
   } else if (outcome_type == 'binary_eof'){
     gformula_binary_eof(obs_data = obs_data, id = id,
                         time_name = time_name, covnames = covnames,
@@ -384,6 +386,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                         histvars = histvars, histories = histories,
                         basecovs = basecovs, outcome_name = outcome_name,
                         ymodel = ymodel, intvars = intvars,
+                        censor_name = censor_name,
+                        censor_model = censor_model,
                         interventions = interventions, int_times = int_times,
                         int_descript = int_descript,
                         ref_int = ref_int, visitprocess = visitprocess,
@@ -394,8 +398,7 @@ gformula <- function(obs_data, id, time_points = NULL,
                         ncores = ncores,
                         ci_method = ci_method, threads = threads,
                         model_fits = model_fits, boot_diag = boot_diag,
-                        show_progress = show_progress,
-                        ...)
+                        show_progress = show_progress, ipw_cutoff = ipw_cutoff, ...)
   }
 }
 
@@ -1137,6 +1140,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     }
     resultdf[, 'obs_risk' := obs_results[[2]]]
   }
+  obs_risk_name <- ifelse(censor, 'IP weighted risk', 'NP Risk')
   if (nsamples > 0){
     colnames(resultdf) <- c("k", "Interv.", "g-form risk",
                             "Risk SE", "Risk lower 95% CI",
@@ -1145,8 +1149,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                             "RR lower 95% CI", "RR upper 95% CI",
                             "Risk difference", "RD SE",
                             "RD lower 95% CI", "RD upper 95% CI",
-                            "NP risk")
-    setcolorder(resultdf, c("k", "Interv.", "NP risk", "g-form risk",
+                            obs_risk_name)
+    setcolorder(resultdf, c("k", "Interv.", obs_risk_name, "g-form risk",
                             "Risk SE",
                             "Risk lower 95% CI", "Risk upper 95% CI",
                             "Risk ratio", "RR SE",
@@ -1155,8 +1159,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                             "RD lower 95% CI", "RD upper 95% CI"))
   } else {
     colnames(resultdf) <- c("k", "Interv.", "g-form risk", "Risk ratio",
-                            "Risk difference", "NP risk")
-    setcolorder(resultdf, c("k", "Interv.", "NP risk", "g-form risk",
+                            "Risk difference", obs_risk_name)
+    setcolorder(resultdf, c("k", "Interv.", obs_risk_name, "g-form risk",
                             "Risk ratio", "Risk difference"))
   }
 
@@ -1412,6 +1416,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                     covpredict_custom = NA, histvars = NULL,
                                     histories = NA, basecovs = NA,
                                     outcome_name, ymodel,
+                                    censor_name = NULL, censor_model = NA,
                                     intvars = NULL, interventions = NULL,
                                     int_times = NULL, int_descript = NULL, ref_int = 0,
                                     visitprocess = NA, restrictions = NA,
@@ -1420,7 +1425,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                     parallel = FALSE, ncores = NA,
                                     ci_method = 'percentile', threads,
                                     model_fits = FALSE, boot_diag = FALSE,
-                                    show_progress = TRUE, ...){
+                                    show_progress = TRUE, ipw_cutoff = NULL, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -1432,11 +1437,16 @@ gformula_continuous_eof <- function(obs_data, id,
     lagavg_indicator <- update_lagavg_indicator(ymodel, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(ymodel, cumavg_indicator)
   }
+  if (!(length(censor_model) == 1 && is.na(censor_model))){
+    lag_indicator <- update_lag_indicator(censor_model, lag_indicator)
+    lagavg_indicator <- update_lagavg_indicator(censor_model, lagavg_indicator)
+    cumavg_indicator <- update_cumavg_indicator(censor_model, cumavg_indicator)
+  }
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
 
   comprisk <- FALSE; comprisk2 <- FALSE
-  censor <- FALSE
+  censor <- !(length(censor_model) == 1 && is.na(censor_model))
 
   if (!missing(threads)){
     setDTthreads(threads = threads)
@@ -1448,8 +1458,6 @@ gformula_continuous_eof <- function(obs_data, id,
   compevent_model <- NA; compevent2_model <- NA
   compevent_name <- NULL; compevent2_name <- NULL
   compevent_restrictions <- NA
-  censor_model <- NA
-  censor_name <- NULL
   hazardratio <- FALSE
   intcomp <- NA
 
@@ -1569,6 +1577,11 @@ gformula_continuous_eof <- function(obs_data, id,
   }
   fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
                      model_fits = model_fits)
+  if (censor){
+    fitC <- pred_fun_D(censor_model, NA, obs_data_geq_0, model_fits = model_fits)
+  } else {
+    fitC <- NA
+  }
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -1784,8 +1797,10 @@ gformula_continuous_eof <- function(obs_data, id,
                              comprisk = comprisk,
                              comprisk2 = comprisk2,
                              censor = censor,
+                             fitC = fitC,
                              outcome_type = outcome_type,
-                             obs_data = obs_data_noresample)
+                             obs_data = obs_data_noresample,
+                             ipw_cutoff = ipw_cutoff)
   obs_results <- plot_info$obs_results
 
   # Generate results table
@@ -1830,7 +1845,7 @@ gformula_continuous_eof <- function(obs_data, id,
   }
 
   resultdf$obs_risk <- c(utils::tail(obs_results[[2]], 1), rep(NA, dim(resultdf)[1] - 1))
-
+  obs_mean_name <- ifelse(censor, 'IP weighted mean', 'NP mean')
   if (nsamples > 0){
     colnames(resultdf) <- c("k", "Interv.", "g-form mean",
                             "Mean SE",
@@ -1839,8 +1854,8 @@ gformula_continuous_eof <- function(obs_data, id,
                             "MR SE", "MR lower 95% CI", "MR upper 95% CI",
                             "Mean difference",
                             "MD SE", "MD lower 95% CI", "MD upper 95% CI",
-                            "NP mean")
-    setcolorder(resultdf, c("k", "Interv.", "NP mean", "g-form mean",
+                            obs_mean_name)
+    setcolorder(resultdf, c("k", "Interv.", obs_mean_name, "g-form mean",
                             "Mean SE",
                             "Mean lower 95% CI", "Mean upper 95% CI",
                             "Mean ratio",
@@ -1849,8 +1864,8 @@ gformula_continuous_eof <- function(obs_data, id,
                             "MD SE", "MD lower 95% CI", "MD upper 95% CI"))
   } else {
     colnames(resultdf) <- c("k", "Interv.", "g-form mean", "Mean ratio",
-                            "Mean difference", "NP mean")
-    setcolorder(resultdf, c("k", "Interv.", "NP mean", "g-form mean",
+                            "Mean difference", obs_mean_name)
+    setcolorder(resultdf, c("k", "Interv.", obs_mean_name, "g-form mean",
                             "Mean ratio", "Mean difference"))
   }
 
@@ -1860,6 +1875,10 @@ gformula_continuous_eof <- function(obs_data, id,
     names(fits)[length(fits)] <- outcome_name
   } else {
     fits <- list(fitY)
+  }
+  if (!is.na(fitC)[[1]]){
+    fits[[length(fits) + 1]] <- fitC
+    names(fits)[length(fits)] <- censor_name
   }
 
   # Add list of coefficients for covariates, outcome variable, and competing event
@@ -2085,6 +2104,7 @@ gformula_binary_eof <- function(obs_data, id,
                                 time_name, covnames, covtypes, covparams,
                                 covfits_custom = NA, covpredict_custom = NA,
                                 histvars = NULL, histories = NA, basecovs = NA,
+                                censor_name = NULL, censor_model = NA,
                                 outcome_name, ymodel, intvars = NULL,
                                 interventions = NULL, int_times = NULL, int_descript = NULL,
                                 ref_int = 0, visitprocess = NA,
@@ -2093,7 +2113,7 @@ gformula_binary_eof <- function(obs_data, id,
                                 nsamples = 0, parallel = FALSE, ncores = NA,
                                 ci_method = 'percentile', threads,
                                 model_fits = FALSE, boot_diag = FALSE,
-                                show_progress = TRUE, ...){
+                                show_progress = TRUE, ipw_cutoff = NULL, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -2105,10 +2125,15 @@ gformula_binary_eof <- function(obs_data, id,
     lagavg_indicator <- update_lagavg_indicator(ymodel, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(ymodel, cumavg_indicator)
   }
+  if (!(length(censor_model) == 1 && is.na(censor_model))){
+    lag_indicator <- update_lag_indicator(censor_model, lag_indicator)
+    lagavg_indicator <- update_lagavg_indicator(censor_model, lagavg_indicator)
+    cumavg_indicator <- update_cumavg_indicator(censor_model, cumavg_indicator)
+  }
   histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
   comprisk <- FALSE; comprisk2 <- FALSE
-  censor <- FALSE
+  censor <- !(length(censor_model) == 1 && is.na(censor_model))
 
   if (!missing(threads)){
     setDTthreads(threads = threads)
@@ -2120,8 +2145,6 @@ gformula_binary_eof <- function(obs_data, id,
   compevent_model <- NA; compevent2_model <- NA
   compevent_name <- NULL; compevent2_name <- NULL
   compevent_restrictions <- NA
-  censor_model <- NA
-  censor_name <- NULL
   hazardratio <- FALSE
   intcomp <- NA
 
@@ -2236,6 +2259,11 @@ gformula_binary_eof <- function(obs_data, id,
   }
   fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
                      model_fits = model_fits)
+  if (censor){
+    fitC <- pred_fun_D(censor_model, NA, obs_data_geq_0, model_fits = model_fits)
+  } else {
+    fitC <- NA
+  }
 
   obs_data_noresample <- copy(obs_data)
   len <- length(unique(obs_data$newid))
@@ -2452,8 +2480,10 @@ gformula_binary_eof <- function(obs_data, id,
                              comprisk = comprisk,
                              comprisk2 = comprisk2,
                              censor = censor,
+                             fitC = fitC,
                              outcome_type = outcome_type,
-                             obs_data = obs_data_noresample)
+                             obs_data = obs_data_noresample,
+                             ipw_cutoff = ipw_cutoff)
   obs_results <- plot_info$obs_results
 
   # Generate results table
@@ -2498,7 +2528,7 @@ gformula_binary_eof <- function(obs_data, id,
   }
 
   resultdf[, 'obs_risk' := c(utils::tail(obs_results[[2]], 1), rep(NA, dim(resultdf)[1] - 1))]
-
+  obs_mean_name <- ifelse(censor, 'IP weighted mean', 'NP mean')
   if (nsamples > 0){
     colnames(resultdf) <- c("k", "Interv.", "g-form mean",
                             "Mean SE",
@@ -2507,8 +2537,8 @@ gformula_binary_eof <- function(obs_data, id,
                             "MR SE", "MR lower 95% CI", "MR upper 95% CI",
                             "Mean difference",
                             "MD SE", "MD lower 95% CI", "MD upper 95% CI",
-                            "NP mean")
-    setcolorder(resultdf, c("k", "Interv.", "NP mean", "g-form mean",
+                            obs_mean_name)
+    setcolorder(resultdf, c("k", "Interv.", obs_mean_name, "g-form mean",
                             "Mean SE",
                             "Mean lower 95% CI", "Mean upper 95% CI",
                             "Mean ratio",
@@ -2517,8 +2547,8 @@ gformula_binary_eof <- function(obs_data, id,
                             "MD SE", "MD lower 95% CI", "MD upper 95% CI"))
   } else {
     colnames(resultdf) <- c("k", "Interv.", "g-form mean", "Mean ratio",
-                            "Mean difference", "NP mean")
-    setcolorder(resultdf, c("k", "Interv.", "NP mean", "g-form mean",
+                            "Mean difference", obs_mean_name)
+    setcolorder(resultdf, c("k", "Interv.", obs_mean_name, "g-form mean",
                             "Mean ratio", "Mean difference"))
   }
 
@@ -2528,6 +2558,10 @@ gformula_binary_eof <- function(obs_data, id,
     names(fits)[length(fits)] <- outcome_name
   } else {
     fits <- list(fitY)
+  }
+  if (!is.na(fitC)[[1]]){
+    fits[[length(fits) + 1]] <- fitC
+    names(fits)[length(fits)] <- censor_name
   }
 
   # Add list of coefficients for covariates, outcome variable, and competing event

@@ -40,7 +40,8 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
         cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
                                 V1 = rep(-1, length = time_points * length(all_levels)))
         cov_means[, (covname)] <- rep(all_levels, times = time_points)
-        cov_means$legend <- 'nonparametric estimates'
+        obs_est_name <- ifelse(censor, 'IP weighted estimates', 'nonparametric estimates')
+        cov_means$legend <- obs_est_name
         row_ind <- 1
         for (i in 0:(time_points - 1)){
           cur_time_ind <- obs_data[[time_name]] == i
@@ -342,7 +343,7 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
     return(sim_results_cov)
   }
 
-  if (censor & outcome_type == 'survival'){
+  if (outcome_type == 'survival'){
     # Calculate weighted mean simulated values at each time point for covariates
     sim_results_cov <- get_sim_cov_means(weights = TRUE)
   } else {
@@ -356,7 +357,7 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
   } else {
     sim_results <- list(sim_results_cov)
   }
-
+  obs_est_name <- ifelse(censor, 'IP weighted estimates', 'nonparametric estimates')
 
   # Generate data tables for plotting each covariate
   dt_cov_plot <- lapply(seq_along(covnames), FUN = function(i){
@@ -369,7 +370,7 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
       NA
     } else {
       obs_cov_data <- data.table(t0 = 0:(time_points - 1), cov = obs_results[[1]][[covname]],
-                                 legend = "nonparametric estimates")
+                                 legend = obs_est_name)
       est_cov_data <- data.table(t0 = 0:(time_points - 1), cov = sim_results[[1]][[covname]],
                                  legend = "parametric g-formula estimates")
       comb_data <- rbind(obs_cov_data, est_cov_data)
@@ -384,7 +385,7 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
     obs_risk_data <- data.table(t0 = 0:(time_points - 1),
                                 risk = obs_results[[2]],
                                 survival = obs_results[[3]],
-                                legend = "nonparametric estimates")
+                                legend = obs_est_name)
     est_risk_data <- data.table(t0 = 0:(time_points - 1),
                                 risk = sim_results[[2]],
                                 survival = sim_results[[3]],
