@@ -70,10 +70,13 @@ hr_helper <- function(i, intcomp, time_name, pools){
 #' @param outcome_name            Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param compevent_name          Character string specifying the name of the competing event variable in \code{obs_data}.
 #' @param comprisk                Logical scalar indicating the presence of a competing event.
+#' @param censor                 Logical scalar indicating the presence of a censoring variable in \code{obs_data}.
+#' @param censor_name            Character string specifying the name of the censoring variable in \code{obs_data}.
 #' @param covmodels              Vector of model statements for the time-varying covariates.
 #' @param histvals               List of length 3. First element contains a vector of integers specifying the number of lags back for the lagged function. Second element contains
 #'                               a vector of integers indicating the number of lags back for the lagavg function. The last element is an indicator whether a cumavg term
 #'                               appears in any of the model statements.
+#' @param ipw_cutoff             Percentile by which to truncate inverse probability weights.
 #'
 #' @return                       No value is returned.
 #' @keywords internal
@@ -84,7 +87,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
                         hazardratio, intcomp, time_points, outcome_type,
                         time_name, obs_data, parallel, ncores, nsamples,
                         sim_data_b, outcome_name, compevent_name, comprisk,
-                        covmodels, histvals, min_time){
+                        censor, censor_name, covmodels, histvals, ipw_cutoff){
 
   if (!is.data.table(obs_data)){
     if (is.data.frame(obs_data)){
@@ -112,6 +115,13 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
       stop("Missing parameter compevent_name")
     } else if (!(compevent_name %in% obs_colnames)){
       stop(paste('compevent_name', compevent_name, 'not found in obs_data'))
+    }
+  }
+  if (censor){
+    if (is.null(censor_name)){
+      stop("Missing parameter censor_name")
+    } else if (!(censor_name %in% obs_colnames)){
+      stop(paste('censor_name', censor_name, 'not found in obs_data'))
     }
   }
   if (!missing(covnames)){
@@ -180,6 +190,14 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
       if (is.factor(obs_data[[covnames[k]]])){
         stop("binary covariates must be numeric 0-1")
       }
+    }
+  }
+  all_covtypes <- c('binary', 'normal', 'categorical', 'bounded normal',
+                    'zero-inflated normal', 'truncated normal',
+                    'absorbing', 'categorical time', 'custom')
+  for (covtype in covtypes){
+    if (!(covtype %in% all_covtypes)){
+      stop(paste('covtype', covtype, 'is not one of the valid options'))
     }
   }
 
@@ -305,6 +323,12 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     if (!stringr::str_detect(covnames[i], model_var)){
       stop("covmodels and covnames ordering do not match")
     }
+  }
+  if (!is.numeric(ipw_cutoff)){
+    stop("'ipw_cutoff' must be a numeric variable")
+  }
+  if (ipw_cutoff <= 0 | ipw_cutoff > 1){
+    stop("'ipw_cutoff' must be between 0 and 1")
   }
 }
 

@@ -742,8 +742,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               obs_data = obs_data, parallel = parallel, ncores = ncores,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
-              comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals)
+              comprisk = comprisk, censor = censor, censor_name = censor_name,
+              covmodels = covparams$covmodels,
+              histvals = histvals, ipw_cutoff = ipw_cutoff)
 
 
   if (comprisk & compevent_cens){
@@ -1548,8 +1549,9 @@ gformula_continuous_eof <- function(obs_data, id,
               obs_data = obs_data, parallel = parallel, ncores = ncores,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
-              comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals, min_time = min_time)
+              comprisk = comprisk, censor = censor, censor_name = censor_name,
+              covmodels = covparams$covmodels,
+              histvals = histvals, ipw_cutoff = ipw_cutoff)
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0
@@ -2247,8 +2249,9 @@ gformula_binary_eof <- function(obs_data, id,
               obs_data = obs_data, parallel = parallel, ncores = ncores,
               nsamples = nsamples, sim_data_b = sim_data_b,
               outcome_name = outcome_name, compevent_name = compevent_name,
-              comprisk = comprisk, covmodels = covparams$covmodels,
-              histvals = histvals, min_time = min_time)
+              comprisk = comprisk, censor = censor, censor_name = censor_name,
+              covmodels = covparams$covmodels,
+              histvals = histvals, ipw_cutoff = ipw_cutoff)
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0

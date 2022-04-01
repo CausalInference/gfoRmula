@@ -6,6 +6,10 @@ Package Updates
 -   Added option for users to specify censoring models to compute
     inverse probability weights for estimating the natural course means
     / risk from the observed data
+-   Added data set `censor_data` and a corresponding example application
+    in the documentation to illustrate the application of inverse
+    probability weighting for estimating the natural course means / risk
+    from the observed data
 -   Fixed an error in calculating the means of the time-varying
     covariates under the natural course for survival outcomes
 -   Fixed an error in calculating the observed risk estimates when
