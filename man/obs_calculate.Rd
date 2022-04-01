@@ -27,15 +27,31 @@ obs_calculate(
 
 \item{compevent_name}{Character string specifying the name of the competing event variable in \code{obs_data}.}
 
+\item{compevent2_name}{Character string specifying the name of the competing event variable in \code{obs_data} if competing events are treated as censoring events.}
+
+\item{censor_name}{Character string specifying the name of the censoring variable in \code{obs_data}.}
+
 \item{time_name}{Character string specifying the name of the time variable in \code{obs_data}.}
 
 \item{covnames}{Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.}
 
+\item{covtypes}{Vector of character strings specifying the "type" of each time-varying covariate included in \code{covnames}. The possible "types" are: \code{"binary"}, \code{"normal"}, \code{"categorical"}, \code{"bounded normal"}, \code{"zero-inflated normal"}, \code{"truncated normal"}, \code{"absorbing"}, \code{"categorical time"}, and \code{"custom"}.}
+
 \item{comprisk}{Logical scalar indicating the presence of a competing event.}
+
+\item{comprisk2}{Logical scalar indicating whether competing events are treated as censoring events.}
+
+\item{censor}{Logical scalar indicating the presence of a censoring variable in \code{obs_data}.}
+
+\item{fitD2}{Model fit for the competing event variable if competing events are treated as censoring events.}
+
+\item{fitC}{Model fit for the censoring variable.}
 
 \item{outcome_type}{Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.}
 
 \item{obs_data}{Data table containing the observed data.}
+
+\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights.}
 }
 \value{
 A list. Its first entry is a list of mean covariate values at each time point;

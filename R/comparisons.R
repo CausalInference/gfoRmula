@@ -5,11 +5,19 @@
 #'
 #' @param outcome_name    Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param compevent_name  Character string specifying the name of the competing event variable in \code{obs_data}.
+#' @param compevent2_name Character string specifying the name of the competing event variable in \code{obs_data} if competing events are treated as censoring events.
+#' @param censor_name     Character string specifying the name of the censoring variable in \code{obs_data}.
 #' @param time_name       Character string specifying the name of the time variable in \code{obs_data}.
 #' @param covnames        Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.
+#' @param covtypes        Vector of character strings specifying the "type" of each time-varying covariate included in \code{covnames}. The possible "types" are: \code{"binary"}, \code{"normal"}, \code{"categorical"}, \code{"bounded normal"}, \code{"zero-inflated normal"}, \code{"truncated normal"}, \code{"absorbing"}, \code{"categorical time"}, and \code{"custom"}.
 #' @param comprisk        Logical scalar indicating the presence of a competing event.
+#' @param comprisk2       Logical scalar indicating whether competing events are treated as censoring events.
+#' @param censor          Logical scalar indicating the presence of a censoring variable in \code{obs_data}.
+#' @param fitD2           Model fit for the competing event variable if competing events are treated as censoring events.
+#' @param fitC            Model fit for the censoring variable.
 #' @param outcome_type    Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
 #' @param obs_data        Data table containing the observed data.
+#' @param ipw_cutoff      Percentile by which to truncate inverse probability weights.
 #' @return                A list. Its first entry is a list of mean covariate values at each time point;
 #'                        its second entry is a vector of the mean observed risk (for \code{"survival"}
 #'                        outcome types) or the mean observed outcome (for \code{"continuous_eof"} and
@@ -71,11 +79,10 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
     } else {
       w <- w_c
     }
-    if (is.null(ipw_cutoff)){
-      ipw_cutoff <- 1
+    if (ipw_cutoff != 1){
+      cutoff_w <- stats::quantile(w, probs = ipw_cutoff)
+      w <- pmin(w, cutoff_w)
     }
-    cutoff_w <- stats::quantile(w, probs = ipw_cutoff)
-    w <- pmin(w, cutoff_w)
 
     # Step 2: Compute weighted mean of covariates
     obs_means <- get_obs_cov_means(weights = TRUE)
@@ -259,6 +266,8 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 #'
 #' @param outcome_name    Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param compevent_name  Character string specifying the name of the competing event variable in \code{obs_data}.
+#' @param compevent2_name Character string specifying the name of the competing event variable in \code{obs_data} if competing events are treated as censoring events.
+#' @param censor_name     Character string specifying the name of the censoring variable in \code{obs_data}.
 #' @param time_name       Character string specifying the name of the time variable in \code{obs_data}.
 #' @param time_points     Number of time points to simulate.
 #' @param covnames        Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.
@@ -266,8 +275,13 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 #' @param nat_pool        Pooled-over-time data table containing simulated data under the natural course.
 #' @param nat_result      Vector containing the mean outcome over all subjects at each time for natural course.
 #' @param comprisk        Logical scalar indicating the presence of a competing event.
+#' @param comprisk2       Logical scalar indicating whether competing events are treated as censoring events.
+#' @param censor          Logical scalar indicating the presence of a censoring variable in \code{obs_data}.
+#' @param fitD2           Model fit for the competing event variable if competing events are treated as censoring events.
+#' @param fitC            Model fit for the censoring variable.
 #' @param outcome_type    Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
 #' @param obs_data        Data table containing observed data.
+#' @param ipw_cutoff      Percentile by which to truncate inverse probability weights.
 #' @return                A list with the following components:
 #' \item{obs_results}{A list of the mean observed values at each time point for covariates and - if the outcome is of type \code{"survival"} - the risk and survival.}
 #' \item{dt_cov_plot}{A list of data tables The data tables contain the observed and simulated mean values of the covariates under each time point.}

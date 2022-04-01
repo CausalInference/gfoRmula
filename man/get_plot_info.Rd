@@ -30,6 +30,10 @@ get_plot_info(
 
 \item{compevent_name}{Character string specifying the name of the competing event variable in \code{obs_data}.}
 
+\item{compevent2_name}{Character string specifying the name of the competing event variable in \code{obs_data} if competing events are treated as censoring events.}
+
+\item{censor_name}{Character string specifying the name of the censoring variable in \code{obs_data}.}
+
 \item{time_name}{Character string specifying the name of the time variable in \code{obs_data}.}
 
 \item{time_points}{Number of time points to simulate.}
@@ -44,9 +48,19 @@ get_plot_info(
 
 \item{comprisk}{Logical scalar indicating the presence of a competing event.}
 
+\item{comprisk2}{Logical scalar indicating whether competing events are treated as censoring events.}
+
+\item{censor}{Logical scalar indicating the presence of a censoring variable in \code{obs_data}.}
+
+\item{fitD2}{Model fit for the competing event variable if competing events are treated as censoring events.}
+
+\item{fitC}{Model fit for the censoring variable.}
+
 \item{outcome_type}{Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.}
 
 \item{obs_data}{Data table containing observed data.}
+
+\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights.}
 }
 \value{
 A list with the following components:

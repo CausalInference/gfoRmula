@@ -16,6 +16,8 @@ gformula_binary_eof(
   histvars = NULL,
   histories = NA,
   basecovs = NA,
+  censor_name = NULL,
+  censor_model = NA,
   outcome_name,
   ymodel,
   intvars = NULL,
@@ -38,6 +40,7 @@ gformula_binary_eof(
   model_fits = FALSE,
   boot_diag = FALSE,
   show_progress = TRUE,
+  ipw_cutoff = 1,
   ...
 )
 }
@@ -78,6 +81,10 @@ in \code{histories} is to be applied.}
 \item{histories}{Vector of history functions to apply to the variables specified in \code{histvars}. The default is \code{NA}.}
 
 \item{basecovs}{Vector of character strings specifying the names of baseline covariates in \code{obs_data}. These covariates are not simulated using a model but rather carry their value over all time points from the first time point of \code{obs_data}. These covariates should not be included in \code{covnames}. The default is \code{NA}.}
+
+\item{censor_name}{Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".}
+
+\item{censor_model}{Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".}
 
 \item{outcome_name}{Character string specifying the name of the outcome variable in \code{obs_data}.}
 
@@ -159,6 +166,8 @@ In many applications, users may wish to set this argument equal to \code{paralle
 
 \item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.}
 
+\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights. The default is \code{1} (i.e., no truncation). See "Details".}
+
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }
 \value{
@@ -181,6 +190,15 @@ The results for the g-formula simulation under various interventions for the las
 Based on an observed data set, this internal function estimates the outcome probability at
 end-of-follow-up under multiple user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 further details concerning the application and implementation of the parametric g-formula.
+}
+\details{
+To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course means of the time-varying covariates from the observed data.
+See Chiu et al. (2022) for details.
+In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
+
+Users need to include a column in \code{obs_data} with a time-varying censoring variable.
+Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
+Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
 }
 \examples{
 

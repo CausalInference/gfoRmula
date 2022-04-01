@@ -21,7 +21,7 @@ gformula_survival(
   ymodel,
   compevent_name = NULL,
   compevent_model = NA,
-  eliminate_compevent = FALSE,
+  compevent_cens = FALSE,
   censor_name = NULL,
   censor_model = NA,
   intvars = NULL,
@@ -46,7 +46,7 @@ gformula_survival(
   model_fits = FALSE,
   boot_diag = FALSE,
   show_progress = TRUE,
-  ipw_cutoff = NULL,
+  ipw_cutoff = 1,
   ...
 )
 }
@@ -99,10 +99,11 @@ in \code{histories} is to be applied.}
 
 \item{compevent_model}{Model statement for the competing event variable. The default is \code{NA}.}
 
-\item{eliminate_compevent}{Logical scalar indicating whether to estimate the counterfactual risk by eliminating competing events.
+\item{compevent_cens}{Logical scalar indicating whether to treat competing events as censoring events.
 This argument is only applicable for survival outcomes and when a competing even model is supplied (i.e., \code{compevent_name} and \code{compevent_model} are specified).
 If this argument is set to \code{TRUE}, the competing event model will only be used to construct inverse probability weights to estimate the natural course means / risk from the observed data.
-If this argument is set to \code{FALSE}, the competing event model will be used in the parametric g-formula estimates of the risk and will not be used to construct inverse probability weights. See "Details".}
+If this argument is set to \code{FALSE}, the competing event model will be used in the parametric g-formula estimates of the risk and will not be used to construct inverse probability weights.
+See "Details". The default is \code{FALSE}.}
 
 \item{censor_name}{Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".}
 
@@ -219,6 +220,17 @@ The results for the g-formula simulation under various interventions only for th
 Based on an observed data set, this internal function estimates the risk over time under multiple
 user-specified interventions using the parametric g-formula. See McGrath et al. (2020) for
 further details concerning the application and implementation of the parametric g-formula.
+}
+\details{
+To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course risk and/or means of the time-varying covariates from the observed data.
+See Chiu et al. (2022) for details.
+In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
+
+Users need to include a column in \code{obs_data} with a time-varying censoring variable.
+Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
+When competing events are present, users need to include a column in \code{obs_data} with a time-varying indicator of the competing event variable and need to indicate the name of the competing event variable and the corresponding model statement with parameters \code{compevent_name} and \code{compevent_model}, respectively.
+Users need to indicate whether to treat competing events as censoring events with the \code{compevent_cens} parameter.
+Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
 }
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a

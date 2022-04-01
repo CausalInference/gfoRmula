@@ -5,17 +5,19 @@ Package Updates
 
 -   Added option for users to specify censoring models to compute
     inverse probability weights for estimating the natural course means
-    / risk from the observed data. Further details are available in .
+    / risk from the observed data
+-   Fixed an error in calculating the means of the time-varying
+    covariates under the natural course for survival outcomes
 -   Fixed an error in calculating the observed risk estimates when
     competing events are not treated like censoring events
 -   Fixed an error in calculating the g-formula survival estimates when
     competing events are not treated like censoring events
 -   For categorical time-varying covariates, the
     `plot.gformula_survival()`, `gformula_continuous_eof()`, and
-    `gformula_binary_eof()` functions now display the nonparametric and
-    parametric g-formula estimates of the probability of the observing
-    each level of the covariate. Previously, these functions displayed
-    the counts of categorical variables.
+    `gformula_binary_eof()` functions now display the nonparametric/IP
+    weighted and parametric g-formula estimates of the probability of
+    observing each level of the covariate. Previously, these functions
+    displayed the counts of categorical variables.
 
 ### Changes in Version 0.3.2 (2021-07-13)
 
