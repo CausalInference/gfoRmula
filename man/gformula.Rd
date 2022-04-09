@@ -47,7 +47,8 @@ gformula(
   model_fits = FALSE,
   boot_diag = FALSE,
   show_progress = TRUE,
-  ipw_cutoff = 1,
+  ipw_cutoff_quantile = NULL,
+  ipw_cutoff_value = NULL,
   ...
 )
 }
@@ -198,7 +199,9 @@ In many applications, users may wish to set this argument equal to \code{paralle
 
 \item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.}
 
-\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights. The default is \code{1} (i.e., no truncation). See "Details".}
+\item{ipw_cutoff_quantile}{Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".}
+
+\item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".}
 
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }
@@ -212,6 +215,7 @@ An object of class \code{gformula_survival}. The object is a list with the follo
 \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
 \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
+\item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
 \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -235,7 +239,7 @@ Users need to include a column in \code{obs_data} with a time-varying censoring 
 Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
 When competing events are present, users need to include a column in \code{obs_data} with a time-varying indicator of the competing event variable and need to indicate the name of the competing event variable and the corresponding model statement with parameters \code{compevent_name} and \code{compevent_model}, respectively.
 Users need to indicate whether to treat competing events as censoring events with the \code{compevent_cens} parameter.
-Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
+Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
 }
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a

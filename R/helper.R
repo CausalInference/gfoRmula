@@ -76,7 +76,8 @@ hr_helper <- function(i, intcomp, time_name, pools){
 #' @param histvals               List of length 3. First element contains a vector of integers specifying the number of lags back for the lagged function. Second element contains
 #'                               a vector of integers indicating the number of lags back for the lagavg function. The last element is an indicator whether a cumavg term
 #'                               appears in any of the model statements.
-#' @param ipw_cutoff             Percentile by which to truncate inverse probability weights.
+#' @param ipw_cutoff_quantile    Percentile by which to truncate inverse probability weights.
+#' @param ipw_cutoff_value       Cutoff value by which to truncate inverse probability weights.
 #'
 #' @return                       No value is returned.
 #' @keywords internal
@@ -87,7 +88,8 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
                         hazardratio, intcomp, time_points, outcome_type,
                         time_name, obs_data, parallel, ncores, nsamples,
                         sim_data_b, outcome_name, compevent_name, comprisk,
-                        censor, censor_name, covmodels, histvals, ipw_cutoff){
+                        censor, censor_name, covmodels, histvals, ipw_cutoff_quantile,
+                        ipw_cutoff_value){
 
   if (!is.data.table(obs_data)){
     if (is.data.frame(obs_data)){
@@ -324,11 +326,24 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
       stop("covmodels and covnames ordering do not match")
     }
   }
-  if (!is.numeric(ipw_cutoff)){
-    stop("'ipw_cutoff' must be a numeric variable")
+  if (!is.null(ipw_cutoff_quantile) & !is.null(ipw_cutoff_value)){
+    stop("Only one of 'ipw_cutoff_quantile' and 'ipw_cutoff_value' can be supplied")
   }
-  if (ipw_cutoff <= 0 | ipw_cutoff > 1){
-    stop("'ipw_cutoff' must be between 0 and 1")
+  if (!is.null(ipw_cutoff_quantile)){
+    if (!is.numeric(ipw_cutoff_quantile)){
+      stop("'ipw_cutoff_quantile' must be a numeric variable")
+    }
+    if (ipw_cutoff_quantile <= 0 | ipw_cutoff_quantile > 1){
+      stop("'ipw_cutoff_quantile' must be between 0 and 1")
+    }
+  }
+  if (!is.null(ipw_cutoff_value)){
+    if (!is.numeric(ipw_cutoff_value)){
+      stop("'ipw_cutoff_value' must be a numeric variable")
+    }
+    if (ipw_cutoff_value <= 0){
+      stop("'ipw_cutoff_value' must be greater than 0")
+    }
   }
 }
 

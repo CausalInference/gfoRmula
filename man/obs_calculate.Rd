@@ -19,7 +19,8 @@ obs_calculate(
   fitC,
   outcome_type,
   obs_data,
-  ipw_cutoff
+  ipw_cutoff_quantile,
+  ipw_cutoff_value
 )
 }
 \arguments{
@@ -51,7 +52,9 @@ obs_calculate(
 
 \item{obs_data}{Data table containing the observed data.}
 
-\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights.}
+\item{ipw_cutoff_quantile}{Percentile by which to truncate inverse probability weights.}
+
+\item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights.}
 }
 \value{
 A list. Its first entry is a list of mean covariate values at each time point;

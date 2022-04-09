@@ -22,7 +22,8 @@ get_plot_info(
   fitC,
   outcome_type,
   obs_data,
-  ipw_cutoff
+  ipw_cutoff_quantile,
+  ipw_cutoff_value
 )
 }
 \arguments{
@@ -60,7 +61,9 @@ get_plot_info(
 
 \item{obs_data}{Data table containing observed data.}
 
-\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights.}
+\item{ipw_cutoff_quantile}{Percentile by which to truncate inverse probability weights.}
+
+\item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights.}
 }
 \value{
 A list with the following components:

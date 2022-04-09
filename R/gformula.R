@@ -14,7 +14,7 @@
 #' Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
 #' When competing events are present, users need to include a column in \code{obs_data} with a time-varying indicator of the competing event variable and need to indicate the name of the competing event variable and the corresponding model statement with parameters \code{compevent_name} and \code{compevent_model}, respectively.
 #' Users need to indicate whether to treat competing events as censoring events with the \code{compevent_cens} parameter.
-#' Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
+#' Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
 #' @param time_points             Number of time points to simulate. By default, this argument is set equal to the maximum
@@ -120,7 +120,8 @@
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
-#' @param ipw_cutoff              Percentile by which to truncate inverse probability weights. The default is \code{1} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
 #' \item{result}{Results table. For survival outcomes, this contains the estimated risk, risk difference, and risk ratio for all interventions (inculding the natural course) at each time point. For continuous end-of-follow-up outcomes, this contains estimated mean outcome, mean difference, and mean ratio for all interventions (inculding natural course) at the last time point. For binary end-of-follow-up outcomes, this contains the estimated outcome probability, probability difference, and probability ratio for all interventions (inculding natural course) at the last time point. If bootstrapping was used, the results table includes the bootstrap risk / mean / probability difference, ratio, standard error, and 95\% confidence interval.}
@@ -131,6 +132,7 @@
 #' \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
 #' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
+#' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -346,7 +348,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                      nsimul = NA, sim_data_b = FALSE, seed,
                      nsamples = 0, parallel = FALSE, ncores = NA,
                      ci_method = 'percentile', threads, model_fits = FALSE,
-                     boot_diag = FALSE, show_progress = TRUE, ipw_cutoff = 1, ...){
+                     boot_diag = FALSE, show_progress = TRUE, ipw_cutoff_quantile = NULL,
+                     ipw_cutoff_value = NULL, ...){
   if (! outcome_type %in% c('survival', 'continuous_eof', 'binary_eof')){
     stop("outcome_type must be 'survival', 'continuous_eof', or 'binary_eof', but outcome_type was set to", outcome_type)
   }
@@ -375,7 +378,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                       nsamples = nsamples, parallel = parallel, ncores = ncores,
                       ci_method = ci_method, threads = threads,
                       model_fits = model_fits, boot_diag = boot_diag,
-                      show_progress = show_progress, ipw_cutoff = ipw_cutoff, ...)
+                      show_progress = show_progress, ipw_cutoff_quantile = ipw_cutoff_quantile,
+                      ipw_cutoff_value = ipw_cutoff_value, ...)
   } else if (outcome_type == 'continuous_eof'){
     gformula_continuous_eof(obs_data = obs_data, id = id,
                             time_name = time_name, covnames = covnames,
@@ -399,7 +403,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                             parallel = parallel, ncores = ncores,
                             ci_method = ci_method, threads = threads,
                             model_fits = model_fits, boot_diag = boot_diag,
-                            show_progress = show_progress, ipw_cutoff = ipw_cutoff, ...)
+                            show_progress = show_progress, ipw_cutoff_quantile = ipw_cutoff_quantile,
+                            ipw_cutoff_value = ipw_cutoff_value, ...)
   } else if (outcome_type == 'binary_eof'){
     gformula_binary_eof(obs_data = obs_data, id = id,
                         time_name = time_name, covnames = covnames,
@@ -421,7 +426,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                         ncores = ncores,
                         ci_method = ci_method, threads = threads,
                         model_fits = model_fits, boot_diag = boot_diag,
-                        show_progress = show_progress, ipw_cutoff = ipw_cutoff, ...)
+                        show_progress = show_progress, ipw_cutoff_quantile = ipw_cutoff_quantile,
+                        ipw_cutoff_value = ipw_cutoff_value, ...)
   }
 }
 
@@ -441,7 +447,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
 #' When competing events are present, users need to include a column in \code{obs_data} with a time-varying indicator of the competing event variable and need to indicate the name of the competing event variable and the corresponding model statement with parameters \code{compevent_name} and \code{compevent_model}, respectively.
 #' Users need to indicate whether to treat competing events as censoring events with the \code{compevent_cens} parameter.
-#' Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
+#' Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
 #' @param time_points             Number of time points to simulate. By default, this argument is set equal to the maximum
@@ -546,7 +552,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
-#' @param ipw_cutoff              Percentile by which to truncate inverse probability weights. When censoring models are provided (i.e., \code{censor_name} and \code{censor_model} are provided), the inverse probability weights are used to estimate the natural course means / risk from the observed data. The default is \code{1} (i.e., no truncation).
+#' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
 #' \item{result}{Results table containing the estimated risk and risk ratio for all interventions (inculding the natural course) at each time point. If bootstrapping was used, the results table includes the bootstrap mean risk ratio, standard error, and 95\% confidence interval.}
@@ -557,6 +564,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' \item{hazardratio_val}{Hazard ratio between two interventions (if applicable).}
 #' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
+#' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -695,7 +703,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               nsamples = 0, parallel = FALSE, ncores = NA,
                               ci_method = 'percentile', threads,
                               model_fits = FALSE, boot_diag = FALSE,
-                              show_progress = TRUE, ipw_cutoff = 1, ...){
+                              show_progress = TRUE, ipw_cutoff_quantile = NULL,
+                              ipw_cutoff_value = NULL, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -744,7 +753,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
-              histvals = histvals, ipw_cutoff = ipw_cutoff)
+              histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
+              ipw_cutoff_value = ipw_cutoff_value)
 
 
   if (comprisk & compevent_cens){
@@ -1149,7 +1159,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                              fitC = fitC,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample,
-                             ipw_cutoff = ipw_cutoff)
+                             ipw_cutoff_quantile = ipw_cutoff_quantile,
+                             ipw_cutoff_value = ipw_cutoff_value)
   obs_results <- plot_info$obs_results
 
   # Generate results table
@@ -1299,6 +1310,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     hazardratio_val = hr_res,
     fits = fits,
     sim_data = sim_data,
+    IP_weights = obs_results$w,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
     bootvcovs = bootvcovs,
@@ -1329,7 +1341,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'
 #' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
 #' Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
-#' Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
+#' Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
 
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
@@ -1418,7 +1430,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
-#' @param ipw_cutoff              Percentile by which to truncate inverse probability weights. The default is \code{1} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #'
 #' @return                        An object of class \code{gformula_continuous_eof}. The object is a list with the following components:
@@ -1429,6 +1442,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
+#' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -1497,7 +1511,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                     parallel = FALSE, ncores = NA,
                                     ci_method = 'percentile', threads,
                                     model_fits = FALSE, boot_diag = FALSE,
-                                    show_progress = TRUE, ipw_cutoff = 1, ...){
+                                    show_progress = TRUE, ipw_cutoff_quantile = NULL,
+                                    ipw_cutoff_value = NULL, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -1551,7 +1566,8 @@ gformula_continuous_eof <- function(obs_data, id,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
-              histvals = histvals, ipw_cutoff = ipw_cutoff)
+              histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
+              ipw_cutoff_value = ipw_cutoff_value)
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0
@@ -1874,7 +1890,8 @@ gformula_continuous_eof <- function(obs_data, id,
                              fitC = fitC,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample,
-                             ipw_cutoff = ipw_cutoff)
+                             ipw_cutoff_quantile = ipw_cutoff_quantile,
+                             ipw_cutoff_value = ipw_cutoff_value)
   obs_results <- plot_info$obs_results
 
   # Generate results table
@@ -2003,6 +2020,7 @@ gformula_continuous_eof <- function(obs_data, id,
     rmses = rmses,
     fits = fits,
     sim_data = sim_data,
+    IP_weights = obs_results$w,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
     bootvcovs = bootvcovs,
@@ -2030,7 +2048,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #'
 #' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
 #' Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
-#' Finally, users can specify the quantile by which to truncate IP weights with the \code{ipw_cutoff} parameter.
+#' Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
 #'
 #' @param id                      Character string specifying the name of the ID variable in \code{obs_data}.
 #' @param obs_data                Data table containing the observed data.
@@ -2118,7 +2136,8 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
 #' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
-#' @param ipw_cutoff              Percentile by which to truncate inverse probability weights. The default is \code{1} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
+#' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #'
 #' @return An object of class \code{gformula_binary_eof}. The object is a list with the following components:
@@ -2129,6 +2148,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' \item{rmses}{A list of root mean square error (RMSE) values of the fitted models.}
 #' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
+#' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
 #' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
@@ -2198,7 +2218,8 @@ gformula_binary_eof <- function(obs_data, id,
                                 nsamples = 0, parallel = FALSE, ncores = NA,
                                 ci_method = 'percentile', threads,
                                 model_fits = FALSE, boot_diag = FALSE,
-                                show_progress = TRUE, ipw_cutoff = 1, ...){
+                                show_progress = TRUE, ipw_cutoff_quantile = NULL,
+                                ipw_cutoff_value = NULL, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -2251,7 +2272,8 @@ gformula_binary_eof <- function(obs_data, id,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
-              histvals = histvals, ipw_cutoff = ipw_cutoff)
+              histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
+              ipw_cutoff_value = ipw_cutoff_value)
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0
@@ -2570,7 +2592,8 @@ gformula_binary_eof <- function(obs_data, id,
                              fitC = fitC,
                              outcome_type = outcome_type,
                              obs_data = obs_data_noresample,
-                             ipw_cutoff = ipw_cutoff)
+                             ipw_cutoff_quantile = ipw_cutoff_quantile,
+                             ipw_cutoff_value = ipw_cutoff_value)
   obs_results <- plot_info$obs_results
 
   # Generate results table
@@ -2699,6 +2722,7 @@ gformula_binary_eof <- function(obs_data, id,
     rmses = rmses,
     fits = fits,
     sim_data = sim_data,
+    IP_weights = obs_results$w,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
     bootvcovs = bootvcovs,

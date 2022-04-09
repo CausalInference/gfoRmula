@@ -34,7 +34,8 @@ error_catch(
   censor_name,
   covmodels,
   histvals,
-  ipw_cutoff
+  ipw_cutoff_quantile,
+  ipw_cutoff_value
 )
 }
 \arguments{
@@ -108,7 +109,9 @@ simulation.}
 a vector of integers indicating the number of lags back for the lagavg function. The last element is an indicator whether a cumavg term
 appears in any of the model statements.}
 
-\item{ipw_cutoff}{Percentile by which to truncate inverse probability weights.}
+\item{ipw_cutoff_quantile}{Percentile by which to truncate inverse probability weights.}
+
+\item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights.}
 }
 \value{
 No value is returned.

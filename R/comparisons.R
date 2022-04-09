@@ -17,7 +17,8 @@
 #' @param fitC            Model fit for the censoring variable.
 #' @param outcome_type    Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
 #' @param obs_data        Data table containing the observed data.
-#' @param ipw_cutoff      Percentile by which to truncate inverse probability weights.
+#' @param ipw_cutoff_quantile Percentile by which to truncate inverse probability weights.
+#' @param ipw_cutoff_value    Cutoff value by which to truncate inverse probability weights.
 #' @return                A list. Its first entry is a list of mean covariate values at each time point;
 #'                        its second entry is a vector of the mean observed risk (for \code{"survival"}
 #'                        outcome types) or the mean observed outcome (for \code{"continuous_eof"} and
@@ -26,7 +27,7 @@
 #' @keywords internal
 #' @import data.table
 obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, covnames, covtypes, comprisk,
-                          comprisk2, censor, fitD2, fitC, outcome_type, obs_data, ipw_cutoff){
+                          comprisk2, censor, fitD2, fitC, outcome_type, obs_data, ipw_cutoff_quantile, ipw_cutoff_value){
 
   time_points <- max(obs_data[[time_name]]) + 1
   get_obs_cov_means <- function(weights = FALSE){
@@ -79,9 +80,11 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
     } else {
       w <- w_c
     }
-    if (ipw_cutoff != 1){
-      cutoff_w <- stats::quantile(w, probs = ipw_cutoff)
+    if (!is.null(ipw_cutoff_quantile)){
+      cutoff_w <- stats::quantile(w, probs = ipw_cutoff_quantile)
       w <- pmin(w, cutoff_w)
+    } else if (!is.null(ipw_cutoff_value)){
+      w <- pmin(w, ipw_cutoff_value)
     }
 
     # Step 2: Compute weighted mean of covariates
@@ -92,7 +95,7 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
       meanEy <- rep(NA, length = time_points)
       cur_time_ind <- obs_data[[time_name]] == (time_points-1)
       meanEy[time_points + 1] <- stats::weighted.mean(obs_data[cur_time_ind][[outcome_name]], w[cur_time_ind], na.rm = TRUE)
-      res <- list(obs_means, meanEy)
+      res <- list(obs_means, meanEy, w = w)
 
     } else if  (outcome_type == 'survival'){
       h_k <- obs_risk_temp <- obs_survival <- rep(NA, times = time_points)
@@ -127,7 +130,7 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
       }
       obs_risk <- cumsum(obs_risk_temp)
       obs_survival <- 1 - obs_risk
-      res <- list(obs_means, obs_risk, obs_survival)
+      res <- list(obs_means, obs_risk, obs_survival, w = w)
     }
   } else {
     obs_means <- get_obs_cov_means(weights = FALSE)
@@ -165,12 +168,12 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
       # Calculate observed probability of death at or before each time point
       obs_risk <- cumsum(obs_prodp1)
       obs_survival <- 1 - obs_risk
-      res <- list(obs_means, obs_risk, obs_survival)
+      res <- list(obs_means, obs_risk, obs_survival, w = NULL)
 
     } else if (outcome_type == 'continuous_eof' || outcome_type == 'binary_eof'){
       meanEy <- tapply(obs_data[[outcome_name]], obs_data[[time_name]], FUN = mean,
                        na.rm = TRUE)
-      res <- list(obs_means, meanEy)
+      res <- list(obs_means, meanEy, w = NULL)
     }
   }
 
@@ -281,7 +284,8 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 #' @param fitC            Model fit for the censoring variable.
 #' @param outcome_type    Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
 #' @param obs_data        Data table containing observed data.
-#' @param ipw_cutoff      Percentile by which to truncate inverse probability weights.
+#' @param ipw_cutoff_quantile    Percentile by which to truncate inverse probability weights.
+#' @param ipw_cutoff_value       Cutoff value by which to truncate inverse probability weights.
 #' @return                A list with the following components:
 #' \item{obs_results}{A list of the mean observed values at each time point for covariates and - if the outcome is of type \code{"survival"} - the risk and survival.}
 #' \item{dt_cov_plot}{A list of data tables The data tables contain the observed and simulated mean values of the covariates under each time point.}
@@ -291,7 +295,7 @@ rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, 
 #' @import ggplot2
 get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, time_points,
                           covnames, covtypes, nat_pool, nat_result, comprisk, comprisk2, censor,
-                          fitD2, fitC, outcome_type, obs_data, ipw_cutoff){
+                          fitD2, fitC, outcome_type, obs_data, ipw_cutoff_quantile, ipw_cutoff_value){
 
   # Calculate mean observed values at each time point for covariates, risk, and survival
   obs_results <- obs_calculate(outcome_name = outcome_name, compevent_name = compevent_name,
@@ -302,7 +306,8 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
                                fitD2 = fitD2, fitC = fitC, outcome_type = outcome_type,
                                obs_data = obs_data[obs_data[[time_name]] < time_points &
                                           obs_data[[time_name]] >= 0],
-                               ipw_cutoff = ipw_cutoff)
+                               ipw_cutoff_quantile = ipw_cutoff_quantile,
+                               ipw_cutoff_value = ipw_cutoff_value)
 
   get_sim_cov_means <- function(weights = FALSE){
     get_weights <- function(weights, cur_time_ind){
