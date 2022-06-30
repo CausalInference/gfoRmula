@@ -118,7 +118,7 @@
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the parametric g-formula estimates as well as the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
@@ -133,7 +133,8 @@
 #' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
-#' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootests}{A data.table containing the bootstrap replicates of the parametric g-formula estimates. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootcoeffs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
@@ -550,7 +551,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the parametric g-formula estimates as well as the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
@@ -565,7 +566,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' \item{fits}{A list of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
-#' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootests}{A data.table containing the bootstrap replicates of the parametric g-formula estimates. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootcoeffs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
@@ -1133,10 +1135,18 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     }
   }
   if (nsamples > 0 & boot_diag){
+    bootests <- comb_result
+    if (!is.null(int_descript)){
+      colnames(bootests)[1:(1 + length(interventions))] <- c('Natural course', int_descript)
+    } else {
+      colnames(bootests)[1:length(comb_interventions)] <- c('Natural course', paste('Intervention', 1:length(interventions)))
+    }
+    bootests[, 'Bootstrap replicate'] <- rep(1:nsamples, each = time_points)
     bootcoeffs <- lapply(final_bs, "[[", 'bootcoeffs')
     bootstderrs <- lapply(final_bs, "[[", 'bootstderrs')
     bootvcovs <- lapply(final_bs, "[[", 'bootvcovs')
   } else {
+    bootests <- NULL
     bootcoeffs <- NULL
     bootstderrs <- NULL
     bootvcovs <- NULL
@@ -1311,6 +1321,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     fits = fits,
     sim_data = sim_data,
     IP_weights = obs_results$w,
+    bootests = bootests,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
     bootvcovs = bootvcovs,
@@ -1428,7 +1439,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the parametric g-formula estimates as well as the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
@@ -1443,7 +1454,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
-#' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootests}{A data.table containing the bootstrap replicates of the parametric g-formula estimates. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootcoeffs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
@@ -1865,10 +1877,18 @@ gformula_continuous_eof <- function(obs_data, id,
     }
   }
   if (nsamples > 0 & boot_diag){
+    bootests <- comb_result
+    if (!is.null(int_descript)){
+      colnames(bootests)[1:(1 + length(interventions))] <- c('Natural course', int_descript)
+    } else {
+      colnames(bootests)[1:length(comb_interventions)] <- c('Natural course', paste('Intervention', 1:length(interventions)))
+    }
+    bootests[, 'Bootstrap replicate'] <- 1:nsamples
     bootcoeffs <- lapply(final_bs, "[[", 'bootcoeffs')
     bootstderrs <- lapply(final_bs, "[[", 'bootstderrs')
     bootvcovs <- lapply(final_bs, "[[", 'bootvcovs')
   } else {
+    bootests <- NULL
     bootcoeffs <- NULL
     bootstderrs <- NULL
     bootvcovs <- NULL
@@ -2021,6 +2041,7 @@ gformula_continuous_eof <- function(obs_data, id,
     fits = fits,
     sim_data = sim_data,
     IP_weights = obs_results$w,
+    bootests = bootests,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
     bootvcovs = bootvcovs,
@@ -2134,7 +2155,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param ci_method               Character string specifying the method for calculating the bootstrap 95\% confidence intervals, if applicable. The options are \code{"percentile"} and \code{"normal"}.
 #' @param threads                 Integer specifying the number of threads to be used in \code{data.table}. See \code{\link[data.table]{setDTthreads}} for further details.
 #' @param model_fits              Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.
-#' @param boot_diag               Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
+#' @param boot_diag               Logical scalar indicating whether to return the parametric g-formula estimates as well as the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param ipw_cutoff_quantile     Percentile by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
 #' @param ipw_cutoff_value        Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".
@@ -2149,7 +2170,8 @@ gformula_continuous_eof <- function(obs_data, id,
 #' \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 #' \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
-#' \item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootests}{A data.table containing the bootstrap replicates of the parametric g-formula estimates. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+#' \item{bootcoeffs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 #' \item{...}{Some additional elements.}
@@ -2567,10 +2589,18 @@ gformula_binary_eof <- function(obs_data, id,
     }
   }
   if (nsamples > 0 & boot_diag){
+    bootests <- comb_result
+    if (!is.null(int_descript)){
+      colnames(bootests)[1:(1 + length(interventions))] <- c('Natural course', int_descript)
+    } else {
+      colnames(bootests)[1:length(comb_interventions)] <- c('Natural course', paste('Intervention', 1:length(interventions)))
+    }
+    bootests[, 'Bootstrap replicate'] <- 1:nsamples
     bootcoeffs <- lapply(final_bs, "[[", 'bootcoeffs')
     bootstderrs <- lapply(final_bs, "[[", 'bootstderrs')
     bootvcovs <- lapply(final_bs, "[[", 'bootvcovs')
   } else {
+    bootests <- NULL
     bootcoeffs <- NULL
     bootstderrs <- NULL
     bootvcovs <- NULL
@@ -2723,6 +2753,7 @@ gformula_binary_eof <- function(obs_data, id,
     fits = fits,
     sim_data = sim_data,
     IP_weights = obs_results$w,
+    bootests = bootests,
     bootcoeffs = bootcoeffs,
     bootstderrs = bootstderrs,
     bootvcovs = bootvcovs,

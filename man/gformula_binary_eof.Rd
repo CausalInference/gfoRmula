@@ -163,7 +163,7 @@ In many applications, users may wish to set this argument equal to \code{paralle
 
 \item{model_fits}{Logical scalar indicating whether to return the fitted models. Note that if this argument is set to \code{TRUE}, the output of this function may use a lot of memory. The default is \code{FALSE}.}
 
-\item{boot_diag}{Logical scalar indicating whether to return the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.}
+\item{boot_diag}{Logical scalar indicating whether to return the parametric g-formula estimates as well as the coefficients, standard errors, and variance-covariance matrices of the parameters of the fitted models in the bootstrap samples. The default is \code{FALSE}.}
 
 \item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.}
 
@@ -183,7 +183,8 @@ An object of class \code{gformula_binary_eof}. The object is a list with the fol
 \item{fits}{A list of the fitted models for the time-varying covariates and outcome. If \code{model_fits} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{sim_data}{A list of data tables of the simulated data. Each element in the list corresponds to one of the interventions. If the argument \code{sim_data_b} is set to \code{FALSE}, a value of \code{NA} is given.}
 \item{IP_weights}{A numeric vector specifying the inverse probability weights. See "Details".}
-\item{bootcoeefs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+\item{bootests}{A data.table containing the bootstrap replicates of the parametric g-formula estimates. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
+\item{bootcoeffs}{A list, where the kth element is a list containing the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{bootstderrs}{A list, where the kth element is a list containing the standard errors of the coefficients of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{bootvcovs}{A list, where the kth element is a list containing the variance-covariance matrices of the parameters of the fitted models corresponding to the kth bootstrap sample. If \code{boot_diag} is set to \code{FALSE}, a value of \code{NULL} is given.}
 \item{...}{Some additional elements.}

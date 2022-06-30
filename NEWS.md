@@ -1,5 +1,10 @@
-Package Updates
----------------
+## Package Updates
+
+### Changes in Version 1.0.1 (TBD)
+
+-   Added option for users to access the bootstrap replicates of the
+    parametric g-formula estimates. See the `boot_diag` argument in the
+    `gformula()` function.
 
 ### Changes in Version 1.0.0 (2022-04-09)
 

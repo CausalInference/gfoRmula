@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
