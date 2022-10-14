@@ -1035,6 +1035,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     hr_res <- NA
   }
 
+  # Calculate percent intervened
+  percent_intervened_res <- get_percent_intervened(pools = pools)
+
   # Calculate user specified number of bootstrap risk ratios
   if (nsamples > 0){
     if (parallel){
@@ -1244,6 +1247,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     setcolorder(resultdf, c("k", "Interv.", obs_risk_name, "g-form risk",
                             "Risk ratio", "Risk difference"))
   }
+  resultdf[k == max(k), '% Intervened On'] <- percent_intervened_res$percent_intervened
+  resultdf[k == max(k), 'Aver % Intervened On'] <- percent_intervened_res$average_percent_intervened
 
   if (time_points > 1){
     fits <- fitcov
@@ -1793,6 +1798,9 @@ gformula_continuous_eof <- function(obs_data, id,
   result_ratio <- int_result / ref_mean
   result_diff <- int_result - ref_mean
 
+  # Calculate percent intervened
+  percent_intervened_res <- get_percent_intervened(pools = pools)
+
   if (nsamples > 0){
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads, covtypes = covtypes,
@@ -1979,6 +1987,9 @@ gformula_continuous_eof <- function(obs_data, id,
     setcolorder(resultdf, c("k", "Interv.", obs_mean_name, "g-form mean",
                             "Mean ratio", "Mean difference"))
   }
+
+  resultdf[k == max(k), '% Intervened On'] <- percent_intervened_res$percent_intervened
+  resultdf[k == max(k), 'Aver % Intervened On'] <- percent_intervened_res$average_percent_intervened
 
   if (time_points > 1){
     fits <- fitcov
@@ -2505,6 +2516,9 @@ gformula_binary_eof <- function(obs_data, id,
   result_ratio <- int_result / ref_mean
   result_diff <- int_result - ref_mean
 
+  # Calculate percent intervened
+  percent_intervened_res <- get_percent_intervened(pools = pools)
+
   if (nsamples > 0){
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes,
@@ -2691,6 +2705,9 @@ gformula_binary_eof <- function(obs_data, id,
     setcolorder(resultdf, c("k", "Interv.", obs_mean_name, "g-form mean",
                             "Mean ratio", "Mean difference"))
   }
+
+  resultdf[k == max(k), '% Intervened On'] <- percent_intervened_res$percent_intervened
+  resultdf[k == max(k), 'Aver % Intervened On'] <- percent_intervened_res$average_percent_intervened
 
   if (time_points > 1){
     fits <- fitcov

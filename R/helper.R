@@ -557,3 +557,25 @@ get_vcovs <- function(fits, fitD, time_points, outcome_name, compevent_name,
   }
   return(vcovs)
 }
+
+get_percent_intervened <- function(pools){
+  percent_intervened <- c(0, rep(NA, times = length(pools)))
+  average_percent_intervened <- c(0, rep(NA, times = length(pools)))
+  my_any <- function(x){
+    if (all(is.na(x))){
+      # Handles the edge case of an individual not having any eligible person-time
+      return(NA)
+    } else {
+      return(any(x, na.rm = TRUE))
+    }
+  }
+  if (length(pools) > 0){
+    for (int_num in 1:length(pools)){
+      df <- pools[[int_num]]
+      average_percent_intervened[int_num + 1] <- 100 * mean(df$intervened, na.rm = TRUE)
+      percent_intervened[int_num + 1] <- 100 * mean(tapply(df$intervened, df$id, my_any), na.rm = TRUE)
+    }
+  }
+  return(list(percent_intervened = percent_intervened,
+              average_percent_intervened = average_percent_intervened))
+}

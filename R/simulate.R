@@ -175,7 +175,8 @@ simulate <- function(o, fitcov, fitY, fitD,
   }
 
   # Create histories_int and histvars_int, which are the necessary histories to create after the intervention
-  if (!(length(intvar) == 1 && intvar == 'none')) {
+  nat_course <- length(intvar == 1) && intvar == 'none'
+  if (!nat_course) {
     intvar_vec <- unique(unlist(intvar))
     histvars_int <- histories_int <- rep(list(NA), length(histvars))
     for (l in seq_along(histvars)){
@@ -198,6 +199,7 @@ simulate <- function(o, fitcov, fitY, fitD,
         pool <- obs_data[obs_data[[time_name]] <= t, ][, .SD, .SDcols = c(covnames, time_name)]
       }
       set(pool, j = 'id', value = rep(ids_unique, each = 1 - min_time))
+      set(pool, j = 'eligible_pt', value = TRUE)
       if (!is.na(basecovs[[1]])){
         setcolorder(pool, c('id', time_name, covnames, basecovs))
       } else {
@@ -206,7 +208,22 @@ simulate <- function(o, fitcov, fitY, fitD,
       newdf <- pool[pool[[time_name]] == 0]
       # Update datatable with specified treatment regime / intervention for this
       # simulation
+      if (!nat_course){
+        mycols <- match(intvar, names(newdf))
+        temp_intvar <- newdf[, ..mycols]
+      }
       intfunc(newdf, pool = pool, intervention, intvar, unlist(int_time), time_name, t)
+      # Check if intervened
+      intervened <- rep(0, times = nrow(newdf))
+      if (!nat_course){
+        for (var in intvar){
+          # Check if the natural value of the intervention variable equals the intervened value
+          intervened <- intervened + (abs(temp_intvar[[var]] - newdf[[var]]) > 1e-6)
+        }
+        intervened <- ifelse(newdf$eligible_pt, intervened >= 1, NA)
+      }
+      set(newdf, j = 'intervened', value = intervened)
+
       if (ncol(newdf) > ncol(pool)){
         pool <- rbind(pool[pool[[time_name]] < t], newdf, fill = TRUE)
         pool <- pool[order(id, get(time_name))]
@@ -497,7 +514,22 @@ simulate <- function(o, fitcov, fitY, fitD,
       # Update datatable with specified treatment regime / intervention for this
       # simulation
       newdf <- pool[pool[[time_name]] == t]
+      if (!nat_course){
+        mycols <- match(intvar, names(newdf))
+        temp_intvar <- newdf[, ..mycols]
+      }
       intfunc(newdf, pool, intervention, intvar, unlist(int_time), time_name, t)
+      # Check if intervened
+      intervened <- rep(0, times = nrow(newdf))
+      if (!nat_course){
+        for (var in intvar){
+          # Check if the natural value of the intervention variable equals the intervened value
+          intervened <- intervened + (abs(temp_intvar[[var]] - newdf[[var]]) > 1e-6)
+        }
+        intervened <- ifelse(newdf$eligible_pt, intervened >= 1, NA)
+      }
+      set(newdf, j = 'intervened', value = intervened)
+
       # Update datatable with new covariates that are functions of history of existing
       # covariates
       pool[pool[[time_name]] == t] <- newdf
