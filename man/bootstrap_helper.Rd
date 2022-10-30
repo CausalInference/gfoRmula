@@ -46,7 +46,8 @@ bootstrap_helper(
   below_zero_indicator,
   min_time,
   show_progress,
-  pb
+  pb,
+  int_visit_type
 )
 }
 \arguments{
@@ -189,6 +190,10 @@ are set to their values at time 0. The default is \code{FALSE}.}
 \item{show_progress}{Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.}
 
 \item{pb}{Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.}
+
+\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
+By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
 }
 \value{
 A list with the following components:

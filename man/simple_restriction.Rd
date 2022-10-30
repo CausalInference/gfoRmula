@@ -4,7 +4,7 @@
 \alias{simple_restriction}
 \title{Simple Restriction}
 \usage{
-simple_restriction(newdf, pool, restriction, time_name, t)
+simple_restriction(newdf, pool, restriction, time_name, t, ...)
 }
 \arguments{
 \item{newdf}{Data table containing the simulated data at time \eqn{t}.}
@@ -22,6 +22,8 @@ the user desires to assign to the covariate when it is not modeled).}
 \item{time_name}{Character string specifying the name of the time variable in \code{pool} and \code{newdf}.}
 
 \item{t}{Integer specifying the current time index.}
+
+\item{...}{This argument is not used in this function.}
 }
 \value{
 No value is returned. The data table \code{newdf} is modified in place.

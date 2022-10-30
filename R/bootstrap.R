@@ -103,6 +103,9 @@
 #' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param pb                      Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.
+#' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+#'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
+#'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
 #' @return                        A list with the following components:
 #' \item{Result}{Matrix containing risks over time under the natural course and under each user-specific intervention.}
 #' \item{ResultRatio}{Matrix containing risk ratios over time under the natural course and under each user-specific intervention.}
@@ -120,7 +123,8 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              time_name, outcome_name, compevent_name,
                              ranges, yrange, compevent_range, parallel, ncores, max_visits,
                              hazardratio, intcomp, boot_diag, nsimul, baselags,
-                             below_zero_indicator, min_time, show_progress, pb){
+                             below_zero_indicator, min_time, show_progress, pb,
+                             int_visit_type){
 
   set.seed(bootseeds[r])
 
@@ -192,7 +196,8 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
              subseed = bootseeds[r], time_points = time_points,
              obs_data = resample_data, parallel = FALSE, max_visits = max_visits,
              baselags = baselags, below_zero_indicator = below_zero_indicator,
-             min_time = min_time, show_progress = show_progress, pb = pb)
+             min_time = min_time, show_progress = show_progress, pb = pb,
+             int_visit_type = int_visit_type[i])
   })
 
   nat_pool <- pools[[1]] # Simulated data under natural course

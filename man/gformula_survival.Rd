@@ -48,6 +48,7 @@ gformula_survival(
   show_progress = TRUE,
   ipw_cutoff_quantile = NULL,
   ipw_cutoff_value = NULL,
+  int_visit_type = NULL,
   ...
 )
 }
@@ -200,11 +201,15 @@ In many applications, users may wish to set this argument equal to \code{paralle
 
 \item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".}
 
+\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
+By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
+
 \item{...}{Other arguments, which are passed to the functions in \code{covpredict_custom}.}
 }
 \value{
 An object of class \code{gformula_survival}. The object is a list with the following components:
-\item{result}{Results table containing the estimated risk and risk ratio for all interventions (inculding the natural course) at each time point. If bootstrapping was used, the results table includes the bootstrap mean risk ratio, standard error, and 95\% confidence interval.}
+\item{result}{Results table containing the estimated risk and risk ratio for all interventions (inculding the natural course) at each time point as well as the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap mean risk ratio, standard error, and 95\% confidence interval.}
 \item{coeffs}{A list of the coefficients of the fitted models.}
 \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
 \item{vcovs}{A list of the variance-covariance matrices of the parameters of the fitted models.}
@@ -236,6 +241,8 @@ Users need to indicate the name of the censoring variable and a model statement 
 When competing events are present, users need to include a column in \code{obs_data} with a time-varying indicator of the competing event variable and need to indicate the name of the competing event variable and the corresponding model statement with parameters \code{compevent_name} and \code{compevent_model}, respectively.
 Users need to indicate whether to treat competing events as censoring events with the \code{compevent_cens} parameter.
 Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
+
+In addition to the package output described in McGrath et al. (2020), the output will display estimates of the "cumulative percent intervened on" and the "average percent intervened on". When using a custom intervention function, users need to specify whether each individual at that time point is eligible to contribute person-time to the percent intervened on calculations. Specifically, this must be specified in the \code{eligible_pt} column of \code{newdf}. By default, \code{eligible_pt} is set to \code{TRUE} for each individual at each time point in custom interventions.
 }
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a

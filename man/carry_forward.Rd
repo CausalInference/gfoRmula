@@ -4,7 +4,7 @@
 \alias{carry_forward}
 \title{Carry Forward}
 \usage{
-carry_forward(newdf, pool, restriction, time_name, t)
+carry_forward(newdf, pool, restriction, time_name, t, int_visit_type, intvar)
 }
 \arguments{
 \item{newdf}{Data table containing the simulated data at time \eqn{t}.}
@@ -21,6 +21,10 @@ entry some value used by the function (in this case, this entry is not used).}
 \item{time_name}{Character string specifying the name of the time variable in \code{pool} and \code{newdf}.}
 
 \item{t}{Integer specifying the current time index.}
+
+\item{int_visit_type}{Logical scalar specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type}
+
+\item{intvar}{A vector specifying the name(s) of the variable(s) to be intervened on.}
 }
 \value{
 No value is returned. The data table \code{newdf} is modified in place.

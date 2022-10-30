@@ -131,6 +131,9 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param pb                      Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.
+#' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+#'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
+#'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        A data table containing simulated data under the specified intervention.
 #' @keywords internal
@@ -143,7 +146,7 @@ simulate <- function(o, fitcov, fitY, fitD,
                      outcome_type, subseed, obs_data, time_points, parallel,
                      covnames, covtypes, covparams, covpredict_custom,
                      basecovs, max_visits, baselags, below_zero_indicator,
-                     min_time, show_progress, pb, ...){
+                     min_time, show_progress, pb, int_visit_type, ...){
   set.seed(subseed)
 
   # Mechanism of passing intervention variable and intervention is different for parallel
@@ -152,6 +155,7 @@ simulate <- function(o, fitcov, fitY, fitD,
     intvar <- intvars[[o]]
     intervention <- interventions[[o]]
     int_time <- int_times[[o]]
+    int_visit_type <- int_visit_type[o]
   } else {
     intvar <- intvars
     intervention <- interventions
@@ -211,6 +215,12 @@ simulate <- function(o, fitcov, fitY, fitD,
       if (!nat_course){
         mycols <- match(intvar, names(newdf))
         temp_intvar <- newdf[, ..mycols]
+
+        if (!int_visit_type){
+          for (var in intvar){
+            newdf[, eval(paste0(var, '_natural')) := newdf[[var]]]
+          }
+        }
       }
       intfunc(newdf, pool = pool, intervention, intvar, unlist(int_time), time_name, t)
       # Check if intervened
@@ -494,7 +504,7 @@ simulate <- function(o, fitcov, fitY, fitD,
             if (restrictions[[r]][[1]] == covnames[i]){
               restrict_ids <- newdf[!eval(parse(text = restrictions[[r]][[2]]))]$id
               if (length(restrict_ids) != 0){
-                restrictions[[r]][[3]](newdf, pool[pool[[time_name]] < t & pool[[time_name]] >= 0], restrictions[[r]], time_name, t)
+                restrictions[[r]][[3]](newdf, pool[pool[[time_name]] < t & pool[[time_name]] >= 0], restrictions[[r]], time_name, t, int_visit_type, intvar)
               }
             }
           })
@@ -517,6 +527,12 @@ simulate <- function(o, fitcov, fitY, fitD,
       if (!nat_course){
         mycols <- match(intvar, names(newdf))
         temp_intvar <- newdf[, ..mycols]
+
+        if (!int_visit_type){
+          for (var in intvar){
+            newdf[, eval(paste0(var, '_natural')) := newdf[[var]]]
+          }
+        }
       }
       intfunc(newdf, pool, intervention, intvar, unlist(int_time), time_name, t)
       # Check if intervened
