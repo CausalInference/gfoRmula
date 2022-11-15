@@ -318,12 +318,14 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     stop("covmodels and covnames are unequal lengths")
   }
   for (i in seq_along(covnames)){
-    rel_model <- paste(deparse(covmodels[[i]]), collapse = "")
-    model_var <- stringr::str_extract(rel_model, '[^~]+')
-    model_var <- stringr::str_trim(model_var, 'left')
-    model_var <- stringr::str_trim(model_var, 'right')
-    if (!stringr::str_detect(covnames[i], model_var)){
-      stop("covmodels and covnames ordering do not match")
+    if (covtypes[i] != 'categorical time'){
+      rel_model <- paste(deparse(covmodels[[i]]), collapse = "")
+      model_var <- stringr::str_extract(rel_model, '[^~]+')
+      model_var <- stringr::str_trim(model_var, 'left')
+      model_var <- stringr::str_trim(model_var, 'right')
+      if (!stringr::str_detect(covnames[i], model_var)){
+        stop("covmodels and covnames ordering do not match")
+      }
     }
   }
   if (!is.null(ipw_cutoff_quantile) & !is.null(ipw_cutoff_value)){
