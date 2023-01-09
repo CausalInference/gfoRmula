@@ -298,14 +298,6 @@ simulate <- function(o, fitcov, fitY, fitD,
           }
           # Simulate competing event variable
           set(newdf, j = 'D', value = stats::rbinom(data_len, 1, newdf$Pd))
-          # Set simulated competing event values outside the observed range to the observed
-          # min / max
-          if (length(newdf[newdf$D < compevent_range[1]]$D) != 0){
-            set(newdf[newdf$D < compevent_range[1]], j = 'D', value = compevent_range[1])
-          }
-          if (length(newdf[newdf$D > compevent_range[2]]$D) != 0){
-            set(newdf[newdf$D > compevent_range[2]], j = 'D', value = compevent_range[2])
-          }
           # Calculate probability of death by main event rather than competing event at
           # time t
           set(newdf, j = 'prodp1', value = newdf$Py * (1 - newdf$Pd))
@@ -573,14 +565,6 @@ simulate <- function(o, fitcov, fitY, fitD,
           }
           # Simulate competing event variable
           set(newdf, j = 'D', value = stats::rbinom(data_len, 1, newdf$Pd))
-          # Set simulated competing event values outside the observed range to the observed
-          # min / max
-          if (length(newdf[newdf$D < compevent_range[1]]$D) != 0){
-            newdf[newdf$D < compevent_range[1], "D" := compevent_range[1]]
-          }
-          if (length(newdf[newdf$D > compevent_range[2]]$D) != 0){
-            newdf[newdf$D > compevent_range[2], "D" := compevent_range[2]]
-          }
         } else {
           set(newdf, j = 'D', value = 0)
         }
