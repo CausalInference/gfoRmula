@@ -7,7 +7,7 @@
 #' implementation of the parametric g-formula.
 #'
 #' To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course risk and/or means of the time-varying covariates from the observed data.
-#' See Chiu et al. (2022) for details.
+#' See Chiu et al. (In press) for details.
 #' In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
 #'
 #' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
@@ -146,7 +146,7 @@
 #'
 #' The results for the g-formula simulation are printed with the \code{\link{print.gformula_survival}}, \code{\link{print.gformula_continuous_eof}}, and \code{\link{print.gformula_binary_eof}} functions. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}}, \code{\link{plot.gformula_continuous_eof}}, and \code{\link{plot.gformula_binary_eof}} functions.
 #'
-#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Evaluating model specification when using the parametric g-formula in the presence of censoring. American Journal of Epidemiology. In press.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -446,7 +446,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course risk and/or means of the time-varying covariates from the observed data.
-#' See Chiu et al. (2022) for details.
+#' See Chiu et al. (In press) for details.
 #' In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
 #'
 #' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
@@ -585,7 +585,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' The results for the g-formula simulation under various interventions only for the first and last time points are printed with the \code{\link{print.gformula_survival}} function. To generate graphs comparing the mean estimated covariate values and risks over time and mean observed covariate values and risks over time, use the \code{\link{plot.gformula_survival}} function.
 #'
 #' @seealso \code{\link{gformula}}
-#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Evaluating model specification when using the parametric g-formula in the presence of censoring. American Journal of Epidemiology. In press.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -1368,7 +1368,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course means of the time-varying covariates from the observed data.
-#' See Chiu et al. (2022) for details.
+#' See Chiu et al. (In press) for details.
 #' In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
 #'
 #' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
@@ -1488,7 +1488,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_continuous_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{print.gformula_continuous_eof}} function.
 #'
 #' @seealso \code{\link{gformula}}
-#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Evaluating model specification when using the parametric g-formula in the presence of censoring. American Journal of Epidemiology. In press.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples
@@ -2101,7 +2101,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' further details concerning the application and implementation of the parametric g-formula.
 #'
 #' To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course means of the time-varying covariates from the observed data.
-#' See Chiu et al. (2022) for details.
+#' See Chiu et al. (In press) for details.
 #' In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
 #'
 #' Users need to include a column in \code{obs_data} with a time-varying censoring variable.
@@ -2221,7 +2221,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' The results for the g-formula simulation under various interventions for the last time point are printed with the \code{\link{print.gformula_binary_eof}} function. To generate graphs comparing the mean estimated and observed covariate values over time, use the \code{\link{plot.gformula_binary_eof}} function.
 #'
 #' @seealso \code{\link{gformula}}
-#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Assessing model misspecification of the parametric g-formula in the presence of censoring. In preparation.
+#' @references Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Evaluating model specification when using the parametric g-formula in the presence of censoring. American Journal of Epidemiology. In press.
 #' @references McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 #' @references Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 #' @examples

@@ -1,6 +1,6 @@
 ## Package Updates
 
-### Changes in Version 1.0.1 (TBD)
+### Changes in Version 1.0.1 (2023-01-11)
 
 -   Added the “cumulative percent intervened on” and “average percent
     intervened on” to the output of the `gformula()` function
