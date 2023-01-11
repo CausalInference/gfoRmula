@@ -10,6 +10,8 @@
 -   Added option for users to access the bootstrap replicates of the
     parametric g-formula estimates. See the `boot_diag` argument in the
     `gformula()` function.
+-   Fixed an error in computing the inverse probability weighted means
+    of the time-varying covariates
 
 ### Changes in Version 1.0.0 (2022-04-09)
 

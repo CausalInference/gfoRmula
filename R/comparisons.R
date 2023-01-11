@@ -42,7 +42,13 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
         cov_means <- rep(NA, length = time_points)
         for (i in 0:(time_points-1)){
           cur_time_ind <- obs_data[[time_name]] == i
-          cov_means[i+1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]], w = w[cur_time_ind], na.rm = TRUE)
+          if (i == 0){
+            cov_means[i+1] <- mean(obs_data[cur_time_ind][[covname]], na.rm = TRUE)
+          } else {
+            individuals_at_cur_time <- obs_data[obs_data[[time_name]] == i]$id
+            prev_time_ind <- obs_data$id %in% individuals_at_cur_time & obs_data[[time_name]] == (i - 1)
+            cov_means[i+1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]], w = w[prev_time_ind], na.rm = TRUE)
+          }
         }
       } else {
         all_levels <- levels(obs_data[[covname]])
@@ -54,9 +60,18 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
         row_ind <- 1
         for (i in 0:(time_points - 1)){
           cur_time_ind <- obs_data[[time_name]] == i
-          for (level in all_levels){
-            cov_means[row_ind, 'V1'] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]] == level, w = w[cur_time_ind], na.rm = TRUE)
-            row_ind <- row_ind + 1
+          if (i == 0){
+            for (level in all_levels){
+              cov_means[row_ind, 'V1'] <- mean(obs_data[cur_time_ind][[covname]] == level, na.rm = TRUE)
+              row_ind <- row_ind + 1
+            }
+          } else {
+            individuals_at_cur_time <- obs_data[obs_data[[time_name]] == i]$id
+            prev_time_ind <- obs_data$id %in% individuals_at_cur_time & obs_data[[time_name]] == (i - 1)
+            for (level in all_levels){
+              cov_means[row_ind, 'V1'] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]] == level, w = w[prev_time_ind], na.rm = TRUE)
+              row_ind <- row_ind + 1
+            }
           }
         }
       }
