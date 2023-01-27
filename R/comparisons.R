@@ -51,7 +51,7 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
           }
         }
       } else {
-        all_levels <- levels(obs_data[[covname]])
+        all_levels <- levels(as.factor(obs_data[[covname]]))
         cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
                                 V1 = rep(-1, length = time_points * length(all_levels)))
         cov_means[, (covname)] <- rep(all_levels, times = time_points)
@@ -357,7 +357,7 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
           cov_means[i+1] <- mean(nat_pool[cur_time_ind][[covname]] * psurv) / mean(psurv)
         }
       } else {
-        all_levels <- levels(obs_data[[covname]])
+        all_levels <- levels(as.factor(obs_data[[covname]]))
         cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
                                 V1 = rep(-1, length = time_points * length(all_levels)))
         cov_means[, (covname)] <- rep(all_levels, times = time_points)

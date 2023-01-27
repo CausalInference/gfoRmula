@@ -1126,7 +1126,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     se_RD <- comb_RD[, lapply(.SD, stats::sd), by = t0]
     if (hazardratio){
       hr_res[2] <- stats::sd(comb_HR$V1)
-      names(hr_res)[2:4] <- c('HR SE', 'HR lower 95% CI', 'HR upper 95% CI')
     }
 
     if (ci_method == 'normal'){
@@ -1151,6 +1150,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
       if (hazardratio){
         hr_res[3:4] <- stats::quantile(comb_HR$V1, probs = c(0.025, 0.975))
       }
+    }
+    if (hazardratio){
+      names(hr_res)[2:4] <- c('HR SE', 'HR lower 95% CI', 'HR upper 95% CI')
     }
   }
   if (nsamples > 0 & boot_diag){

@@ -1,5 +1,12 @@
 ## Package Updates
 
+### Changes in Version 1.0.2 (TBD)
+
+-   Fixed an error when obtaining confidence intervals around the hazard
+    ratio estimates
+-   Allowed categorical covariates to be of class “numeric” (rather than
+    requiring them to be of class “factor”)
+
 ### Changes in Version 1.0.1 (2023-01-11)
 
 -   Added the “cumulative percent intervened on” and “average percent
