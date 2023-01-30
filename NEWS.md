@@ -2,6 +2,8 @@
 
 ### Changes in Version 1.0.2 (TBD)
 
+-   Revised the plot of the estimates of the natural course risk so that
+    it starts at (0, 0)
 -   Fixed an error when obtaining confidence intervals around the hazard
     ratio estimates
 -   Allowed categorical covariates to be of class “numeric” (rather than

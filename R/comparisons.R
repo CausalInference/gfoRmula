@@ -485,18 +485,27 @@ get_cvgrphs <- function(x, covnames, covtypes, xlab, ylab_cov){
 #' @import ggplot2
 get_outgrphs <- function(x, risk, survival, xlab, ylab_risk, ylab_surv, ci_risk){
 
+  temp1 <- data.table(0, 0, 1, 'nonparametric estimates')
+  temp2 <- data.table(0, 0, 1, 'parametric g-formula estimates')
+  colnames(temp1) <- colnames(temp2) <- c(x$time_name, 'risk', 'survival', 'legend')
+
+  dt_out_plot_rev <- x$dt_out_plot
+  dt_out_plot_rev[, 1] <- dt_out_plot_rev[, 1] + 1
+  dt_out_plot_rev <- rbind(temp1, dt_out_plot_rev[dt_out_plot_rev$legend == 'nonparametric estimates', ],
+                           temp2, dt_out_plot_rev[dt_out_plot_rev$legend == 'parametric g-formula estimates', ])
+
   risk_outgrph <-
-    ggplot(data = x$dt_out_plot, aes_string(x = x$time_name, y = "risk", color = "legend")) +
+    ggplot(data = dt_out_plot_rev, aes_string(x = x$time_name, y = "risk", color = "legend")) +
     geom_point() + geom_line() + xlab(xlab) + ylab(ylab_risk)
   surv_outgrph <-
-    ggplot(data = x$dt_out_plot, aes_string(x = x$time_name, y = "survival", color = "legend")) +
+    ggplot(data = dt_out_plot_rev, aes_string(x = x$time_name, y = "survival", color = "legend")) +
     geom_point() + geom_line() + xlab(xlab) + ylab(ylab_surv)
 
   if (x$nsamples > 0 & ci_risk){
     nat_data <- x$result[x$result$Interv. == 0]
     risk_outgrph <-
-      risk_outgrph + geom_errorbar(aes(ymin = rep(nat_data$`Risk lower 95% CI`, 2),
-                                       ymax = rep(nat_data$`Risk upper 95% CI`, 2)),
+      risk_outgrph + geom_errorbar(aes(ymin = rep(c(0, nat_data$`Risk lower 95% CI`), 2),
+                                       ymax = rep(c(0, nat_data$`Risk upper 95% CI`), 2)),
                                    width = 0.3)
   }
 
