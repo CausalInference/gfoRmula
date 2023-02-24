@@ -6,6 +6,8 @@
     it starts at (0, 0)
 -   Fixed an error when obtaining confidence intervals around the hazard
     ratio estimates
+-   Fixed an error in the reported standard errors of the coefficients
+    of the fitted categorical covariate models
 -   Allowed categorical covariates to be of class “numeric” (rather than
     requiring them to be of class “factor”)
 

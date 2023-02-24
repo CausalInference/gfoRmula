@@ -397,7 +397,7 @@ add_rmse <- function(fit){
 
 add_stderr <- function(fit){
   if (any(class(fit) == 'multinom')){
-    return(summary(fit)$coefficients)
+    return(summary(fit)$standard.errors)
   } else {
     return (stats::coefficients(summary(fit))[, "Std. Error"])
   }
