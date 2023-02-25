@@ -862,7 +862,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
       NA
     }
   })
-  yrange <- range(obs_data_geq_0[[outcome_name]])
 
   # Fit models to covariates and outcome variable
   if (time_points > 1){
@@ -881,10 +880,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   if (comprisk){
     fitD <- pred_fun_D(compevent_model, compevent_restrictions, obs_data_geq_0,
                        model_fits = model_fits)
-    compevent_range <- range(obs_data_geq_0[[compevent_name]])
   } else {
     fitD <- NA
-    compevent_range <- NA
   }
   if (comprisk2){
     fitD2 <- pred_fun_D(compevent2_model, NA, obs_data_geq_0,
@@ -962,7 +959,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                  covparams = covparams, covnames = covnames, covtypes = covtypes,
                                  covpredict_custom = covpredict_custom, basecovs = basecovs,
                                  comprisk = comprisk, ranges = ranges,
-                                 yrange = yrange, compevent_range = compevent_range,
                                  outcome_type = outcome_type,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel, max_visits = max_visits,
@@ -982,7 +978,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                histories = histories, covparams = covparams,
                covnames = covnames, covtypes = covtypes,
                covpredict_custom = covpredict_custom, basecovs = basecovs, comprisk = comprisk,
-               ranges = ranges, yrange = yrange, compevent_range = compevent_range,
+               ranges = ranges,
                outcome_type = outcome_type,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel, max_visits = max_visits,
@@ -1070,7 +1066,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                       yrestrictions = yrestrictions,
                                       compevent_restrictions = compevent_restrictions,
                                       restrictions = restrictions, outcome_type = outcome_type,
-                                      ranges = ranges, yrange = yrange, compevent_range = compevent_range,
+                                      ranges = ranges,
                                       time_name = time_name, outcome_name = outcome_name,
                                       compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
@@ -1096,7 +1092,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          compevent_restrictions = compevent_restrictions,
                          restrictions = restrictions,
                          outcome_type = outcome_type,
-                         ranges = ranges, yrange = yrange, compevent_range = compevent_range,
+                         ranges = ranges,
                          time_name = time_name, outcome_name = outcome_name,
                          compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
@@ -1690,7 +1686,6 @@ gformula_continuous_eof <- function(obs_data, id,
       NA
     }
   })
-  yrange <- range(obs_data_geq_0[[outcome_name]])
 
   # Fit models to covariates and outcome variable
   if (time_points > 1){
@@ -1770,7 +1765,6 @@ gformula_continuous_eof <- function(obs_data, id,
                                  covparams = covparams, covnames = covnames, covtypes = covtypes,
                                  covpredict_custom = covpredict_custom, basecovs = basecovs,
                                  comprisk = comprisk, ranges = ranges,
-                                 yrange = yrange, compevent_range = NA,
                                  outcome_type = outcome_type,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel,
@@ -1789,7 +1783,7 @@ gformula_continuous_eof <- function(obs_data, id,
                int_times = comb_int_times[[i]], histvars = histvars, histvals = histvals, histories = histories,
                covparams = covparams, covnames = covnames, covtypes = covtypes,
                covpredict_custom = covpredict_custom, basecovs = basecovs, comprisk = comprisk,
-               ranges = ranges, yrange = yrange, compevent_range = NA,
+               ranges = ranges,
                outcome_type = outcome_type,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel,
@@ -1842,7 +1836,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                       yrestrictions = yrestrictions,
                                       compevent_restrictions = compevent_restrictions,
                                       restrictions = restrictions, outcome_type = outcome_type,
-                                      ranges = ranges, yrange = yrange, compevent_range = NA,
+                                      ranges = ranges,
                                       time_name = time_name, outcome_name = outcome_name,
                                       compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
@@ -1869,7 +1863,7 @@ gformula_continuous_eof <- function(obs_data, id,
                          compevent_restrictions = compevent_restrictions,
                          restrictions = restrictions,
                          outcome_type = outcome_type,
-                         ranges = ranges, yrange = yrange, compevent_range = NA,
+                         ranges = ranges,
                          time_name = time_name, outcome_name = outcome_name,
                          compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
@@ -2416,7 +2410,6 @@ gformula_binary_eof <- function(obs_data, id,
       NA
     }
   })
-  yrange <- range(obs_data_geq_0[[outcome_name]])
 
   # Fit models to covariates and outcome variable
   if (time_points > 1){
@@ -2496,7 +2489,6 @@ gformula_binary_eof <- function(obs_data, id,
                                  covparams = covparams, covnames = covnames, covtypes = covtypes,
                                  covpredict_custom = covpredict_custom, basecovs = basecovs,
                                  comprisk = comprisk, ranges = ranges,
-                                 yrange = yrange, compevent_range = NA,
                                  outcome_type = outcome_type,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel,
@@ -2516,7 +2508,7 @@ gformula_binary_eof <- function(obs_data, id,
                int_times = comb_int_times[[i]], histvars = histvars, histvals = histvals, histories = histories,
                covparams = covparams, covnames = covnames, covtypes = covtypes,
                covpredict_custom = covpredict_custom, basecovs = basecovs, comprisk = comprisk,
-               ranges = ranges, yrange = yrange, compevent_range = NA,
+               ranges = ranges,
                outcome_type = outcome_type,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel,
@@ -2569,7 +2561,7 @@ gformula_binary_eof <- function(obs_data, id,
                                       yrestrictions = yrestrictions,
                                       compevent_restrictions = compevent_restrictions,
                                       restrictions = restrictions, outcome_type = outcome_type,
-                                      ranges = ranges, yrange = yrange, compevent_range = NA,
+                                      ranges = ranges,
                                       time_name = time_name, outcome_name = outcome_name,
                                       compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
@@ -2596,7 +2588,7 @@ gformula_binary_eof <- function(obs_data, id,
                          compevent_restrictions = compevent_restrictions,
                          restrictions = restrictions,
                          outcome_type = outcome_type,
-                         ranges = ranges, yrange = yrange, compevent_range = NA,
+                         ranges = ranges,
                          time_name = time_name, outcome_name = outcome_name,
                          compevent_name = compevent_name, parallel = parallel, ncores = ncores,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,

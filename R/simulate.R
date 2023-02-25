@@ -92,10 +92,6 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @param comprisk                Logical scalar indicating the presence of a competing event.
 #' @param ranges                  List of vectors. Each vector contains the minimum and
 #'                                maximum values of one of the covariates in \code{covnames}.
-#' @param yrange                  Vector containing the minimum and maximum values of the
-#'                                outcome variable in the observed dataset.
-#' @param compevent_range         Vector containing the minimum and maximum values of the
-#'                                competing event variable in the observed dataset.
 #' @param outcome_type            Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
 #' @param subseed                 Integer specifying the seed for this simulation.
 #' @param obs_data                Data table containing the observed data.
@@ -142,7 +138,7 @@ simulate <- function(o, fitcov, fitY, fitD,
                      yrestrictions, compevent_restrictions, restrictions,
                      outcome_name, compevent_name, time_name,
                      intvars, interventions, int_times, histvars, histvals, histories,
-                     comprisk, ranges, yrange, compevent_range,
+                     comprisk, ranges,
                      outcome_type, subseed, obs_data, time_points, parallel,
                      covnames, covtypes, covparams, covpredict_custom,
                      basecovs, max_visits, baselags, below_zero_indicator,
@@ -273,13 +269,6 @@ simulate <- function(o, fitcov, fitY, fitD,
       # Simulate outcome variable
       if (outcome_type == 'survival'){
         set(newdf, j = 'Y', value = stats::rbinom(data_len, 1, newdf$Py))
-      }
-      # Set simulated outcome values outside the observed range to the observed min / max
-      if (length(newdf[newdf$Y < yrange[1]]$Y) != 0){
-        set(newdf[newdf$Y < yrange[1]], j = 'Y', value = yrange[1])
-      }
-      if (length(newdf[newdf$Y > yrange[2]]$Y) != 0){
-        set(newdf[newdf$Y > yrange[2]], j = 'Y', value = yrange[2])
       }
       if (outcome_type == 'survival')
       {
@@ -600,13 +589,6 @@ simulate <- function(o, fitcov, fitY, fitD,
       # Simulate outcome variable
       if (outcome_type == 'survival'){
         set(newdf, j = 'Y', value = stats::rbinom(data_len, 1, newdf$Py))
-      }
-      # Set simulated outcome values outside the observed range to the observed min / max
-      if (length(newdf[newdf$Y < yrange[1]]$Y) != 0){
-        newdf[newdf$Y < yrange[1], 'Y' := yrange[1]]
-      }
-      if (length(newdf[newdf$Y > yrange[2]]$Y) != 0){
-        newdf[newdf$Y > yrange[2], 'Y' := yrange[2]]
       }
       if (outcome_type == 'survival')
         newdf[newdf$D == 1, 'Y' := NA]

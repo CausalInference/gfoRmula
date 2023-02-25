@@ -23,8 +23,6 @@ simulate(
   histories,
   comprisk,
   ranges,
-  yrange,
-  compevent_range,
   outcome_type,
   subseed,
   obs_data,
@@ -104,12 +102,6 @@ in \code{histories} is to be applied.}
 
 \item{ranges}{List of vectors. Each vector contains the minimum and
 maximum values of one of the covariates in \code{covnames}.}
-
-\item{yrange}{Vector containing the minimum and maximum values of the
-outcome variable in the observed dataset.}
-
-\item{compevent_range}{Vector containing the minimum and maximum values of the
-competing event variable in the observed dataset.}
 
 \item{outcome_type}{Character string specifying the "type" of the outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.}
 

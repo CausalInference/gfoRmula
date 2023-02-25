@@ -74,10 +74,6 @@
 #' @param compevent_name          Character string specifying the name of the competing event variable in \code{obs_data}.
 #' @param ranges                  List of vectors. Each vector contains the minimum and
 #'                                maximum values of one of the covariates in \code{covnames}.
-#' @param yrange                  Vector containing the minimum and maximum values of the
-#'                                outcome variable in the observed dataset.
-#' @param compevent_range         Vector containing the minimum and maximum values of the
-#'                                competing event variable in the observed dataset.
 #' @param parallel                Logical scalar indicating whether to parallelize simulations of
 #'                                different interventions to multiple cores.
 #' @param ncores                  Integer specifying the number of cores to use in parallel
@@ -121,7 +117,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              ymodel, yrestrictions, compevent_restrictions, restrictions,
                              comprisk, compevent_model,
                              time_name, outcome_name, compevent_name,
-                             ranges, yrange, compevent_range, parallel, ncores, max_visits,
+                             ranges, parallel, ncores, max_visits,
                              hazardratio, intcomp, boot_diag, nsimul, baselags,
                              below_zero_indicator, min_time, show_progress, pb,
                              int_visit_type){
@@ -191,7 +187,6 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
              covpredict_custom = covpredict_custom,
              basecovs = basecovs,
              comprisk = comprisk, ranges = ranges,
-             yrange = yrange, compevent_range = compevent_range,
              outcome_type = outcome_type,
              subseed = bootseeds[r], time_points = time_points,
              obs_data = resample_data, parallel = FALSE, max_visits = max_visits,

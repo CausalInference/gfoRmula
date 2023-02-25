@@ -33,8 +33,6 @@ bootstrap_helper(
   outcome_name,
   compevent_name,
   ranges,
-  yrange,
-  compevent_range,
   parallel,
   ncores,
   max_visits,
@@ -147,12 +145,6 @@ third entry. The default is \code{NA}.}
 
 \item{ranges}{List of vectors. Each vector contains the minimum and
 maximum values of one of the covariates in \code{covnames}.}
-
-\item{yrange}{Vector containing the minimum and maximum values of the
-outcome variable in the observed dataset.}
-
-\item{compevent_range}{Vector containing the minimum and maximum values of the
-competing event variable in the observed dataset.}
 
 \item{parallel}{Logical scalar indicating whether to parallelize simulations of
 different interventions to multiple cores.}
