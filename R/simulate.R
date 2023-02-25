@@ -164,9 +164,7 @@ simulate <- function(o, fitcov, fitY, fitD,
 
   if (!is.null(fitcov)){
     rmses <- lapply(seq_along(fitcov), FUN = rmse_calculate, fits = fitcov, covnames = covnames,
-                    covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
-                    time_name = time_name, restrictions = restrictions,
-                    yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
+                    covtypes = covtypes)
   }
 
   # Initialize

@@ -204,75 +204,23 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
 #' @param fits                      List of fitted models.
 #' @param covnames                  Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.
 #' @param covtypes                  Vector of character strings specifying the "type" of each time-varying covariate included in \code{covnames}. The possible "types" are: \code{"binary"}, \code{"normal"}, \code{"categorical"}, \code{"bounded normal"}, \code{"zero-inflated normal"}, \code{"truncated normal"}, \code{"absorbing"}, \code{"categorical time"}, and \code{"custom"}.
-#' @param obs_data                  Data table containing the observed data.
-#' @param outcome_name              Character string specifying the name of the outcome variable in \code{obs_data}.
-#' @param time_name                 Character string specifying the name of the time variable in \code{obs_data}.
-#' @param restrictions              List of vectors. Each vector contains as its first entry a covariate for which
-#'                                  \emph{a priori} knowledge of its distribution is available; its second entry a condition
-#'                                  under which no knowledge of its distribution is available and that must be \code{TRUE}
-#'                                  for the distribution of that covariate given that condition to be estimated via a parametric
-#'                                  model or other fitting procedure; its third entry a function for estimating the distribution
-#'                                  of that covariate given the condition in the second entry is false such that \emph{a priori} knowledge
-#'                                  of the covariate distribution is available; and its fourth entry a value used by the function in the
-#'                                  third entry. The default is \code{NA}.
-#' @param yrestrictions             List of vectors. Each vector containins as its first entry
-#'                                  a condition and its second entry an integer. When the
-#'                                  condition is \code{TRUE}, the outcome variable is simulated
-#'                                  according to the fitted model; when the condition is \code{FALSE},
-#'                                  the outcome variable takes on the value in the second entry.
-#' @param compevent_restrictions    List of vectors. Each vector containins as its first entry
-#'                                  a condition and its second entry an integer. When the
-#'                                  condition is \code{TRUE}, the competing event variable is simulated
-#'                                  according to the fitted model; when the condition is \code{FALSE},
-#'                                  the competing event variable takes on the value in the
-#'                                  second entry.
 #'
 #' @return                          The RMSE for the model.
 #' @keywords internal
 #' @import data.table
 
-rmse_calculate <- function(i, fits, covnames, covtypes, obs_data, outcome_name, time_name,
-                           restrictions, yrestrictions, compevent_restrictions){
+rmse_calculate <- function(i, fits, covnames, covtypes){
   fit <- fits[[i]]
-  obs_data <- obs_data[obs_data[[time_name]] > 0]
   if (i <= length(covtypes)){
     if (covtypes[i] == 'normal' || covtypes[i] == 'binary' ||
         covtypes[i] == 'bounded normal' || covtypes[i] == 'truncated normal'){
-      fit$rmse
+      return(fit$rmse)
     } else if (covtypes[i] == 'zero-inflated normal') {
       fit <- fits[[i]][[2]]
       return (fit$rmse)
     }
   } else {
-    if (i == length(covtypes) + 1) {
-      if (!is.na(yrestrictions[[1]][[1]])){ # Check for restrictions on outcome variable modeling
-        # Set condition where outcome variable is modeled
-        ycondition <- yrestrictions[[1]][1]
-        if (length(yrestrictions) > 1){
-          # If more than one restriction on outcome variable, set condition such that modeling
-          # occurs when any one of the restriction conditions is fulfilled
-          for (yrestriction in yrestrictions[-1]){
-            ycondition <- paste(ycondition, yrestriction[1], sep = "||")
-          }
-        }
-        obs_data <- subset(obs_data, eval(parse(text = ycondition)))
-      }
-    }
-    if (i == length(covtypes) + 2) {
-      if (!is.na(compevent_restrictions[[1]][[1]])){ # Check for restrictions on compevent event variable modeling
-        # Set condition where competing event variable is modeled
-        dcondition <- compevent_restrictions[[1]][1]
-        if (length(compevent_restrictions) > 1){
-          # If more than one restriction on compeeting event variable, set condition such
-          # that modeling occurs when any one of the restriction conditions is fulfilled
-          for (compevent_restriction in compevent_restrictions[-1]){
-            dcondition <- paste(dcondition, compevent_restriction[1], sep = "||")
-          }
-        }
-        obs_data <- subset(obs_data, eval(parse(text = dcondition)))
-      }
-    }
-    return (sqrt(mean(obs_data[[outcome_name]] - stats::predict(fit, newdata = obs_data), na.rm = TRUE)^2))
+    return (fit$rmse)
   }
 }
 

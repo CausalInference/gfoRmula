@@ -1301,9 +1301,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                      covnames = covnames)
 
   rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
-                  covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
-                  time_name = time_name, restrictions = restrictions,
-                  yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
+                  covtypes = covtypes)
   if (!is.na(fitD)[[1]]){
     if (time_points == 1){
       rmses <- stats::setNames(rmses, c(outcome_name, compevent_name))
@@ -2045,9 +2043,7 @@ gformula_continuous_eof <- function(obs_data, id,
 
 
   rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
-                  covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
-                  time_name = time_name, restrictions = restrictions,
-                  yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
+                  covtypes = covtypes)
 
   if (time_points == 1){
     rmses <- stats::setNames(rmses, outcome_name)
@@ -2774,9 +2770,7 @@ gformula_binary_eof <- function(obs_data, id,
 
 
   rmses <- lapply(seq_along(fits), FUN = rmse_calculate, fits = fits, covnames = covnames,
-                  covtypes = covtypes, obs_data = obs_data, outcome_name = outcome_name,
-                  time_name = time_name, restrictions = restrictions,
-                  yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions)
+                  covtypes = covtypes)
 
   if (time_points == 1){
     rmses <- stats::setNames(rmses, outcome_name)

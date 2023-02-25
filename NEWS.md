@@ -8,6 +8,8 @@
     ratio estimates
 -   Fixed an error in the reported standard errors of the coefficients
     of the fitted categorical covariate models
+-   Fixed an error in the reported root mean squared error values for
+    the outcome and competing event models
 -   Allowed categorical covariates to be of class “numeric” (rather than
     requiring them to be of class “factor”)
 
