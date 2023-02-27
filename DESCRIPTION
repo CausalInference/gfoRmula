@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
@@ -15,6 +15,8 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
                       email = "rwlogan@hsph.harvard.edu"),
               person("Lucia C.", "Petito", role = c("aut"),
                       email = "petito@hsph.harvard.edu"),
+              person("Jing", "Li", role = c("aut"), 
+                      email = "jing_li@hsph.harvard.edu"),
               person("Jessica G.", "Young", role = c("aut"),
                       email = "jyoung@hsph.harvard.edu",
                       comment = c(ORCID = "0000-0002-2758-6932", 

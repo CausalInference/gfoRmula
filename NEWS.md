@@ -1,6 +1,6 @@
 ## Package Updates
 
-### Changes in Version 1.0.2 (TBD)
+### Changes in Version 1.0.2 (2023-02-27)
 
 -   Revised the plot of the estimates of the natural course risk so that
     it starts at (0, 0)
