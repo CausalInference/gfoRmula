@@ -1,5 +1,10 @@
 ## Package Updates
 
+### Changes in Version 1.0.3 (TBD)
+
+-   Fixed an error in the `gformula()` function that assumed that the
+    name of the ID variable in `obs_data` was `'id'`
+
 ### Changes in Version 1.0.2 (2023-02-27)
 
 -   Revised the plot of the estimates of the natural course risk so that

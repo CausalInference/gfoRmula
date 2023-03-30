@@ -10,6 +10,7 @@ get_plot_info(
   compevent2_name,
   censor_name,
   time_name,
+  id,
   time_points,
   covnames,
   covtypes,
@@ -36,6 +37,8 @@ get_plot_info(
 \item{censor_name}{Character string specifying the name of the censoring variable in \code{obs_data}.}
 
 \item{time_name}{Character string specifying the name of the time variable in \code{obs_data}.}
+
+\item{id}{Character string specifying the name of the ID variable in \code{obs_data}.}
 
 \item{time_points}{Number of time points to simulate.}
 

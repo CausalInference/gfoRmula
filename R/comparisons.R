@@ -8,6 +8,7 @@
 #' @param compevent2_name Character string specifying the name of the competing event variable in \code{obs_data} if competing events are treated as censoring events.
 #' @param censor_name     Character string specifying the name of the censoring variable in \code{obs_data}.
 #' @param time_name       Character string specifying the name of the time variable in \code{obs_data}.
+#' @param id              Character string specifying the name of the ID variable in \code{obs_data}.
 #' @param covnames        Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.
 #' @param covtypes        Vector of character strings specifying the "type" of each time-varying covariate included in \code{covnames}. The possible "types" are: \code{"binary"}, \code{"normal"}, \code{"categorical"}, \code{"bounded normal"}, \code{"zero-inflated normal"}, \code{"truncated normal"}, \code{"absorbing"}, \code{"categorical time"}, and \code{"custom"}.
 #' @param comprisk        Logical scalar indicating the presence of a competing event.
@@ -26,7 +27,7 @@
 #'                        third entry is a vector of mean observed survival.
 #' @keywords internal
 #' @import data.table
-obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, covnames, covtypes, comprisk,
+obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, id, covnames, covtypes, comprisk,
                           comprisk2, censor, fitD2, fitC, outcome_type, obs_data, ipw_cutoff_quantile, ipw_cutoff_value){
 
   time_points <- max(obs_data[[time_name]]) + 1
@@ -45,8 +46,8 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
           if (i == 0){
             cov_means[i+1] <- mean(obs_data[cur_time_ind][[covname]], na.rm = TRUE)
           } else {
-            individuals_at_cur_time <- obs_data[obs_data[[time_name]] == i]$id
-            prev_time_ind <- obs_data$id %in% individuals_at_cur_time & obs_data[[time_name]] == (i - 1)
+            individuals_at_cur_time <- obs_data[obs_data[[time_name]] == i][[id]]
+            prev_time_ind <- obs_data[[id]] %in% individuals_at_cur_time & obs_data[[time_name]] == (i - 1)
             cov_means[i+1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]], w = w[prev_time_ind], na.rm = TRUE)
           }
         }
@@ -66,8 +67,8 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
               row_ind <- row_ind + 1
             }
           } else {
-            individuals_at_cur_time <- obs_data[obs_data[[time_name]] == i]$id
-            prev_time_ind <- obs_data$id %in% individuals_at_cur_time & obs_data[[time_name]] == (i - 1)
+            individuals_at_cur_time <- obs_data[obs_data[[time_name]] == i][[id]]
+            prev_time_ind <- obs_data[[id]] %in% individuals_at_cur_time & obs_data[[time_name]] == (i - 1)
             for (level in all_levels){
               cov_means[row_ind, 'V1'] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]] == level, w = w[prev_time_ind], na.rm = TRUE)
               row_ind <- row_ind + 1
@@ -83,13 +84,13 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
   if (censor){
     # Step 1: Compute weights
     censor_p0_inv <- 1 / (1 - stats::predict(fitC, type = 'response', newdata = obs_data))
-    censor_inv_cum <- unlist(tapply(censor_p0_inv, obs_data[['id']], FUN = cumprod))
+    censor_inv_cum <- unlist(tapply(censor_p0_inv, obs_data[[id]], FUN = cumprod))
     w_c <- ifelse(obs_data[[censor_name]] == 1, 0, censor_inv_cum)
     if (outcome_type == 'survival' & comprisk2){
       comprisk_p0_inv <- rep(0, length = nrow(obs_data))
       row_ind <- !is.na(obs_data[[compevent2_name]])
       comprisk_p0_inv[row_ind] <- 1 / (1 - stats::predict(fitD2, type = 'response', newdata = obs_data[row_ind]))
-      comprisk_inv_cum <- unlist(tapply(comprisk_p0_inv, obs_data[['id']], FUN = cumprod))
+      comprisk_inv_cum <- unlist(tapply(comprisk_p0_inv, obs_data[[id]], FUN = cumprod))
       w_d <- ifelse(obs_data[[compevent2_name]] == 1 | is.na(obs_data[[compevent2_name]]), 0, comprisk_inv_cum)
       w <- w_c * w_d
     } else {
@@ -235,6 +236,7 @@ rmse_calculate <- function(i, fits, covnames, covtypes){
 #' @param compevent2_name Character string specifying the name of the competing event variable in \code{obs_data} if competing events are treated as censoring events.
 #' @param censor_name     Character string specifying the name of the censoring variable in \code{obs_data}.
 #' @param time_name       Character string specifying the name of the time variable in \code{obs_data}.
+#' @param id              Character string specifying the name of the ID variable in \code{obs_data}.
 #' @param time_points     Number of time points to simulate.
 #' @param covnames        Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.
 #' @param covtypes        Vector of character strings specifying the "type" of each time-varying covariate included in \code{covnames}. The possible "types" are: \code{"binary"}, \code{"normal"}, \code{"categorical"}, \code{"bounded normal"}, \code{"zero-inflated normal"}, \code{"truncated normal"}, \code{"absorbing"}, \code{"categorical time"}, and \code{"custom"}.
@@ -256,14 +258,14 @@ rmse_calculate <- function(i, fits, covnames, covtypes){
 #' @keywords internal
 #' @import data.table
 #' @import ggplot2
-get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, time_points,
+get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_name, time_name, id, time_points,
                           covnames, covtypes, nat_pool, nat_result, comprisk, comprisk2, censor,
                           fitD2, fitC, outcome_type, obs_data, ipw_cutoff_quantile, ipw_cutoff_value){
 
   # Calculate mean observed values at each time point for covariates, risk, and survival
   obs_results <- obs_calculate(outcome_name = outcome_name, compevent_name = compevent_name,
                                compevent2_name = compevent2_name, censor_name = censor_name,
-                               time_name = time_name,
+                               time_name = time_name, id = id,
                                covnames = covnames, covtypes = covtypes, comprisk = comprisk,
                                comprisk2 = comprisk2, censor = censor,
                                fitD2 = fitD2, fitC = fitC, outcome_type = outcome_type,
