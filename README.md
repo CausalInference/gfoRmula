@@ -5,9 +5,7 @@
 
 <!-- badges: start -->
 
-[![Travis build
-status](https://travis-ci.org/CausalInference/gfoRmula.svg?branch=master)](https://travis-ci.org/CausalInference/gfoRmula)
-[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/gfoRmula)](https://cran.r-project.org/package=gfoRmula)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/gfoRmula)](https://cran.r-project.org/package=gfoRmula)
 <!-- badges: end -->
 
 ## Installation
@@ -29,5 +27,5 @@ devtools::install_github("CausalInference/gfoRmula")
 ## Usage
 
 Please refer to [McGrath et
-al. (2020)](https://www.cell.com/patterns/fulltext/S2666-3899\(20\)30008-8)
+al. (2020)](https://www.cell.com/patterns/fulltext/S2666-3899(20)30008-8)
 for a detailed guide to the `gfoRmula` package.

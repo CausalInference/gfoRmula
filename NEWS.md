@@ -1,9 +1,10 @@
 ## Package Updates
 
-### Changes in Version 1.0.3 (TBD)
+### Changes in Version 1.0.3 (2023-05-18)
 
 -   Fixed an error in the `gformula()` function that assumed that the
     name of the ID variable in `obs_data` was `'id'`
+-   Removed Travis CI
 
 ### Changes in Version 1.0.2 (2023-02-27)
 
