@@ -435,13 +435,14 @@ get_cvgrphs <- function(x, covnames, covtypes, xlab, ylab_cov){
 #' @import ggplot2
 get_outgrphs <- function(x, risk, survival, xlab, ylab_risk, ylab_surv, ci_risk){
 
-  temp1 <- data.table(0, 0, 1, 'nonparametric estimates')
+  my_lab <- ifelse('IP weighted estimates' %in% x$dt_out_plot$legend, 'IP weighted estimates', 'nonparametric estimates')
+  temp1 <- data.table(0, 0, 1, my_lab)
   temp2 <- data.table(0, 0, 1, 'parametric g-formula estimates')
   colnames(temp1) <- colnames(temp2) <- c(x$time_name, 'risk', 'survival', 'legend')
 
   dt_out_plot_rev <- x$dt_out_plot
   dt_out_plot_rev[, 1] <- dt_out_plot_rev[, 1] + 1
-  dt_out_plot_rev <- rbind(temp1, dt_out_plot_rev[dt_out_plot_rev$legend == 'nonparametric estimates', ],
+  dt_out_plot_rev <- rbind(temp1, dt_out_plot_rev[dt_out_plot_rev$legend == my_lab, ],
                            temp2, dt_out_plot_rev[dt_out_plot_rev$legend == 'parametric g-formula estimates', ])
 
   risk_outgrph <-
