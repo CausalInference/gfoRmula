@@ -1,5 +1,11 @@
 ## Package Updates
 
+### Changes in Version 1.0.4 (TBD)
+
+-   Slightly sped up the calculation of the counterfactual cumulative
+    risks
+-   Expanded the error checking
+
 ### Changes in Version 1.0.3 (2023-05-18)
 
 -   Fixed an error in the `gformula()` function that assumed that the

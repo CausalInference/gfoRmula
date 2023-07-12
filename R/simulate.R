@@ -288,15 +288,15 @@ simulate <- function(o, fitcov, fitY, fitD,
           # Calculate probability of death by main event rather than competing event at
           # time t
           set(newdf, j = 'prodp1', value = newdf$Py * (1 - newdf$Pd))
+          set(newdf, j = 'prodd0', value = 1 - newdf$Pd)
         } else {
           set(newdf, j = 'D', value = 0)
           # Calculate probability of death by main event without competing event
-          if (outcome_type == 'survival'){
-            set(newdf, j = 'prodp1', value = newdf$Py)
-          }
+          set(newdf, j = 'prodp1', value = newdf$Py)
         }
         set(newdf[newdf$D == 1], j = 'Y', value = NA)
         set(newdf, j = 'prodp0', value = 1 - newdf$Py)
+        set(newdf, j = 'poprisk', value = newdf$prodp1)
       }
       # If competing event occurs, outcome cannot also occur because
       # both presumably lead to death
@@ -582,43 +582,29 @@ simulate <- function(o, fitcov, fitY, fitD,
           }
         }
       }
-      # Calculate probability of survival or death from competing event (if any) at time t
-      if (outcome_type == 'survival'){
-        set(newdf, j = 'prodp0', value = 1 - newdf$Py)
-      }
       # Simulate outcome variable
       if (outcome_type == 'survival'){
         set(newdf, j = 'Y', value = stats::rbinom(data_len, 1, newdf$Py))
-      }
-      if (outcome_type == 'survival')
         newdf[newdf$D == 1, 'Y' := NA]
-      # If competing event occurs, outcome cannot also occur because
-      # both presumably lead to death
-      # Calculate probability of death from main event at time t
-      if (comprisk){
-        set(newdf, j = 'prodp1',
-            value = newdf$Py * tapply(pool[pool[[time_name]] < t & pool[[time_name]] >= 0]$prodp0,
-                                      pool[pool[[time_name]] < t & pool[[time_name]] >= 0]$id, FUN = prod) *
-              tapply(1 - pool[pool[[time_name]] < t & pool[[time_name]] >= 0]$Pd,
-                     pool[pool[[time_name]] < t & pool[[time_name]] >= 0]$id,
-                     FUN = prod) * (1 - newdf$Pd))
-      } else if (outcome_type == 'survival'){
-        set(newdf, j = 'prodp1', value = newdf$Py * tapply(pool[pool[[time_name]] < t & pool[[time_name]] >= 0]$prodp0,
-                                                           pool[pool[[time_name]] < t & pool[[time_name]] >= 0]$id,
-                                                           FUN = prod))
+        if (comprisk){
+          set(newdf, j = 'prodp1',
+              value = newdf$Py * (1 - newdf$Pd) * pool[pool[[time_name]] == t - 1,]$prodp0 * pool[pool[[time_name]] == t - 1,]$prodd0)
+          set(newdf, j = 'prodd0', value = (1 - newdf$Pd) * pool[pool[[time_name]] == t - 1,]$prodd0)
+        } else {
+          set(newdf, j = 'prodp1',
+              value = newdf$Py * pool[pool[[time_name]] == t - 1,]$prodp0)
+        }
+        set(newdf, j = 'prodp0', value = (1 - newdf$Py) * pool[pool[[time_name]] == t - 1,]$prodp0)
+        set(newdf, j = 'poprisk', value = pool[pool[[time_name]] == t - 1,]$poprisk + newdf$prodp1)
       }
-      # Add simulated data for time t to aggregate simulated data over time
       pool[pool[[time_name]] == t] <- newdf
     }
   }
   colnames(pool)[colnames(pool) == time_name] <- 't0'
   setorder(pool, id, t0)
   colnames(pool)[colnames(pool) == 't0'] <- time_name
-  # Calculate probabiity of death from main event at or before time t for each individual
-  # at each time point
   pool <- pool[pool[[time_name]] >= 0]
   if (outcome_type == 'survival'){
-    pool[, 'poprisk' := stats::ave(pool$prodp1, by = pool$id, FUN = cumsum)]
     pool[, 'survival' := 1 - pool$poprisk]
   }
   pool2 <- copy(pool)

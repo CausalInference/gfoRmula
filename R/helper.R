@@ -157,6 +157,8 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     stop("Missing parameter time_name")
   } else if (!(time_name %in% colnames(obs_data))){
     stop(paste('time_name', time_name, 'not found in obs_data'))
+  } else if (time_name == 't'){
+    stop('time_name cannot be set to "t"')
   }
   if(!is.numeric(obs_data[[time_name]])){
     stop("Time variable in obs_data is not a numeric variable")
@@ -168,7 +170,13 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
                                      all(x == min(min_time, 0):(length(x)+min(min_time, 0)-1))
                                      })
   if (!all(correct_time_indicator)){
-    stop("Time variable in obs_data not correctly specified. For each individual time records should begin with 0 (or, optionally -i if using i lags) and increase in increments of 1, where no time records are skipped.")
+    stop("Time variable in obs_data not correctly specified. For each individual time records should begin with 0 (or, optionally -i if using i lags) and increase in increments of 1 in consecutive rows, where no time records are skipped.")
+  }
+  n_temp <- nrow(obs_data)
+  dif <- obs_data[2:n_temp][[time_name]] - obs_data[1:(n_temp - 1)][[time_name]]
+  rows_changing_id <- which(dif != 1)
+  if(!(all(obs_data[rows_changing_id + 1][[time_name]] == min_time))){
+    stop('obs_data is not sorted with respect to the ID variable and time variable. For each individual time records should begin with 0 (or, optionally -i if using i lags) and increase in increments of 1 in consecutive rows, where no time records are skipped. ')
   }
 
   obs_time_points_pos <- max(obs_data[[time_name]])+1
