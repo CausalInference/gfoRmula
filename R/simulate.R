@@ -137,13 +137,15 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 simulate <- function(o, fitcov, fitY, fitD,
                      yrestrictions, compevent_restrictions, restrictions,
                      outcome_name, compevent_name, time_name,
-                     intvars, interventions, int_times, histvars, histvals, histories,
+                     intvars, interventions, int_times, histvars, histvals, histories,lag_indicators_new  ,
                      comprisk, ranges,
                      outcome_type, subseed, obs_data, time_points, parallel,
                      covnames, covtypes, covparams, covpredict_custom,
                      basecovs, max_visits, baselags, below_zero_indicator,
                      min_time, show_progress, pb, int_visit_type, ...){
   set.seed(subseed)
+
+  #rwl add in new variable lag_indicators_new for holding new version of lag_indicator list. This is not included in hisvals
 
   # Mechanism of passing intervention variable and intervention is different for parallel
   # and non-parallel versions

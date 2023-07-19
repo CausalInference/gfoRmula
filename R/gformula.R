@@ -718,7 +718,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               show_progress = TRUE, ipw_cutoff_quantile = NULL,
                               ipw_cutoff_value = NULL, int_visit_type = NULL, ...){
 
-  lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
+  #rwl add in new variable for holding new form of lag_indicator
+
+  lag_indicator <- lagavg_indicator <- cumavg_indicator <- lag_indicators_new <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
   lagavg_indicator <- update_lagavg_indicator(covparams$covmodels, lagavg_indicator)
   cumavg_indicator <- update_cumavg_indicator(covparams$covmodels, cumavg_indicator)
@@ -728,21 +730,39 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   if (!missing(ymodel)){
     lag_indicator <- update_lag_indicator(ymodel, lag_indicator)
+    all.models <- c(covparams$covmodels,ymodel)
+
     lagavg_indicator <- update_lagavg_indicator(ymodel, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(ymodel, cumavg_indicator)
   }
   if (comprisk){
     lag_indicator <- update_lag_indicator(compevent_model, lag_indicator)
+    all.models <- c(all.models,compevent_model)
     lagavg_indicator <- update_lagavg_indicator(compevent_model, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(compevent_model, cumavg_indicator)
   }
   if (censor){
     lag_indicator <- update_lag_indicator(censor_model, lag_indicator)
+    all.models <- c(all.models, cesor_model)
+
     lagavg_indicator <- update_lagavg_indicator(censor_model, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(censor_model, cumavg_indicator)
   }
-  histvals <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
+
+  #rwl add in new function for finding variables with needed lags. This is different
+  #rwl from the original function. The result is a named list with each component being the name
+  #rwl of the varialbe and the second being the maximum number of lags needed. {var.name='L2', max.lag=3}
+  #rwl replace the original value of lag_indicator in histvals with empty list so that the lags will not be
+  #rwl calculated in default make_histories function
+
+  lag_indicators_new <- update_lag_indicator_rwl(all.models , covnames, lag_indicators_new)
+  print(lag_indicators)
+
+  histvals_orig <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
+
+  histvals <- list(lag_indicator = c(), lagavg_indicator = lagavg_indicator,
+                        cumavg_indicator = cumavg_indicator)
 
 
   if (!missing(threads)){
@@ -753,7 +773,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   }
   outcome_type <- 'survival'
   hazardratio <- !(length(intcomp) == 1 && is.na(intcomp))
-
+#rwl use original form of histvals for checking.
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
               covnames = covnames, covtypes = covtypes, basecovs = basecovs,
@@ -765,7 +785,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               outcome_name = outcome_name, compevent_name = compevent_name,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
-              histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
+              histvals = histvals_orig, ipw_cutoff_quantile = ipw_cutoff_quantile,
               ipw_cutoff_value = ipw_cutoff_value)
 
 
@@ -807,14 +827,16 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     }
   }
 
-
+#rwl in make_histories for observed data we will use histvals_orig so that lagged values are created.
   for (t in 0:max(obs_data[[time_name]])) {
-    make_histories(pool = obs_data, histvars = histvars, histvals = histvals,
+    make_histories(pool = obs_data, histvars = histvars, histvals = histvals_orig,
                    histories = histories, time_name = time_name, t = t, id = id ,
                    max_visits = max_visits, baselags = baselags,
                    below_zero_indicator = below_zero_indicator)
   }
 
+  #rwl should we remove "lagged" components from histories and histvars??
+return(1)
   sample_size <- length(unique(obs_data[[id]]))
   if (is.null(time_points)){
     time_points <- max(obs_data[[time_name]])+1
@@ -944,6 +966,9 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   # Simulate pooled-over-time datasets containing covariates, outcome, and risk for each
   # subject
+
+  #rwl use new version of histvals to drop the lag_indicator list
+  #rwl need to include the new variable lag_indicators_new
   if (parallel){
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
     pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
@@ -955,7 +980,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                  time_name = time_name,
                                  intvars = comb_intvars, interventions = comb_interventions,
                                  int_times = comb_int_times, histvars = histvars,
-                                 histvals = histvals, histories = histories,
+                                 histvals = histvals, histories = histories,lag_indicators_new = lag_indicators_new ,
                                  covparams = covparams, covnames = covnames, covtypes = covtypes,
                                  covpredict_custom = covpredict_custom, basecovs = basecovs,
                                  comprisk = comprisk, ranges = ranges,
@@ -975,6 +1000,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                time_name = time_name,
                intvars = comb_intvars[[i]], interventions = comb_interventions[[i]],
                int_times = comb_int_times[[i]], histvars = histvars, histvals = histvals,
+               lag_indicators_new = lag_indicators_new ,
                histories = histories, covparams = covparams,
                covnames = covnames, covtypes = covtypes,
                covpredict_custom = covpredict_custom, basecovs = basecovs, comprisk = comprisk,
@@ -1062,6 +1088,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                       covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                                       basecovs = basecovs, ymodel = ymodel,
                                       histvars = histvars, histvals = histvals, histories = histories,
+                                      lag_indicators_new = lag_indicators_new ,
                                       comprisk = comprisk, compevent_model = compevent_model,
                                       yrestrictions = yrestrictions,
                                       compevent_restrictions = compevent_restrictions,
@@ -1087,6 +1114,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                          basecovs = basecovs, ymodel = ymodel,
                          histvars = histvars, histvals = histvals, histories = histories,
+                         lag_indicators_new = lag_indicators_new ,
                          comprisk = comprisk, compevent_model = compevent_model,
                          yrestrictions = yrestrictions,
                          compevent_restrictions = compevent_restrictions,
