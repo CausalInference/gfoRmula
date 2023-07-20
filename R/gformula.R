@@ -1143,10 +1143,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     }
 
 
-    print('after call to simulate')
-
-#RWL    return(1)
-
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
       as.data.table(t(m$Result))
     }))
