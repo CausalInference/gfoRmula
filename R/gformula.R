@@ -976,8 +976,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   #rwl use new version of histvals to drop the lag_indicator list
   #rwl need to include the new variable lag_indicators_new
-  print('after make_histories')
-  print(head(obs_data))
 
 
   if (parallel){
@@ -1125,8 +1123,11 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
                          covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                          basecovs = basecovs, ymodel = ymodel,
-                         histvars = histvars, histvals = histvals, histories = histories,
+
+                         histvars = histvars, histvals = histvals_orig, histories = histories,
+                         extra_lag_variables = extra_lag_variables ,
                          lag_indicators_new = lag_indicators_new ,
+
                          comprisk = comprisk, compevent_model = compevent_model,
                          yrestrictions = yrestrictions,
                          compevent_restrictions = compevent_restrictions,
