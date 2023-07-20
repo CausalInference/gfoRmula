@@ -6,6 +6,7 @@ update_lag_indicator_rwl <- function(models, covs,  lag_indicator){
   test1 <- (stringr::str_extract_all(deparse(models),'lag\\d[_]\\w+'))
 
   yy <- (unique(unlist(test1)))
+  ##print(yy)
 
   ##print(covs)
   mytest <- sapply((covs),function(var){
@@ -101,7 +102,7 @@ my.lag.function2<-function(var.index){
 
 
 
-my.lag.function3<- function(var.index){
+my.lag.function3<- function(var.index,newdf=newdf){
 
   var.info <- lag_indicators[[var.index]]
   var.in.name <- var.info$var.name
@@ -111,7 +112,7 @@ my.lag.function3<- function(var.index){
     lag.names <- sapply(max.lag:1 , FUN=function(i){paste0("lag",i,"_",var.in.name)})
 ##    print(lag.names)
 
-    my.dt[,(lag.names) := lapply(max.lag2:0,FUN=function(x){
+    newdf[,(lag.names) := lapply(max.lag2:0,FUN=function(x){
       if(x==0){eval(parse(text=var.in.name))}
       else {eval(parse(text=paste0("lag",x,"_",var.in.name)))}
     })]

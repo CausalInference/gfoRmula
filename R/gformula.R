@@ -725,6 +725,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   lagavg_indicator <- update_lagavg_indicator(covparams$covmodels, lagavg_indicator)
   cumavg_indicator <- update_cumavg_indicator(covparams$covmodels, cumavg_indicator)
 
+
   comprisk <- !(length(compevent_model) == 1 && is.na(compevent_model))
   censor <- !(length(censor_model) == 1 && is.na(censor_model))
 
@@ -743,11 +744,12 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   }
   if (censor){
     lag_indicator <- update_lag_indicator(censor_model, lag_indicator)
-    all.models <- c(all.models, cesor_model)
+    all.models <- c(all.models, censor_model)
 
     lagavg_indicator <- update_lagavg_indicator(censor_model, lagavg_indicator)
     cumavg_indicator <- update_cumavg_indicator(censor_model, cumavg_indicator)
   }
+
 
   #rwl add in new function for finding variables with needed lags. This is different
   #rwl from the original function. The result is a named list with each component being the name
@@ -756,13 +758,18 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   #rwl calculated in default make_histories function
 
   lag_indicators_new <- update_lag_indicator_rwl(all.models , covnames, lag_indicators_new)
-  print(lag_indicators)
+
 
   histvals_orig <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
 
-  histvals <- list(lag_indicator = c(), lagavg_indicator = lagavg_indicator,
+  histvals <- list(lag_indicator = list(), lagavg_indicator = lagavg_indicator,
                         cumavg_indicator = cumavg_indicator)
+
+  #RWL add in new variable for holding the lagged variables
+  test1 <- (stringr::str_extract_all(deparse(all.models),'lag\\d[_]\\w+'))
+
+  extra_lag_variables <- (unique(unlist(test1)))
 
 
   if (!missing(threads)){
@@ -803,7 +810,6 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   obs_data <- copy(obs_data)
 
 
-
   max_visits <- NA
   if (!is.na(visitprocess[[1]][[1]])){
     for (vp in visitprocess){
@@ -836,7 +842,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   }
 
   #rwl should we remove "lagged" components from histories and histvars??
-return(1)
+
+
   sample_size <- length(unique(obs_data[[id]]))
   if (is.null(time_points)){
     time_points <- max(obs_data[[time_name]])+1
@@ -969,6 +976,10 @@ return(1)
 
   #rwl use new version of histvals to drop the lag_indicator list
   #rwl need to include the new variable lag_indicators_new
+  print('after make_histories')
+  print(head(obs_data))
+
+
   if (parallel){
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
     pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
@@ -999,7 +1010,8 @@ return(1)
                outcome_name = outcome_name, compevent_name = compevent_name,
                time_name = time_name,
                intvars = comb_intvars[[i]], interventions = comb_interventions[[i]],
-               int_times = comb_int_times[[i]], histvars = histvars, histvals = histvals,
+               int_times = comb_int_times[[i]], histvars = histvars, histvals = histvals_orig,
+               extra_lag_variables = extra_lag_variables ,
                lag_indicators_new = lag_indicators_new ,
                histories = histories, covparams = covparams,
                covnames = covnames, covtypes = covtypes,
@@ -1128,6 +1140,11 @@ return(1)
                          below_zero_indicator = below_zero_indicator, min_time = min_time,
                          show_progress = show_progress, pb = pb, int_visit_type = int_visit_type, ...)
     }
+
+
+    print('after call to simulate')
+
+#RWL    return(1)
 
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
       as.data.table(t(m$Result))
