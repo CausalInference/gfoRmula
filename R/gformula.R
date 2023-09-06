@@ -720,7 +720,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   #rwl add in new variable for holding new form of lag_indicator
 
-  lag_indicator <- lagavg_indicator <- cumavg_indicator <- lag_indicators_new <- c()
+  lag_indicator <- lagavg_indicator <- cumavg_indicator <-  c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
   lagavg_indicator <- update_lagavg_indicator(covparams$covmodels, lagavg_indicator)
   cumavg_indicator <- update_cumavg_indicator(covparams$covmodels, cumavg_indicator)
@@ -757,14 +757,17 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   #rwl replace the original value of lag_indicator in histvals with empty list so that the lags will not be
   #rwl calculated in default make_histories function
 
-  lag_indicators_new <- update_lag_indicator_rwl(all.models , covnames, lag_indicators_new)
+  lag_indicators_new <- lag_cumavg_indicators_new <-cumavg_indicators_new<-c()
 
+  lag_indicators_new <-        update_lag_indicator_rwl       (all.models , covnames, lag_indicators_new)
+  lag_cumavg_indicators_new <- update_lagcumavg_indicator_rwl (all.models, covnames,  lag_cumavg_indicators_new)
+  cumavg_indicators_new <-     update_cumavg_indicator_rwl    (all.models, covnames,  cumavg_indicators_new)
 
   histvals_orig <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
                    cumavg_indicator = cumavg_indicator)
 
-  histvals <- list(lag_indicator = list(), lagavg_indicator = lagavg_indicator,
-                        cumavg_indicator = cumavg_indicator)
+  histvals <- list(lag_indicator = list(), lagavg_indicator = list(),
+                        cumavg_indicator = list() )
 
   #RWL add in new variable for holding the lagged variables
   test1 <- (stringr::str_extract_all(deparse(all.models),'lag\\d[_]\\w+'))
@@ -989,7 +992,10 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                  time_name = time_name,
                                  intvars = comb_intvars, interventions = comb_interventions,
                                  int_times = comb_int_times, histvars = histvars,
-                                 histvals = histvals, histories = histories,lag_indicators_new = lag_indicators_new ,
+                                 lag_indicators_new = lag_indicators_new,
+                                 lag_cumavg_indicators_new = lag_cumavg_indicators_new ,
+                                 cumavg_indicators_new = cumavg_indicators_new ,
+                                 histvals = histvals, histories = histories ,
                                  covparams = covparams, covnames = covnames, covtypes = covtypes,
                                  covpredict_custom = covpredict_custom, basecovs = basecovs,
                                  comprisk = comprisk, ranges = ranges,
@@ -1099,6 +1105,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                       basecovs = basecovs, ymodel = ymodel,
                                       histvars = histvars, histvals = histvals, histories = histories,
                                       lag_indicators_new = lag_indicators_new ,
+                                      lag_cumavg_indicators_new = lag_cumavg_indicators_new ,
+                                      cumavg_indicators_new = cumavg_indicators_new ,
                                       comprisk = comprisk, compevent_model = compevent_model,
                                       yrestrictions = yrestrictions,
                                       compevent_restrictions = compevent_restrictions,
@@ -1127,7 +1135,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          histvars = histvars, histvals = histvals_orig, histories = histories,
                          extra_lag_variables = extra_lag_variables ,
                          lag_indicators_new = lag_indicators_new ,
-
+                         lag_cumavg_indicators_new = lag_cumavg_indicators_new ,
+                         cumavg_indicators_new = cumavg_indicators_new ,
                          comprisk = comprisk, compevent_model = compevent_model,
                          yrestrictions = yrestrictions,
                          compevent_restrictions = compevent_restrictions,
