@@ -173,7 +173,7 @@ simulate <- function(o, fitcov, fitY, fitD,
   }
 
   # Create histories_int and histvars_int, which are the necessary histories to create after the intervention
-  nat_course <- length(intvar == 1) && intvar == 'none'
+  nat_course <- length(intvar) == 1 && intvar == 'none'
   if (!nat_course) {
     intvar_vec <- unique(unlist(intvar))
     histvars_int <- histories_int <- rep(list(NA), length(histvars))

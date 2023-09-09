@@ -2,6 +2,7 @@
 
 ### Changes in Version 1.0.4 (TBD)
 
+-   Fixed an error for joint interventions on multiple treatments
 -   Slightly sped up the calculation of the counterfactual cumulative
     risks
 -   Expanded the error checking
