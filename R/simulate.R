@@ -147,10 +147,16 @@ simulate <- function(o, fitcov, fitY, fitD,
                      min_time, show_progress, pb, int_visit_type, ...){
   set.seed(subseed)
 
-  #rwl add in new variable lag_indicators_new for holding new version of lag_indicator list. This is not included in hisvals
+  #rwl add in new variable lag_indicators_new for holding new version of lag_indicator list. This is not included in histvals
 
   # Mechanism of passing intervention variable and intervention is different for parallel
   # and non-parallel versions
+
+#  print(colnames(obs_data))
+
+#  print(extra_lag_variables)
+
+
   if (parallel){
     intvar <- intvars[[o]]
     intervention <- interventions[[o]]
@@ -192,6 +198,8 @@ simulate <- function(o, fitcov, fitY, fitD,
     histories_int <- histories_int[!is.na(histories_int)]
   }
 
+
+
   for (t in ((1:time_points) - 1)){
     if (t == 0){
       # Set simulated covariate values at time t = 0 equal to observed covariate values
@@ -211,6 +219,7 @@ simulate <- function(o, fitcov, fitY, fitD,
         setcolorder(pool, c('id', time_name, covnames , extra_lag_variables))
       }
       newdf <- pool[pool[[time_name]] == 0]
+
 
   #RWL    print(nat_course)
   #    print(head(newdf))
@@ -332,11 +341,15 @@ simulate <- function(o, fitcov, fitY, fitD,
     } else {
       # Set initial simulated values at time t to simulated values at time t - 1, to be
       # updated later
-      newdf <- pool[pool[[time_name]] == t - 1]
+
+      #RWL NOW LOOP T > 0
+
+      #RWL CAN WE JUST USE THE NEWDF FROM THE PREVIOUS LOOP? WHY RELOAD IT AGAIN
+      #RWL HOW MUCH TIME DOES THIS TAKE?
+
+      ##newdf <- pool[pool[[time_name]] == t - 1]
       set(newdf, j = time_name, value = rep(t, data_len))
 
-#RWL      if(nat_course) print("at top of time loop for t > 0, should be the same as the end of the previous loop")
-#RWL      if(nat_course) print(head(newdf[,c("time","systolic","lag1_systolic","ldl","lag1_ldl")]))
 
       if ('categorical time' %in% covtypes){
         time_name_f <- paste(time_name, "_f", sep = "")
@@ -350,6 +363,7 @@ simulate <- function(o, fitcov, fitY, fitD,
 #RWL                     time_name = time_name, t = t, id = 'id', max_visits = max_visits,
 #RWL                     baselags = baselags, below_zero_indicator = below_zero_indicator)
 #RWL      newdf <- pool[pool[[time_name]] == t]
+
       for (i in seq_along(covnames)){
         cast <- get(paste0('as.',unname(col_types[covnames[i]])))
         if (covtypes[i] == 'binary'){
@@ -538,10 +552,29 @@ simulate <- function(o, fitcov, fitY, fitD,
 #RWL                         baselags = baselags, below_zero_indicator = below_zero_indicator)
 #RWL          newdf <- pool[pool[[time_name]] == t]
         }
+        #RWL for cumavg update
+
+
+          var.info <- cumavg_indicators_new[[i]]
+          var.in.name <- var.info$var.name
+          max.lag <- as.numeric(var.info$max.lag)
+          if( max.lag == 1){
+            ##print(c("there is a cumavg for ",covnames[i],var.in.name, max.lag, t))
+            lag.names <- paste0("cumavg_",var.in.name)
+            newdf[,(lag.names) := eval(parse(text=paste0("(t*cumavg_",var.in.name,"+",var.in.name,")/(t+1)")))]
+          }
+
+
+
       }
       # Update datatable with specified treatment regime / intervention for this
       # simulation
-      newdf <- pool[pool[[time_name]] == t]
+      #RWL newdf <- pool[pool[[time_name]] == t]
+
+
+
+
+
       if (!nat_course){
         mycols <- match(intvar, names(newdf))
         temp_intvar <- newdf[, ..mycols]
@@ -646,6 +679,67 @@ simulate <- function(o, fitcov, fitY, fitD,
     # INCLUDE NEW CODE FOR UPDATING LAGGED VALUES
 #RWL    if(nat_course) print(t)
 #RWL    if(nat_course) print(head(newdf[,c("time","systolic","lag1_systolic","ldl","lag1_ldl")]))
+
+#RWL We need to perform update of lag_cumavg variables first
+
+#RWL for updating lag_cumavgX_Y we can use: (THIS IS FOR THE t+1 observation)
+#RWL  lag_cumavg1_Y = {(t - 1) * lag_cumavg1_Y + Y(t)}/(t)
+#RWL  lag_cumavg2_Y = {(t - 2) * lag_cumavg2_Y + lag1_Y}/(t-1) IMPORTANT: THIS NEEDS TO BE DONE BEFORE UPDATING LAG1_Y
+#RWL  lag_cumavg3_Y = {(t - 3) * lag_cumavg3_Y + lag2_Y}/(t-2) THIS NEEDS TO BE DONE BEFORE UPDATING LAG2_Y
+#RWL  AFTER THE LAG_CUMAVGi VARIABLES HAVE BEEN UPDATED, THEN THE LAGi VARIABLES CAN BE UPDATED.
+
+# FOR CUMAVG_Y, AFTER y HAS BEEN UPDATED FROM SIMULATED VALUE CUMAVG_Y(t) = {(t-1)*cumavg_y(t-1) + y(t)}/t
+
+    lapply(seq_along(lag_cumavg_indicators_new),FUN = function(var.index){
+      var.info <- lag_cumavg_indicators_new[[var.index]]
+      var.in.name <- var.info$var.name
+      lag.values <- var.info$max.lag
+      max.lag <- max(as.numeric(lag.values ))
+      if(max.lag > 0){
+        max.lag2 <- max.lag - 1
+        lag.names <- sapply(lag.values , FUN=function(i){ paste0("lag_cumavg",i,"_",var.in.name)})
+        ## print(lag.names)
+
+        newdf[,(lag.names) := lapply(lag.values,FUN=function(i) {
+        #  print(c(t,i))
+        if( t < i - 1 ) {
+               0
+          }
+
+        else if (t == i - 1 ){
+             if(i == 1) {
+                eval(parse(text=paste0(var.in.name )))
+             }
+             else {
+                eval(parse(text=paste0("lag",i-1,"_",var.in.name)))
+             }
+        }
+        else {
+          if( i == 1){
+               eval(parse(text = paste0("(t*lag_cumavg",i,"_",var.in.name,"+",var.in.name,")/(t+1)")))
+          }
+          else {
+                eval(parse(text = paste0("((t+1-i) *lag_cumavg",i,"_",var.in.name,"+lag",i-1,"_",var.in.name,")/(t+1-(i-1) )")))
+              ##  print(paste0("((t+1-i*lag_cumavg",i,"_",var.in.name,"+lag",i-1,"_",var.in.name,")/(t-(i-1)+1)"))
+          }
+      }
+
+
+        })
+        ]
+    }
+      })
+
+
+
+##newdf[,lag_cumavg1_ldl := NULL ]
+#RWL this is setting the lag_cumavg1_X for use in the next loop for time.
+#RWL this will be used for the t+1 loop.
+#RWL when t = 0 , at time = 1 lag_cumavg1_X will be equal to X
+#RWL when t = 1, at time = 2 , lag_cumavg1_X =
+
+
+
     lapply(seq_along(lag_indicators_new),FUN=function(var.index){
         var.info <- lag_indicators_new[[var.index]]
         var.in.name <- var.info$var.name

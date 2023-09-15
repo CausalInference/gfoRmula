@@ -675,7 +675,6 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' ## Using IP weighting to estimate natural course risk
 #' ## Only the natural course intervention is included for simplicity
 #' \donttest{
-#' covnames <- c('L', 'A')
 #' histories <- c(lagged)
 #' histvars <- list(c('A', 'L'))
 #' ymodel <- Y ~ L + A
@@ -763,17 +762,78 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   lag_cumavg_indicators_new <- update_lagcumavg_indicator_rwl (all.models, covnames,  lag_cumavg_indicators_new)
   cumavg_indicators_new <-     update_cumavg_indicator_rwl    (all.models, covnames,  cumavg_indicators_new)
 
-  histvals_orig <- list(lag_indicator = lag_indicator, lagavg_indicator = lagavg_indicator,
-                   cumavg_indicator = cumavg_indicator)
 
-  histvals <- list(lag_indicator = list(), lagavg_indicator = list(),
-                        cumavg_indicator = list() )
+  # needed to be used to calculate lagavg variables, from above definition
+  lags.from.lagavg<-unlist(sapply(seq_along(lag_cumavg_indicators_new),FUN=function(ivar){lag_cumavg_indicators_new[[ivar]]$needed.list}))
 
-  #RWL add in new variable for holding the lagged variables
-  test1 <- (stringr::str_extract_all(deparse(all.models),'lag\\d[_]\\w+'))
+  # included in model statements
+  lags.from.models <- unique(unlist(stringr::str_extract_all(deparse(all.models),'lag\\d[_]\\w+')))
+  cumavg.from.models <- unique(unlist(stringr::str_extract_all(deparse(all.models),'cumavg_\\w+')))
 
-  extra_lag_variables <- (unique(unlist(test1)))
+  all_lag_variables <- unique(c(lags.from.models, lags.from.lagavg))
 
+  # these are the needed variables not included in the model statements , needed for lag_cumavg variables
+  needed_lag_variables <- setdiff(all_lag_variables,lags.from.models)
+
+#  print(needed_lag_variables)
+
+  extra_lagavg_variables <- unique(unlist(stringr::str_extract_all(deparse(all.models),'lag_cumavg\\d[_]\\w+')))
+
+  # these are the lagged variables to keep from obs_data in the simulate function.
+  extra_variables <- c(all_lag_variables , extra_lagavg_variables ,cumavg.from.models )
+
+#print(all_lag_variables)
+#print('-------')
+#print(extra_lagavg_variables)
+#print('------')
+#print(cumavg.from.models)
+#print('-------')
+# print(extra_variables)
+# print('-----')
+
+#return(0)
+
+ # print(cumavg_indicators_new[[1]]$max.lag)
+
+  lag_indicators_new<-update.lagged.for.lag_cumavg.v2(lag_indicators=lag_indicators_new,needed.list=needed_lag_variables,covnames )
+
+
+# print(lag_indicators_new)
+
+  overall.max.lag.needed <- find.max.lag.needed(lag_indicators = lag_indicators_new)
+#  print(overall.max.lag.needed)
+  updated_lag_indicators<-1:overall.max.lag.needed
+#  print(updated_lag_indicators)
+#  print(lags.from.models)
+#  print("extra variables")
+#  print(extra_variables)
+#  print(lag_cumavg_indicators_new)
+
+
+#print(lag_indicator)
+
+  histvals_orig <- list(lag_indicator = updated_lag_indicators, lagavg_indicator = lagavg_indicator,  cumavg_indicator = cumavg_indicator)
+  histvals <- list(lag_indicator = list(), lagavg_indicator = list(), cumavg_indicator = list() )
+  histvals_just_lag_indicators <- list(lag_indicator = updated_lag_indicators , lagavg_indicator = (numeric(0)) , cumavg_indicator = NULL )
+  histvars_just_lag_indicators <- list(c(covnames))
+  histories_just_lag_indicators <- c(lagged)
+
+
+  check.lags <- c()
+  for (i in seq_along(needed_lag_variables)){
+    var.in <- needed_lag_variables[i]
+    part0 <- unlist(strsplit(var.in,"_"))[1]
+    l1 <- nchar(part0)+1
+    var.name <- substring(var.in,first=l1+1)
+
+    z1.lags <- stringr::str_extract_all(string=var.in , pattern ='lag\\d+')
+    z1 <- as.numeric(stringr::str_extract_all(string = z1.lags ,  pattern = '\\d+'))
+
+    for (j in 1:z1){check.lags <- c(check.lags,paste0('lag',j,'_',var.name))}
+  }
+
+
+  extra_variables <- unique(c(extra_variables,check.lags))
 
   if (!missing(threads)){
     setDTthreads(threads = threads)
@@ -844,8 +904,10 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                    below_zero_indicator = below_zero_indicator)
   }
 
-  #rwl should we remove "lagged" components from histories and histvars??
 
+  #rwl should we remove "lagged" components from histories and histvars??
+#print(colnames(obs_data))
+#return(0)
 
   sample_size <- length(unique(obs_data[[id]]))
   if (is.null(time_points)){
@@ -981,6 +1043,13 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   #rwl need to include the new variable lag_indicators_new
 
 
+  print(extra_variables)
+
+  #print(histvals_orig)
+  #print(lag_indicator)
+
+# print(colnames(obs_data))
+#return(0)
   if (parallel){
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
     pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
@@ -1015,8 +1084,10 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                time_name = time_name,
                intvars = comb_intvars[[i]], interventions = comb_interventions[[i]],
                int_times = comb_int_times[[i]], histvars = histvars, histvals = histvals_orig,
-               extra_lag_variables = extra_lag_variables ,
+               extra_lag_variables = extra_variables ,
                lag_indicators_new = lag_indicators_new ,
+               lag_cumavg_indicators_new = lag_cumavg_indicators_new ,
+               cumavg_indicators_new = cumavg_indicators_new ,
                histories = histories, covparams = covparams,
                covnames = covnames, covtypes = covtypes,
                covpredict_custom = covpredict_custom, basecovs = basecovs, comprisk = comprisk,
@@ -1035,6 +1106,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   # Initialize results matrices
   result_ratio <- result_diff <- int_result <-
     matrix(NA, nrow = length(pools) + 1, ncol = time_points)
+
 
   # Calculate mean risk over all subjects at each time for natural course
   nat_result <- tapply(nat_pool$poprisk, nat_pool[[time_name]], FUN = mean)
@@ -1133,7 +1205,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          basecovs = basecovs, ymodel = ymodel,
 
                          histvars = histvars, histvals = histvals_orig, histories = histories,
-                         extra_lag_variables = extra_lag_variables ,
+                         extra_lag_variables = extra_variables ,
                          lag_indicators_new = lag_indicators_new ,
                          lag_cumavg_indicators_new = lag_cumavg_indicators_new ,
                          cumavg_indicators_new = cumavg_indicators_new ,

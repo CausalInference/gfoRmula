@@ -43,9 +43,6 @@ update_lagcumavg_indicator_rwl <- function(models, covs,  lag_indicator){
   test1 <- (stringr::str_extract_all(deparse(models),'lag_cumavg\\d[_]\\w+'))
 
   yy <- (unique(unlist(test1)))
- ## print(yy)
-
-  ##print(covs)
   mytest <- sapply((covs),function(var){
 
     xx <- all(is.na( stringr::str_match(string=yy,
@@ -61,15 +58,19 @@ update_lagcumavg_indicator_rwl <- function(models, covs,  lag_indicator){
                                           pattern ='lag_cumavg\\d+')
       z1.lags <- as.numeric(stringr::str_extract_all(string = z1.lags ,
                                                      pattern = '\\d+'))
-      z1.lags <- max(z1.lags)
     } else {
       z1.lags <- 0
     }
-    return(list(var.name = var, max.lag=z1.lags))
-    #return(z1.lags)
+
+
+    needed.list <-NULL
+
+    needed.list <- sapply(z1.lags , FUN=function(i){if(i > 1 ){ paste0("lag",i-1,"_",var)}})
+
+    return(list(var.name = var, max.lag=z1.lags, needed.list = needed.list))
+
 
   } , simplify = FALSE , USE.NAMES = TRUE)
-
 
   return(mytest)
 }
@@ -82,8 +83,6 @@ update_cumavg_indicator_rwl <- function(models, covs,  lag_indicator){
 
   yy <- (unique(unlist(test1)))
 
-
-  ##print(covs)
   mytest <- sapply((covs),function(var){
 
     xx <- all(is.na( stringr::str_match(string=yy,
@@ -95,7 +94,6 @@ update_cumavg_indicator_rwl <- function(models, covs,  lag_indicator){
       z1.lags <- -1
     }
     return(list(var.name = var, max.lag=z1.lags))
-    #return(z1.lags)
 
   } , simplify = FALSE , USE.NAMES = TRUE)
 
@@ -104,104 +102,41 @@ update_cumavg_indicator_rwl <- function(models, covs,  lag_indicator){
 }
 
 
+update.lagged.for.lag_cumavg.v2<-function(lag_indicators,needed.list,covnames){
 
-my.lag<-function(var.info){
-
-  var.in.name <- var.info$var.name
-  max.lag <- var.info$mx.lag
-  my.output.list <-c()
-
-  if (max.lag > 1){
-    for(i in max.lag:2){
-      my.output.list <- c(my.output.list, (paste("lag",i,"_",var.in.name,":=","lag",i-1,"_",var.in.name,sep="")))
-    }
-  }
-  my.output.list<-c(my.output.list, (paste("lag1_",var.in.name,":=",var.in.name, sep="") ))
-
-  return(my.output.list)
-}
-
-my.lag.function<-function(var.index){
-
-  var.info <- lag_indicators[[var.index]]
-  var.in.name <- var.info$var.name
-  max.lag <- as.numeric(var.info$max.lag)
-
-
-  if(max.lag > 0){
-    if (max.lag > 1){
-      for(i in max.lag:2){
-        lhs <- paste0("lag",i,"_",var.in.name)
-        rhs <- paste0("lag",i-1,"_",var.in.name)
-        my.dt[,(lhs) := get(rhs)]
-      }
-    }
-    lhs <- paste0("lag1_",var.in.name)
-    my.dt[ , (lhs) := get(var.in.name)]
-  }
-
-}
-
-my.lag.function2<-function(var.index){
-
-  var.info <- lag_indicators[[var.index]]
-  var.in.name <- var.info$var.name
-  max.lag <- as.numeric(var.info$max.lag)
-
-
-  if(max.lag > 0){
-    if (max.lag > 1){
-      for(i in max.lag:2){
-        lhs <- paste0("lag",i,"_",var.in.name)
-        rhs <- paste0("lag",i-1,"_",var.in.name)
-        my.dt[,(lhs) := get(rhs)]
-      }
-    }
-    lhs <- paste0("lag1_",var.in.name)
-    my.dt[ , (lhs) := get(var.in.name)]
-  }
-
-}
-
-
-
-
-my.lag.function3<- function(var.index,newdt=newdf){
-
-  var.info <- lag_indicators[[var.index]]
-  var.in.name <- var.info$var.name
-  max.lag <- as.numeric(var.info$max.lag)
-  if(max.lag > 0){
-    max.lag2 <- max.lag - 1
-    lag.names <- sapply(max.lag:1 , FUN=function(i){paste0("lag",i,"_",var.in.name)})
-##    print(lag.names)
-
-    newdt[,(lag.names) := lapply(max.lag2:0,FUN=function(x){
-      if(x==0){eval(parse(text=var.in.name))}
-      else {eval(parse(text=paste0("lag",x,"_",var.in.name)))}
-    })]
-  }
-}
-
-update.lagged.for.lag_cumavg<-function(lag_indicators,lag_cumavg_indicators,covnames){
-
-  mylag.test<-lapply(seq_along(lag_cumavg_indicators),FUN=function(index){
+  mylag.test<-lapply(seq_along(covnames ),FUN=function(index){
+    # there should be a 1-1 mapping of the ordering of covnames and lag_indicators
 
     tmp.lag.list <- lag_indicators[[index]]
-    tmp.cumavg.list <- lag_cumavg_indicators[[index]]
     lagged.max.lag <- tmp.lag.list$max.lag
-    cumavg.max.lag <- tmp.cumavg.list$max.lag
 
-   if(lagged.max.lag < cumavg.max.lag - 1){
-     #print(tmp.lag.list$var.name)
-     #print("not enough lagged values")
-     #print(tmp.lag.list)
-     tmp.lag.list$max.lag <- tmp.cumavg.list$max.lag - 1
-     #print(tmp.lag.list)
+    for(i in seq_along(needed.list)){
 
-   }
+      lag.check <- needed.list[i]
+      lag.check.name <- unlist(strsplit(lag.check,"_"))[2]
+      lag.part <- unlist(strsplit(lag.check,"_"))[1]
+      needed.lag <- as.numeric((stringr::str_extract_all(string=lag.part,pattern='\\d')))
+
+      if (tmp.lag.list$var.name == lag.check.name && tmp.lag.list$max.lag < needed.lag) {
+
+        tmp.lag.list$max.lag <- needed.lag
+      }
+    }
     lag_indicators[[index]] <- tmp.lag.list
   })
+
   return(mylag.test)
 }
+
+find.max.lag.needed <- function(lag_indicators){
+  max.lag <- 0
+  for (i in seq_along(lag_indicators)){
+    if (lag_indicators[[i]]$max.lag > max.lag) {max.lag <- lag_indicators[[i]]$max.lag}
+  }
+
+  return(max.lag)
+
+}
+
+
 
