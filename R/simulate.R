@@ -370,7 +370,7 @@ simulate <- function(o, fitcov, fitY, fitD,
                     if (condition[1] == ""){
                       condition <- conditions[j]
                     } else {
-                      condition <- paste(condition, conditions[j], sep = "|")
+                      condition <- paste(condition, conditions[j], sep = "&")
                     }
                   }
                 }
@@ -439,7 +439,7 @@ simulate <- function(o, fitcov, fitY, fitD,
                     if (condition[1] == ""){
                       condition <- conditions[j]
                     } else {
-                      condition <- paste(condition, conditions[j], sep = "|")
+                      condition <- paste(condition, conditions[j], sep = "&")
                     }
                   }
                 }

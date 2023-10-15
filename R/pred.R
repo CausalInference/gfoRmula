@@ -314,7 +314,7 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
               if (condition[1] == ""){
                 condition <- conditions[k]
               } else {
-                condition <- paste(condition, conditions[k], sep = "|")
+                condition <- paste(condition, conditions[k], sep = "&")
               }
             }
           }
@@ -394,9 +394,9 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name,
     condition <- yrestrictions[[1]][1]
     if (length(yrestrictions) > 1){
       # If more than one restriction on outcome variable, set condition such that modeling
-      # occurs when any one of the restriction conditions is fulfilled
+      # occurs when all of the restriction conditions are fulfilled
       for (yrestriction in yrestrictions[-1]){
-        condition <- paste(condition, yrestriction[1], sep = "|")
+        condition <- paste(condition, yrestriction[1], sep = "&")
       }
     }
     # Fit GLM for outcome variable using user-specified model
@@ -444,10 +444,10 @@ pred_fun_D <- function(model, compevent_restrictions, obs_data, model_fits){
     # Set condition where competing event variable is modeled
     condition <- compevent_restrictions[[1]][1]
     if (length(compevent_restrictions) > 1){
-      # If more than one restriction on compeeting event variable, set condition such
-      # that modeling occurs when any one of the restriction conditions is fulfilled
+      # If more than one restriction on competing event variable, set condition such
+      # that modeling occurs when all of the restriction conditions are fulfilled
       for (compevent_restriction in compevent_restrictions[-1]){
-        condition <- paste(condition, compevent_restriction[1], sep = "|")
+        condition <- paste(condition, compevent_restriction[1], sep = "&")
       }
     }
     # Fit GLM assuming binomial distribution
