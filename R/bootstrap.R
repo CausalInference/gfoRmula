@@ -277,6 +277,10 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
       hr_res <- survival::coxph(formula = survival::Surv(t0, Y == "1") ~ regime, data = data_hr)
       hr_res <- exp(hr_res$coefficients)
     }
+    if (is.na(hr_res)){
+      warning(paste0('NA value for the hazard ratio found in bootstrap replicate ', r,
+                     '. The analysis should likely be repeated with more parsimonious models.'))
+    }
   } else {
     hr_res <- NA
   }
@@ -306,6 +310,12 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
     bootvcovs <- NA
   }
 
+
+  # Check NA values
+  if (any(is.na(int_result))){
+    warning(paste0('NA values for the g-form risk found in bootstrap replicate ', r,
+                  '. The analysis should likely be repeated with more parsimonious models.'))
+  }
 
   final <- list(Result = int_result, ResultRatio = result_ratio, ResultDiff = result_diff, ResultHR = hr_res,
                 bootcoeffs = bootcoeffs, bootstderrs = bootstderrs, bootvcovs = bootvcovs)
