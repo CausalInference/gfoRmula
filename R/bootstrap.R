@@ -102,6 +102,7 @@
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param ...                     Other arguments
 #' @return                        A list with the following components:
 #' \item{Result}{Matrix containing risks over time under the natural course and under each user-specific intervention.}
 #' \item{ResultRatio}{Matrix containing risk ratios over time under the natural course and under each user-specific intervention.}
@@ -120,7 +121,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              ranges, parallel, ncores, max_visits,
                              hazardratio, intcomp, boot_diag, nsimul, baselags,
                              below_zero_indicator, min_time, show_progress, pb,
-                             int_visit_type){
+                             int_visit_type, ...){
 
   set.seed(bootseeds[r])
 
@@ -192,7 +193,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
              obs_data = resample_data, parallel = FALSE, max_visits = max_visits,
              baselags = baselags, below_zero_indicator = below_zero_indicator,
              min_time = min_time, show_progress = show_progress, pb = pb,
-             int_visit_type = int_visit_type[i])
+             int_visit_type = int_visit_type[i], ...)
   })
 
   nat_pool <- pools[[1]] # Simulated data under natural course
@@ -320,4 +321,44 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
   final <- list(Result = int_result, ResultRatio = result_ratio, ResultDiff = result_diff, ResultHR = hr_res,
                 bootcoeffs = bootcoeffs, bootstderrs = bootstderrs, bootvcovs = bootvcovs)
   return (final)
+}
+
+
+
+
+bootstrap_helper_with_trycatch <- function(r, time_points, obs_data, bootseeds, outcome_type,
+                             intvars, interventions, int_times, ref_int,
+                             covparams, covnames, covtypes, covfits_custom, covpredict_custom, basecovs, histvars, histvals, histories,
+                             ymodel, yrestrictions, compevent_restrictions, restrictions,
+                             comprisk, compevent_model,
+                             time_name, outcome_name, compevent_name,
+                             ranges, parallel, ncores, max_visits,
+                             hazardratio, intcomp, boot_diag, nsimul, baselags,
+                             below_zero_indicator, min_time, show_progress, pb,
+                             int_visit_type, ...){
+  tryCatch({
+    bootstrap_helper(
+      r = r, time_points = time_points, obs_data = obs_data, bootseeds = bootseeds, outcome_type = outcome_type,
+      intvars = intvars, interventions = interventions, int_times = int_times, ref_int = ref_int,
+      covparams = covparams, covnames = covnames, covtypes = covtypes, covfits_custom = covfits_custom, covpredict_custom = covpredict_custom, basecovs = basecovs, histvars = histvars, histvals = histvals, histories = histories,
+      ymodel = ymodel, yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions, restrictions = restrictions,
+      comprisk = comprisk, compevent_model = compevent_model,
+      time_name = time_name, outcome_name = outcome_name, compevent_name = compevent_name,
+      ranges = ranges, parallel = parallel, ncores = ncores, max_visits = max_visits,
+      hazardratio = hazardratio, intcomp = intcomp, boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
+      below_zero_indicator = below_zero_indicator, min_time = min_time, show_progress = show_progress, pb = pb,
+      int_visit_type = int_visit_type, ...)
+  },
+  error = function(e){
+    warning(paste0('An error occured in bootstrap replicate ', r,
+                   '. The analysis should likely be repeated with more parsimonious models. The error message encountered is:\n', e))
+    if (grepl('eof', outcome_type)){
+      result_ratio <- result_diff <- int_result <- rep(NA, length(interventions))
+    } else {
+      result_ratio <- result_diff <- int_result <-
+        matrix(NA, nrow = length(interventions), ncol = time_points)
+    }
+    final <- list(Result = int_result, ResultRatio = result_ratio, ResultDiff = result_diff, ResultHR = NA,
+                  bootcoeffs = NULL, bootstderrs = NULL, bootvcovs = NULL)
+  })
 }

@@ -1055,7 +1055,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes,
                          bootstrap_option = TRUE)
-      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper, time_points = time_points,
+      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper_with_trycatch, time_points = time_points,
                                       obs_data = obs_data_noresample, bootseeds = bootseeds,
                                       intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -1080,7 +1080,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                          clear = FALSE,
                                          format = 'Bootstrap progress [:bar] :percent, Elapsed time :elapsed, Est. time remaining :eta')
       }
-      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
+      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper_with_trycatch, time_points = time_points,
                          obs_data = obs_data_noresample, bootseeds = bootseeds,
                          intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -1826,7 +1826,7 @@ gformula_continuous_eof <- function(obs_data, id,
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads, covtypes = covtypes,
                          bootstrap_option = TRUE)
-      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper, time_points = time_points,
+      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper_with_trycatch, time_points = time_points,
                                       obs_data = obs_data_noresample, bootseeds = bootseeds,
                                       intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -1852,7 +1852,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                          clear = FALSE,
                                          format = 'Bootstrap progress [:bar] :percent, Elapsed time :elapsed, Est. time remaining :eta')
       }
-      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
+      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper_with_trycatch, time_points = time_points,
                          obs_data = obs_data_noresample, bootseeds = bootseeds,
                          intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -2552,7 +2552,7 @@ gformula_binary_eof <- function(obs_data, id,
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes,
                          bootstrap_option = TRUE)
-      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper, time_points = time_points,
+      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper_with_trycatch, time_points = time_points,
                                       obs_data = obs_data_noresample, bootseeds = bootseeds,
                                       intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -2578,7 +2578,7 @@ gformula_binary_eof <- function(obs_data, id,
                                          clear = FALSE,
                                          format = 'Bootstrap progress [:bar] :percent, Elapsed time :elapsed, Est. time remaining :eta')
       }
-      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
+      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper_with_trycatch, time_points = time_points,
                          obs_data = obs_data_noresample, bootseeds = bootseeds,
                          intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,

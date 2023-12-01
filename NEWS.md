@@ -5,10 +5,10 @@
 -   Fixed an error for joint interventions on multiple treatments
 -   Fixed an error occurring when multiple restrictions are applied to a
     single variable
--   Revised the `gformula()` function so that it does not produce an
-    error message when one of the bootstrap replicates produces a g-form
-    risk or HR of NA. The bootstrap standard errors and 95% CIs are
-    calculated based on the removing all NA values.
+-   Revised the `gformula()` function so that it produces a warning
+    message rather than an error message when one of the bootstrap
+    replicates fails. The bootstrap standard errors and 95% CIs are
+    calculated based on the bootstrap replicates that do not fail.
 -   Slightly sped up the calculation of the counterfactual cumulative
     risks
 -   Expanded the error checking
