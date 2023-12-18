@@ -360,5 +360,6 @@ bootstrap_helper_with_trycatch <- function(r, time_points, obs_data, bootseeds, 
     }
     final <- list(Result = int_result, ResultRatio = result_ratio, ResultDiff = result_diff, ResultHR = NA,
                   bootcoeffs = NULL, bootstderrs = NULL, bootvcovs = NULL)
+    final
   })
 }
