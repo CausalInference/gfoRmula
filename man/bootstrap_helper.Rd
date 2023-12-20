@@ -45,7 +45,8 @@ bootstrap_helper(
   min_time,
   show_progress,
   pb,
-  int_visit_type
+  int_visit_type,
+  ...
 )
 }
 \arguments{
@@ -186,6 +187,8 @@ are set to their values at time 0. The default is \code{FALSE}.}
 \item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
+
+\item{...}{Other arguments}
 }
 \value{
 A list with the following components:

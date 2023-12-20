@@ -1169,7 +1169,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes,
                          bootstrap_option = TRUE)
-      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper, time_points = time_points,
+      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper_with_trycatch, time_points = time_points,
                                       obs_data = obs_data_noresample, bootseeds = bootseeds,
                                       intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -1197,7 +1197,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                          clear = FALSE,
                                          format = 'Bootstrap progress [:bar] :percent, Elapsed time :elapsed, Est. time remaining :eta')
       }
-      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
+      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper_with_trycatch, time_points = time_points,
                          obs_data = obs_data_noresample, bootseeds = bootseeds,
                          intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -1240,11 +1240,11 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     comb_result$t0 <- comb_RR$t0 <- comb_RD$t0 <-
       rep(0:(time_points - 1), nsamples)
 
-    se_result <- comb_result[, lapply(.SD, stats::sd), by = t0]
-    se_RR <- comb_RR[, lapply(.SD, stats::sd), by = t0]
-    se_RD <- comb_RD[, lapply(.SD, stats::sd), by = t0]
+    se_result <- comb_result[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
+    se_RR <- comb_RR[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
+    se_RD <- comb_RD[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
     if (hazardratio){
-      hr_res[2] <- stats::sd(comb_HR$V1)
+      hr_res[2] <- stats::sd(comb_HR$V1, na.rm = TRUE)
     }
 
     if (ci_method == 'normal'){
@@ -1260,14 +1260,14 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
       }
     }
     if (ci_method == 'percentile') {
-      ci_lb_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_lb_RR <- comb_RR[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_lb_RD <- comb_RD[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_ub_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
-      ci_ub_RR <- comb_RR[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
-      ci_ub_RD <- comb_RD[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
+      ci_lb_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_lb_RR <- comb_RR[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_lb_RD <- comb_RD[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_ub_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
+      ci_ub_RR <- comb_RR[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
+      ci_ub_RD <- comb_RD[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
       if (hazardratio){
-        hr_res[3:4] <- stats::quantile(comb_HR$V1, probs = c(0.025, 0.975))
+        hr_res[3:4] <- stats::quantile(comb_HR$V1, probs = c(0.025, 0.975), na.rm = TRUE)
       }
     }
     if (hazardratio){
@@ -1949,7 +1949,7 @@ gformula_continuous_eof <- function(obs_data, id,
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads, covtypes = covtypes,
                          bootstrap_option = TRUE)
-      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper, time_points = time_points,
+      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper_with_trycatch, time_points = time_points,
                                       obs_data = obs_data_noresample, bootseeds = bootseeds,
                                       intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -1975,7 +1975,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                          clear = FALSE,
                                          format = 'Bootstrap progress [:bar] :percent, Elapsed time :elapsed, Est. time remaining :eta')
       }
-      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
+      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper_with_trycatch, time_points = time_points,
                          obs_data = obs_data_noresample, bootseeds = bootseeds,
                          intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -2007,9 +2007,9 @@ gformula_continuous_eof <- function(obs_data, id,
 
     comb_result$t0 <- comb_MR$t0 <- comb_MD$t0 <- time_points
 
-    se_result <- comb_result[, lapply(.SD, stats::sd), by = t0]
-    se_MR <- comb_MR[, lapply(.SD, stats::sd), by = t0]
-    se_MD <- comb_MD[, lapply(.SD, stats::sd), by = t0]
+    se_result <- comb_result[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
+    se_MR <- comb_MR[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
+    se_MD <- comb_MD[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
 
     if (ci_method == 'normal'){
       ci_lb_result <- t(int_result) - stats::qnorm(0.975)*se_result[,-c('t0')]
@@ -2020,12 +2020,12 @@ gformula_continuous_eof <- function(obs_data, id,
       ci_ub_MD <- t(int_result) + stats::qnorm(0.975)*se_MD[,-c('t0')]
     }
     if (ci_method == 'percentile') {
-      ci_lb_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_lb_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_lb_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_ub_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
-      ci_ub_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
-      ci_ub_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
+      ci_lb_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_lb_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_lb_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_ub_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
+      ci_ub_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
+      ci_ub_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
     }
   }
   if (nsamples > 0 & boot_diag){
@@ -2675,7 +2675,7 @@ gformula_binary_eof <- function(obs_data, id,
     if (parallel){
       cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes,
                          bootstrap_option = TRUE)
-      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper, time_points = time_points,
+      final_bs <- parallel::parLapply(cl, 1:nsamples, bootstrap_helper_with_trycatch, time_points = time_points,
                                       obs_data = obs_data_noresample, bootseeds = bootseeds,
                                       intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -2701,7 +2701,7 @@ gformula_binary_eof <- function(obs_data, id,
                                          clear = FALSE,
                                          format = 'Bootstrap progress [:bar] :percent, Elapsed time :elapsed, Est. time remaining :eta')
       }
-      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper, time_points = time_points,
+      final_bs <- lapply(1:nsamples, FUN = bootstrap_helper_with_trycatch, time_points = time_points,
                          obs_data = obs_data_noresample, bootseeds = bootseeds,
                          intvars = comb_intvars, interventions = comb_interventions, int_times = comb_int_times, ref_int = ref_int,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
@@ -2733,9 +2733,9 @@ gformula_binary_eof <- function(obs_data, id,
 
     comb_result$t0 <- comb_MR$t0 <- comb_MD$t0 <- time_points
 
-    se_result <- comb_result[, lapply(.SD, stats::sd), by = t0]
-    se_MR <- comb_MR[, lapply(.SD, stats::sd), by = t0]
-    se_MD <- comb_MD[, lapply(.SD, stats::sd), by = t0]
+    se_result <- comb_result[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
+    se_MR <- comb_MR[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
+    se_MD <- comb_MD[, lapply(.SD, stats::sd, na.rm = TRUE), by = t0]
 
     if (ci_method == 'normal'){
       ci_lb_result <- t(int_result) - stats::qnorm(0.975)*se_result[,-c('t0')]
@@ -2746,12 +2746,12 @@ gformula_binary_eof <- function(obs_data, id,
       ci_ub_MD <- t(int_result) + stats::qnorm(0.975)*se_MD[,-c('t0')]
     }
     if (ci_method == 'percentile') {
-      ci_lb_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_lb_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_lb_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.025), by = t0]
-      ci_ub_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
-      ci_ub_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
-      ci_ub_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.975), by = t0]
+      ci_lb_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_lb_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_lb_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.025, na.rm = TRUE), by = t0]
+      ci_ub_result <- comb_result[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
+      ci_ub_MR <- comb_MR[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
+      ci_ub_MD <- comb_MD[, lapply(.SD, stats::quantile, probs = 0.975, na.rm = TRUE), by = t0]
     }
   }
   if (nsamples > 0 & boot_diag){
