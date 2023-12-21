@@ -9,6 +9,8 @@
     message rather than an error message when one of the bootstrap
     replicates fails. The bootstrap standard errors and 95% CIs are
     calculated based on the bootstrap replicates that do not fail.
+-   Fixed an error occurring when no interventions are supplied (i.e.,
+    only the natural course intervention is used)
 -   Slightly sped up the calculation of the counterfactual cumulative
     risks
 -   Expanded the error checking

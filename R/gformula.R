@@ -1815,7 +1815,9 @@ gformula_continuous_eof <- function(obs_data, id,
   int_result[1] <- nat_result
   # Calculate mean risk over all subjects at each time for all interventions other than
   # the natural course
-  int_result[-1] <- sapply(pools, FUN = function(pool){mean(pool$Ey, na.rm = TRUE)})
+  if (length(comb_interventions) > 1){
+    int_result[-1] <- sapply(pools, FUN = function(pool){mean(pool$Ey, na.rm = TRUE)})
+  }
   result_ratio <- int_result / ref_mean
   result_diff <- int_result - ref_mean
 
@@ -2541,7 +2543,9 @@ gformula_binary_eof <- function(obs_data, id,
   int_result[1] <- nat_result
   # Calculate mean risk over all subjects at each time for all interventions other than
   # the natural course
-  int_result[-1] <- sapply(pools, FUN = function(pool){mean(pool$Py, na.rm = TRUE)})
+  if (length(comb_interventions) > 1){
+    int_result[-1] <- sapply(pools, FUN = function(pool){mean(pool$Py, na.rm = TRUE)})
+  }
   result_ratio <- int_result / ref_mean
   result_diff <- int_result - ref_mean
 
