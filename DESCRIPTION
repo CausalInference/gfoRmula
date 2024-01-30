@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula
-Version: 1.0.3
+Version: 1.0.4
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
@@ -60,5 +60,5 @@ Imports:
     utils
 Suggests: Hmisc
 URL: https://github.com/CausalInference/gfoRmula, 
-    https://www.cell.com/patterns/fulltext/S2666-3899(20)30008-8
+    https://doi.org/10.1016/j.patter.2020.100008
 BugReports: https://github.com/CausalInference/gfoRmula/issues

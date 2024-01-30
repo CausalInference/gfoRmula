@@ -1,6 +1,6 @@
 ## Package Updates
 
-### Changes in Version 1.0.4 (TBD)
+### Changes in Version 1.0.4 (2024-01-30)
 
 -   Fixed an error for joint interventions on multiple treatments
 -   Fixed an error occurring when multiple restrictions are applied to a
