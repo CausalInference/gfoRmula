@@ -151,7 +151,7 @@ simulate <- function(o, fitcov, fitY, fitD,
 
     coefficients <- lapply(fitcov, coefficients)
 
-    errored_parts <- out_coefs[vapply(out_coefs, anyNA, logical(1))]  |>
+    errored_parts <- coefficients[vapply(coefficients, anyNA, logical(1))]  |>
       lapply(\(coefs) {names(coefs[is.na(coefs)])})
 
 
