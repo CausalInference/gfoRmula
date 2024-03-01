@@ -145,6 +145,28 @@ simulate <- function(o, fitcov, fitY, fitD,
                      min_time, show_progress, pb, int_visit_type, ...){
   set.seed(subseed)
 
+  invalid_coefs <- vapply(lapply(fitcov, coefficients), anyNA, logical(1)) |> any()
+
+  if (invalid_coefs) {
+
+    coefficients <- lapply(fitcov, coefficients)
+
+    errored_parts <- out_coefs[vapply(out_coefs, anyNA, logical(1))]  |>
+      lapply(\(coefs) {names(coefs[is.na(coefs)])})
+
+
+    paste(names(errored_parts), errored_parts, sep = "\n - ", collapse = "\n\n")
+
+    stop(
+        "`NA` coefficients produced in covariate prediction model. ",
+        "This may be due to (multi)collinearity in `covmodels` predictor variables, ",
+        "or including `time_name` variable in a 'continuous_eof' model.\n",
+        "Variables returning `NA` coefficients:\n",
+        paste(names(errored_parts), errored_parts, sep = "\n - ", collapse = "\n\n")
+    )
+
+  }
+
   # Mechanism of passing intervention variable and intervention is different for parallel
   # and non-parallel versions
   if (parallel){
