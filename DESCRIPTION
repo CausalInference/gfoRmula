@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula
-Version: 1.0.4
+Version: 1.0.5
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
@@ -27,18 +27,21 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
                       contributions"),
               person("2019 The President and Fellows of Harvard College", 
                       role = c("cph")))
-Description: Implements the parametric g-formula algorithm of Robins (1986) 
-    <doi:10.1016/0270-0255(86)90088-6>. The g-formula can be used to estimate 
-    the causal effects of hypothetical time-varying treatment interventions on 
-    the mean or risk of an outcome from longitudinal data with time-varying 
-    confounding. This package allows: 1) binary or continuous/multi-level 
-    time-varying treatments; 2) different types of outcomes (survival or 
-    continuous/binary end of follow-up); 3) data with competing events or 
-    truncation by death and loss to follow-up and other types of censoring 
-    events; 4) different options for handling competing events in the case of 
-    survival outcomes; 5) a random measurement/visit process; 6) joint 
-    interventions on multiple treatments; and 7) general incorporation of a 
-    priori knowledge of the data structure.
+Description: Implements the non-iterative conditional expectation (NICE) 
+    algorithm of the g-formula algorithm (Robins (1986) 
+    <doi:10.1016/0270-0255(86)90088-6>, Hernán and Robins (2024, ISBN:9781420076165)). 
+    The g-formula can estimate an outcome's counterfactual mean or risk under 
+    hypothetical treatment strategies (interventions) when there is sufficient 
+    information on time-varying treatments and confounders. 
+    This package can be used for discrete or continuous time-varying treatments 
+    and for failure time outcomes or continuous/binary end of follow-up 
+    outcomes. The package can handle a random measurement/visit process and a 
+    priori knowledge of the data structure, as well as censoring (e.g., by loss 
+    to follow-up) and two options for handling competing events for failure time
+    outcomes. Interventions can be flexibly specified, both as interventions on 
+    a single treatment or as joint interventions on multiple treatments.
+    See McGrath et al. (2020) <doi:10.1016/j.patter.2020.100008> for a guide on 
+    how to use the package.
 Depends: R (>= 3.5.0)
 License: GPL-3
 Encoding: UTF-8
