@@ -35,7 +35,8 @@ error_catch(
   covmodels,
   histvals,
   ipw_cutoff_quantile,
-  ipw_cutoff_value
+  ipw_cutoff_value,
+  old_convention
 )
 }
 \arguments{
@@ -112,6 +113,8 @@ appears in any of the model statements.}
 \item{ipw_cutoff_quantile}{Percentile by which to truncate inverse probability weights.}
 
 \item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights.}
+
+\item{old_convention}{Logical scalar indicating whether the "old" intervention convention was used (i.e., by specifying \code{interventions}, \code{intvars}, and \code{int_times}).}
 }
 \value{
 No value is returned.

@@ -47,6 +47,7 @@ the observed and simulated probability of each level are plotted at each time po
 ## Estimating the effect of threshold interventions on the mean of a binary
 ## end of follow-up outcome
 \donttest{
+outcome_type <- 'binary_eof'
 id <- 'id_num'
 time_name <- 'time'
 covnames <- c('cov1', 'cov2', 'treat')
@@ -54,34 +55,30 @@ outcome_name <- 'outcome'
 histories <- c(lagged, cumavg)
 histvars <- list(c('treat', 'cov1', 'cov2'), c('cov1', 'cov2'))
 covtypes <- c('binary', 'zero-inflated normal', 'normal')
-covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3 +
-                                  time,
-                                cov2 ~ lag1_treat + cov1 + lag1_cov1 + lag1_cov2 +
+covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 +
                                   cov3 + time,
+                                cov2 ~ lag1_treat + cov1 + lag1_cov1 +
+                                  lag1_cov2 + cov3 + time,
                                 treat ~ lag1_treat + cumavg_cov1 +
                                   cumavg_cov2 + cov3 + time))
 ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-intvars <- list('treat', 'treat')
-interventions <- list(list(c(static, rep(0, 7))),
-                      list(c(threshold, 1, Inf)))
+intervention1.treat <- list(static, rep(0, 7))
+intervention2.treat <- list(threshold, 1, Inf)
 int_descript <- c('Never treat', 'Threshold - lower bound 1')
 nsimul <- 10000
 ncores <- 2
 
-gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
-                                     time_name = time_name,
-                                     covnames = covnames,
-                                     outcome_name = outcome_name,
-                                     covtypes = covtypes,
-                                     covparams = covparams,
-                                     ymodel = ymodel,
-                                     intvars = intvars,
-                                     interventions = interventions,
-                                     int_descript = int_descript,
-                                     histories = histories, histvars = histvars,
-                                     basecovs = c("cov3"), seed = 1234,
-                                     parallel = TRUE, nsamples = 5,
-                                     nsimul = nsimul, ncores = ncores)
+gform_bin_eof <- gformula(obs_data = binary_eofdata,
+                          outcome_type = outcome_type, id = id,
+                          time_name = time_name, covnames = covnames,
+                          outcome_name = outcome_name, covtypes = covtypes,
+                          covparams = covparams, ymodel = ymodel,
+                          intervention1.treat = intervention1.treat,
+                          intervention2.treat = intervention2.treat,
+                          int_descript = int_descript, histories = histories,
+                          histvars = histvars, basecovs = c("cov3"),
+                          seed = 1234, parallel = TRUE, nsamples = 5,
+                          nsimul = nsimul, ncores = ncores)
 plot(gform_bin_eof)
 }
 

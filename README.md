@@ -28,4 +28,5 @@ devtools::install_github("CausalInference/gfoRmula")
 
 Please refer to [McGrath et
 al. (2020)](https://doi.org/10.1016/j.patter.2020.100008) for a detailed
-guide to the `gfoRmula` package.
+guide to the `gfoRmula` package. Also, see the vignette “A Simplified
+Approach for Specifying Interventions in gfoRmula”.

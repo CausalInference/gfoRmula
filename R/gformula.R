@@ -31,21 +31,21 @@
 #' @param censor_name             Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param censor_model            Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param outcome_type            Character string specifying the "type" of outcome. The possible "types" are: \code{"survival"}, \code{"continuous_eof"}, and \code{"binary_eof"}.
-#' @param intvars                 List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
+#' @param intvars                 (Deprecated. See the \code{...} argument) List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 #'                                on in each round of the simulation under the kth intervention in \code{interventions}.
-#' @param interventions           List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
+#' @param interventions           (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
 #'                                implementing a particular intervention on a single variable, optionally
 #'                                followed by one or more "intervention values" (i.e.,
 #'                                integers used to specify the treatment regime).
-#' @param int_times               List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
+#' @param int_times               (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
 #'                                When an intervention is not applied, the simulated natural course value is used. By default, this argument is set so that all interventions are applied in all time points.
 #' @param int_descript            Vector of character strings, each describing an intervention. It must
-#'                                be in same order as the entries in \code{interventions}.
+#'                                be in same order as the specified interventions (see the \code{...} argument).
 #' @param ref_int                 Integer denoting the intervention to be used as the
 #'                                reference for calculating the risk ratio and risk difference. 0 denotes the
 #'                                natural course, while subsequent integers denote user-specified
 #'                                interventions in the order that they are
-#'                                named in \code{interventions}. The default is 0.
+#'                                named (see the \code{...} argument). The default is 0.
 #' @param covnames                Vector of character strings specifying the names of the time-varying covariates in \code{obs_data}.
 #' @param covtypes                Vector of character strings specifying the "type" of each time-varying covariate included in \code{covnames}. The possible "types" are: \code{"binary"}, \code{"normal"}, \code{"categorical"}, \code{"bounded normal"}, \code{"zero-inflated normal"}, \code{"truncated normal"}, \code{"absorbing"}, \code{"categorical time"}, and \code{"custom"}.
 #' @param covparams               List of vectors, where each vector contains information for
@@ -127,8 +127,23 @@
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
-#' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
-#' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
+#' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
+#' \itemize{
+#' \item{Each intervention argument begins with a prefix of \code{intervention}.}
+#' \item{After the prefix, the intervention number is specified and followed by a period.}
+#' \item{After the period, the treatment variable name is specified.}
+#' }
+#' Each intervention argument takes as input a list with the following elements:
+#' \itemize{
+#' \item{The first element specifies the intervention function.}
+#' \item{The subsequent elements specify any intervention values.}
+#' \item{(Optional) The named element \code{int_times} specifies the time points to apply the intervention. By default, all interventions are applied at all time points.}
+#' }
+#' For example, an "always treat" intervention on \code{A} is given by \cr
+#' \code{intervention1.A = list(static, rep(1, time_points))} \cr
+#' See the vignette "A Simplified Approach for Specifying Interventions in gfoRmula" and "Examples" section for more examples.
+#'
+#' @return                        An object of class "gformula_survival" (for survival outcomes), "gformula_continuous_eof" (for continuous end-of-follow-up outcomes), or "gformula_binary_eof" (for binary end-of-follow-up outcomes). The object is a list with the following components:
 #' \item{result}{Results table. For survival outcomes, this contains the estimated risk, risk difference, and risk ratio for all interventions (inculding the natural course) at each time point. For continuous end-of-follow-up outcomes, this contains estimated mean outcome, mean difference, and mean ratio for all interventions (inculding natural course) at the last time point. For binary end-of-follow-up outcomes, this contains the estimated outcome probability, probability difference, and probability ratio for all interventions (inculding natural course) at the last time point. For all outcome types, this also contains the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap risk / mean / probability difference, ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
@@ -169,9 +184,8 @@
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -181,8 +195,8 @@
 #'                         outcome_name = outcome_name,
 #'                         outcome_type = outcome_type, covtypes = covtypes,
 #'                         covparams = covparams, ymodel = ymodel,
-#'                         intvars = intvars,
-#'                         interventions = interventions,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
 #'                         int_descript = int_descript,
 #'                         histories = histories, histvars = histvars,
 #'                         basecovs = c('L3'), nsimul = nsimul,
@@ -213,9 +227,8 @@
 #'                                   lag_cumavg1_L2 + L3 + as.factor(t0)))
 #' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3 + as.factor(t0)
 #' compevent_model <- D ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3 + as.factor(t0)
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -228,7 +241,8 @@
 #'                         covtypes = covtypes,
 #'                         covparams = covparams, ymodel = ymodel,
 #'                         compevent_model = compevent_model,
-#'                         intvars = intvars, interventions = interventions,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
 #'                         int_descript = int_descript,
 #'                         histories = histories, histvars = histvars,
 #'                         basecovs = c('L3'), nsimul = nsimul,
@@ -254,9 +268,8 @@
 #'                                 L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
 #'                                 A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(static, rep(1, 7))))
+#' intervention1.A <- list(static, rep(0, 7))
+#' intervention2.A <- list(static, rep(1, 7))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -265,7 +278,8 @@
 #'                            covnames = covnames, outcome_name = outcome_name,
 #'                            outcome_type = outcome_type, covtypes = covtypes,
 #'                            covparams = covparams, ymodel = ymodel,
-#'                            intvars = intvars, interventions = interventions,
+#'                            intervention1.A = intervention1.A,
+#'                            intervention2.A = intervention2.A,
 #'                            int_descript = int_descript,
 #'                            histories = histories, histvars = histvars,
 #'                            basecovs = c("L3"), nsimul = nsimul, seed = 1234)
@@ -291,9 +305,8 @@
 #'                                 treat ~ lag1_treat + cumavg_cov1 +
 #'                                   cumavg_cov2 + cov3 + time))
 #' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-#' intvars <- list('treat', 'treat')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(threshold, 1, Inf)))
+#' intervention1.treat <- list(static, rep(0, 7))
+#' intervention2.treat <- list(threshold, 1, Inf)
 #' int_descript <- c('Never treat', 'Threshold - lower bound 1')
 #' nsimul <- 10000
 #' ncores <- 2
@@ -303,7 +316,8 @@
 #'                           time_name = time_name, covnames = covnames,
 #'                           outcome_name = outcome_name, covtypes = covtypes,
 #'                           covparams = covparams, ymodel = ymodel,
-#'                           intvars = intvars, interventions = interventions,
+#'                           intervention1.treat = intervention1.treat,
+#'                           intervention2.treat = intervention2.treat,
 #'                           int_descript = int_descript, histories = histories,
 #'                           histvars = histvars, basecovs = c("cov3"),
 #'                           seed = 1234, parallel = TRUE, nsamples = 5,
@@ -329,7 +343,6 @@
 #'                        censor_name = censor_name, censor_model = censor_model,
 #'                        covtypes = covtypes,
 #'                        covparams = covparams, ymodel = ymodel,
-#'                        intvars = NULL, interventions = NULL, int_descript = NULL,
 #'                        histories = histories, histvars = histvars,
 #'                        seed = 1234)
 #' plot(res_censor)
@@ -469,16 +482,16 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param compevent_name          Character string specifying the name of the competing event variable in \code{obs_data}.
 #' @param censor_name             Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param censor_model            Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
-#' @param intvars                 List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
+#' @param intvars                 (Deprecated. See the \code{...} argument) List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 #'                                on in each round of the simulation under the kth intervention in \code{interventions}.
-#' @param interventions           List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
+#' @param interventions           (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
 #'                                implementing a particular intervention on a single variable, optionally
 #'                                followed by one or more "intervention values" (i.e.,
 #'                                integers used to specify the treatment regime).
-#' @param int_times               List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
+#' @param int_times               (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
 #'                                When an intervention is not applied, the simulated natural course value is used. By default, this argument is set so that all interventions are applied in all time points.
 #' @param int_descript            Vector of character strings, each describing an intervention. It must
-#'                                be in same order as the entries in \code{interventions}.
+#'                                be in same order as the specified interventions (see the \code{...} argument).
 #' @param ref_int                 Integer denoting the intervention to be used as the
 #'                                reference for calculating the risk ratio and risk difference. 0 denotes the
 #'                                natural course, while subsequent integers denote user-specified
@@ -565,8 +578,23 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
-#' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
-#' @return                        An object of class \code{gformula_survival}. The object is a list with the following components:
+#' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
+#' \itemize{
+#' \item{Each intervention argument begins with a prefix of \code{intervention}.}
+#' \item{After the prefix, the intervention number is specified and followed by a period.}
+#' \item{After the period, the treatment variable name is specified.}
+#' }
+#' Each intervention argument takes as input a list with the following elements:
+#' \itemize{
+#' \item{The first element specifies the intervention function.}
+#' \item{The subsequent elements specify any intervention values.}
+#' \item{(Optional) The named element \code{int_times} specifies the time points to apply the intervention. By default, all interventions are applied at all time points.}
+#' }
+#' For example, an "always treat" intervention on \code{A} is given by \cr
+#' \code{intervention1.A = list(static, rep(1, time_points))} \cr
+#' See the vignette "A Simplified Approach for Specifying Interventions in gfoRmula" and "Examples" section for more examples.
+#'
+#' @return                        An object of class "gformula_survival". The object is a list with the following components:
 #' \item{result}{Results table containing the estimated risk and risk ratio for all interventions (inculding the natural course) at each time point as well as the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap mean risk ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
@@ -607,9 +635,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -619,8 +646,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #'                                  outcome_name = outcome_name,
 #'                                  covtypes = covtypes,
 #'                                  covparams = covparams, ymodel = ymodel,
-#'                                  intvars = intvars,
-#'                                  interventions = interventions,
+#'                                  intervention1.A = intervention1.A,
+#'                                  intervention2.A = intervention2.A,
 #'                                  int_descript = int_descript,
 #'                                  histories = histories, histvars = histvars,
 #'                                  basecovs = c('L3'), nsimul = nsimul,
@@ -650,9 +677,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #'                                   lag_cumavg1_L2 + L3 + as.factor(t0)))
 #' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3 + as.factor(t0)
 #' compevent_model <- D ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3 + as.factor(t0)
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -664,7 +690,8 @@ gformula <- function(obs_data, id, time_points = NULL,
 #'                                  covtypes = covtypes,
 #'                                  covparams = covparams, ymodel = ymodel,
 #'                                  compevent_model = compevent_model,
-#'                                  intvars = intvars, interventions = interventions,
+#'                                  intervention1.A = intervention1.A,
+#'                                  intervention2.A = intervention2.A,
 #'                                  int_descript = int_descript,
 #'                                  histories = histories, histvars = histvars,
 #'                                  basecovs = c('L3'), nsimul = nsimul,
@@ -754,6 +781,77 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   outcome_type <- 'survival'
   hazardratio <- !(length(intcomp) == 1 && is.na(intcomp))
 
+
+  # Process new intervention specification format, if applicable
+  old_convention <- TRUE
+  if (is.null(interventions)){
+    sub_kwarg <- substitute(list(...))
+    clean_kwarg_str <- paste0(stringr::str_remove_all(as.character(deparse(sub_kwarg)), " "), collapse = "")
+    kwarg_list <- as.list(sub_kwarg)
+    kwarg_name_list <- names(kwarg_list)
+
+    args <- c(as.list(environment()), eval(parse(text = clean_kwarg_str)))
+    kwargs_len <- length(eval(parse(text = clean_kwarg_str)))
+
+    arg_names <- names(args)
+    arg_idx <- which(stringr::str_detect(arg_names, "intervention") & arg_names != 'interventions')
+    arg_interv <- args[arg_idx]
+
+    if (kwargs_len > 0) {
+      old_convention <- FALSE
+      interv_args_split <- split_args(arg_interv, "intervention")
+      interv_list_origin <- interv_args_split$origin_list
+      interv_list <- unlist(interv_args_split$prefix)
+      interv_list_all_names <- interv_args_split$suffix
+      ninterv <- length(unique(interv_list))
+
+      if (ref_int > ninterv | ref_int < 0) {
+        stop("Please input a valid index for the reference intervention.
+         0 represents natural course as reference.
+         Other integer represents the corresponding specified intervention.")
+      }
+      if (length(arg_idx) == 0 | any(is.na(interv_list)) | any(is.na(unlist(interv_list_all_names)))) {
+        stop("Please enter interventions through keywords arguments following the naming pattern interventioni.treatment where treatment is the variable name in intervention i. See the help file for the gformula function for additional details and examples.")
+      }
+
+      interventions <- vector(mode = "list", length = ninterv)
+      intvars <- vector(mode = "list", length = ninterv)
+      int_times <- vector(mode = "list", length = ninterv)
+
+      for (i in 1:ninterv) {
+
+        # get all treatments for each intervention
+        interv_idx <- which((unlist(interv_list)) == as.character(i))
+        interv_all_names <- unlist(interv_list_all_names)[interv_idx]
+
+        interv_single <- list()
+        interv_var_single <- NULL
+        interv_time_single <- NULL
+
+        for (treat in 1:length(interv_idx)) {
+          treat_idx <- interv_idx[treat]
+          treat_name <- paste0("intervention", interv_list_origin[treat_idx])
+          interv <- as.list(arg_interv[[which(names(arg_interv) == treat_name)]])
+          interv_var <- interv_all_names[treat]
+          if ('int_times' %in% names(interv)){
+            times <- interv$int_times
+            interv$int_times <- NULL
+          } else {
+            times <- 0:(time_points - 1)
+          }
+          interv_single <- c(interv_single, list(unlist(interv)))
+          interv_var_single <- c(interv_var_single, interv_var)
+          interv_time_single <- c(interv_time_single, list(times))
+        }
+
+        interventions[i] <- list(interv_single)
+        intvars[[i]] <- interv_var_single
+        int_times[[i]] <- interv_time_single
+      }
+    }
+  }
+
+
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
               covnames = covnames, covtypes = covtypes, basecovs = basecovs,
@@ -766,7 +864,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
               histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
-              ipw_cutoff_value = ipw_cutoff_value)
+              ipw_cutoff_value = ipw_cutoff_value, old_convention = old_convention)
 
 
   if (comprisk & compevent_cens){
@@ -1383,16 +1481,16 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param outcome_name            Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param censor_name             Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param censor_model            Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
-#' @param intvars                 List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
+#' @param intvars                 (Deprecated. See the \code{...} argument) List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 #'                                on in each round of the simulation under the kth intervention in \code{interventions}.
-#' @param interventions           List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
+#' @param interventions           (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
 #'                                implementing a particular intervention on a single variable, optionally
 #'                                followed by one or more "intervention values" (i.e.,
 #'                                integers used to specify the treatment regime).
-#' @param int_times               List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
+#' @param int_times               (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
 #'                                When an intervention is not applied, the simulated natural course value is used. By default, this argument is set so that all interventions are applied in all time points.
 #' @param int_descript            Vector of character strings, each describing an intervention. It must
-#'                                be in same order as the entries in \code{interventions}.
+#'                                be in same order as the specified interventions (see the \code{...} argument).
 #' @param ref_int                 Integer denoting the intervention to be used as the
 #'                                reference for calculating the end-of-follow-up mean ratio and mean difference. 0 denotes the
 #'                                natural course, while subsequent integers denote user-specified
@@ -1465,9 +1563,23 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
-#' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
+#' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
+#' \itemize{
+#' \item{Each intervention argument begins with a prefix of \code{intervention}.}
+#' \item{After the prefix, the intervention number is specified and followed by a period.}
+#' \item{After the period, the treatment variable name is specified.}
+#' }
+#' Each intervention argument takes as input a list with the following elements:
+#' \itemize{
+#' \item{The first element specifies the intervention function.}
+#' \item{The subsequent elements specify any intervention values.}
+#' \item{(Optional) The named element \code{int_times} specifies the time points to apply the intervention. By default, all interventions are applied at all time points.}
+#' }
+#' For example, an "always treat" intervention on \code{A} is given by \cr
+#' \code{intervention1.A = list(static, rep(1, time_points))} \cr
+#' See the vignette "A Simplified Approach for Specifying Interventions in gfoRmula" and "Examples" section for more examples.
 #'
-#' @return                        An object of class \code{gformula_continuous_eof}. The object is a list with the following components:
+#' @return                        An object of class "gformula_continuous_eof". The object is a list with the following components:
 #' \item{result}{Results table containing the estimated mean outcome for all interventions (inculding natural course) at the last time point as well as the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap end-of-follow-up mean ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
@@ -1506,9 +1618,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'                                 L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
 #'                                 A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(static, rep(1, 7))))
+#' intervention1.A <- list(static, rep(0, 7))
+#' intervention2.A <- list(static, rep(1, 7))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -1519,8 +1630,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'                                           outcome_name = outcome_name,
 #'                                           covtypes = covtypes,
 #'                                           covparams = covparams, ymodel = ymodel,
-#'                                           intvars = intvars,
-#'                                           interventions = interventions,
+#'                                           intervention1.A = intervention1.A,
+#'                                           intervention2.A = intervention2.A,
 #'                                           int_descript = int_descript,
 #'                                           histories = histories, histvars = histvars,
 #'                                           basecovs = c("L3"),
@@ -1587,6 +1698,76 @@ gformula_continuous_eof <- function(obs_data, id,
   if ('time_points' %in% names(extra_args)){
     stop('Argument time_points cannot be supplied in this function. For end of follow up outcomes, the mean is calculated at the last time point in obs_data')
   }
+  time_points <- max(obs_data[[time_name]])+1
+
+  # Process new intervention specification format, if applicable
+  old_convention <- TRUE
+  if (is.null(interventions)){
+    sub_kwarg <- substitute(list(...))
+    clean_kwarg_str <- paste0(stringr::str_remove_all(as.character(deparse(sub_kwarg)), " "), collapse = "")
+    kwarg_list <- as.list(sub_kwarg)
+    kwarg_name_list <- names(kwarg_list)
+
+    args <- c(as.list(environment()), eval(parse(text = clean_kwarg_str)))
+    kwargs_len <- length(eval(parse(text = clean_kwarg_str)))
+
+    arg_names <- names(args)
+    arg_idx <- which(stringr::str_detect(arg_names, "intervention") & arg_names != 'interventions')
+    arg_interv <- args[arg_idx]
+
+    if (kwargs_len > 0) {
+      old_convention <- FALSE
+      interv_args_split <- split_args(arg_interv, "intervention")
+      interv_list_origin <- interv_args_split$origin_list
+      interv_list <- unlist(interv_args_split$prefix)
+      interv_list_all_names <- interv_args_split$suffix
+      ninterv <- length(unique(interv_list))
+
+      if (ref_int > ninterv | ref_int < 0) {
+        stop("Please input a valid index for the reference intervention.
+         0 represents natural course as reference.
+         Other integer represents the corresponding specified intervention.")
+      }
+      if (length(arg_idx) == 0 | any(is.na(interv_list)) | any(is.na(unlist(interv_list_all_names)))) {
+        stop("Please enter interventions through keywords arguments following the naming pattern interventioni.treatment where treatment is the variable name in intervention i. See the help file for the gformula function for additional details and examples.")
+      }
+
+      interventions <- vector(mode = "list", length = ninterv)
+      intvars <- vector(mode = "list", length = ninterv)
+      int_times <- vector(mode = "list", length = ninterv)
+
+      for (i in 1:ninterv) {
+
+        # get all treatments for each intervention
+        interv_idx <- which((unlist(interv_list)) == as.character(i))
+        interv_all_names <- unlist(interv_list_all_names)[interv_idx]
+
+        interv_single <- list()
+        interv_var_single <- list()
+        interv_time_single <- list()
+
+        for (treat in 1:length(interv_idx)) {
+          treat_idx <- interv_idx[treat]
+          treat_name <- paste0("intervention", interv_list_origin[treat_idx])
+          interv <- as.list(arg_interv[[which(names(arg_interv) == treat_name)]])
+          interv_var <- interv_all_names[treat]
+          if ('int_times' %in% names(interv)){
+            times <- interv$int_times
+            interv$int_times <- NULL
+          } else {
+            times <- 0:(time_points - 1)
+          }
+          interv_single <- c(interv_single, list(unlist(interv)))
+          interv_var_single <- c(interv_var_single, interv_var)
+          interv_time_single <- c(interv_time_single, list(times))
+        }
+
+        interventions[i] <- list(interv_single)
+        intvars[i] <- interv_var_single
+        int_times[i] <- interv_time_single
+      }
+    }
+  }
 
 
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
@@ -1601,7 +1782,7 @@ gformula_continuous_eof <- function(obs_data, id,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
               histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
-              ipw_cutoff_value = ipw_cutoff_value)
+              ipw_cutoff_value = ipw_cutoff_value, old_convention = old_convention)
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0
@@ -1645,7 +1826,6 @@ gformula_continuous_eof <- function(obs_data, id,
   }
 
   sample_size <- length(unique(obs_data[[id]]))
-  time_points <- max(obs_data[[time_name]])+1
 
   for (i in seq_along(covnames)){
     if (covtypes[i] == 'absorbing'){
@@ -2115,16 +2295,16 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param outcome_name            Character string specifying the name of the outcome variable in \code{obs_data}.
 #' @param censor_name             Character string specifying the name of the censoring variable in \code{obs_data}. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
 #' @param censor_model            Model statement for the censoring variable. Only applicable when using inverse probability weights to estimate the natural course means / risk from the observed data. See "Details".
-#' @param intvars                 List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
+#' @param intvars                 (Deprecated. See the \code{...} argument) List, whose elements are vectors of character strings. The kth vector in \code{intvars} specifies the name(s) of the variable(s) to be intervened
 #'                                on in each round of the simulation under the kth intervention in \code{interventions}.
-#' @param interventions           List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
+#' @param interventions           (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. Each list in \code{interventions} specifies a unique intervention on the relevant variable(s) in \code{intvars}. Each vector contains a function
 #'                                implementing a particular intervention on a single variable, optionally
 #'                                followed by one or more "intervention values" (i.e.,
 #'                                integers used to specify the treatment regime).
-#' @param int_times               List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
+#' @param int_times               (Deprecated. See the \code{...} argument) List, whose elements are lists of vectors. The kth list in \code{int_times} corresponds to the kth intervention in \code{interventions}. Each vector specifies the time points in which the relevant intervention is applied on the corresponding variable in \code{intvars}.
 #'                                When an intervention is not applied, the simulated natural course value is used. By default, this argument is set so that all interventions are applied in all time points.
 #' @param int_descript            Vector of character strings, each describing an intervention. It must
-#'                                be in same order as the entries in \code{interventions}.
+#'                                be in same order as the specified interventions (see the \code{...} argument).
 #' @param ref_int                 Integer denoting the intervention to be used as the
 #'                                reference for calculating the end-of-follow-up mean ratio and mean difference. 0 denotes the
 #'                                natural course, while subsequent integers denote user-specified
@@ -2197,9 +2377,23 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
-#' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
+#' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
+#' \itemize{
+#' \item{Each intervention argument begins with a prefix of \code{intervention}.}
+#' \item{After the prefix, the intervention number is specified and followed by a period.}
+#' \item{After the period, the treatment variable name is specified.}
+#' }
+#' Each intervention argument takes as input a list with the following elements:
+#' \itemize{
+#' \item{The first element specifies the intervention function.}
+#' \item{The subsequent elements specify any intervention values.}
+#' \item{(Optional) The named element \code{int_times} specifies the time points to apply the intervention. By default, all interventions are applied at all time points.}
+#' }
+#' For example, an "always treat" intervention on \code{A} is given by \cr
+#' \code{intervention1.A = list(static, rep(1, time_points))} \cr
+#' See the vignette "A Simplified Approach for Specifying Interventions in gfoRmula" and "Examples" section for more examples.
 #'
-#' @return An object of class \code{gformula_binary_eof}. The object is a list with the following components:
+#' @return An object of class "gformula_binary_eof". The object is a list with the following components:
 #' \item{result}{Results table containing the estimated outcome probability for all interventions (inculding natural course) at the last time point as well as the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap end-of-follow-up mean ratio, standard error, and 95\% confidence interval.}
 #' \item{coeffs}{A list of the coefficients of the fitted models.}
 #' \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
@@ -2239,9 +2433,8 @@ gformula_continuous_eof <- function(obs_data, id,
 #'                                 treat ~ lag1_treat + cumavg_cov1 +
 #'                                   cumavg_cov2 + cov3 + time))
 #' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-#' intvars <- list('treat', 'treat')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(threshold, 1, Inf)))
+#' intervention1.treat <- list(static, rep(0, 7))
+#' intervention2.treat <- list(threshold, 1, Inf)
 #' int_descript <- c('Never treat', 'Threshold - lower bound 1')
 #' nsimul <- 10000
 #' ncores <- 2
@@ -2253,8 +2446,8 @@ gformula_continuous_eof <- function(obs_data, id,
 #'                                      covtypes = covtypes,
 #'                                      covparams = covparams,
 #'                                      ymodel = ymodel,
-#'                                      intvars = intvars,
-#'                                      interventions = interventions,
+#'                                      intervention1.treat = intervention1.treat,
+#'                                      intervention2.treat = intervention2.treat,
 #'                                      int_descript = int_descript,
 #'                                      histories = histories, histvars = histvars,
 #'                                      basecovs = c("cov3"), seed = 1234,
@@ -2319,7 +2512,76 @@ gformula_binary_eof <- function(obs_data, id,
   if ('time_points' %in% names(extra_args)){
     stop('Argument time_points cannot be supplied in this function. For end of follow up outcomes, the mean is calculated at the last time point in obs_data')
   }
+  time_points <- max(obs_data[[time_name]])+1
 
+  # Process new intervention specification format, if applicable
+  old_convention <- TRUE
+  if (is.null(interventions)){
+    sub_kwarg <- substitute(list(...))
+    clean_kwarg_str <- paste0(stringr::str_remove_all(as.character(deparse(sub_kwarg)), " "), collapse = "")
+    kwarg_list <- as.list(sub_kwarg)
+    kwarg_name_list <- names(kwarg_list)
+
+    args <- c(as.list(environment()), eval(parse(text = clean_kwarg_str)))
+    kwargs_len <- length(eval(parse(text = clean_kwarg_str)))
+
+    arg_names <- names(args)
+    arg_idx <- which(stringr::str_detect(arg_names, "intervention") & arg_names != 'interventions')
+    arg_interv <- args[arg_idx]
+
+    if (kwargs_len > 0) {
+      old_convention <- FALSE
+      interv_args_split <- split_args(arg_interv, "intervention")
+      interv_list_origin <- interv_args_split$origin_list
+      interv_list <- unlist(interv_args_split$prefix)
+      interv_list_all_names <- interv_args_split$suffix
+      ninterv <- length(unique(interv_list))
+
+      if (ref_int > ninterv | ref_int < 0) {
+        stop("Please input a valid index for the reference intervention.
+         0 represents natural course as reference.
+         Other integer represents the corresponding specified intervention.")
+      }
+      if (length(arg_idx) == 0 | any(is.na(interv_list)) | any(is.na(unlist(interv_list_all_names)))) {
+        stop("Please enter interventions through keywords arguments following the naming pattern interventioni.treatment where treatment is the variable name in intervention i. See the help file for the gformula function for additional details and examples.")
+      }
+
+      interventions <- vector(mode = "list", length = ninterv)
+      intvars <- vector(mode = "list", length = ninterv)
+      int_times <- vector(mode = "list", length = ninterv)
+
+      for (i in 1:ninterv) {
+
+        # get all treatments for each intervention
+        interv_idx <- which((unlist(interv_list)) == as.character(i))
+        interv_all_names <- unlist(interv_list_all_names)[interv_idx]
+
+        interv_single <- list()
+        interv_var_single <- list()
+        interv_time_single <- list()
+
+        for (treat in 1:length(interv_idx)) {
+          treat_idx <- interv_idx[treat]
+          treat_name <- paste0("intervention", interv_list_origin[treat_idx])
+          interv <- as.list(arg_interv[[which(names(arg_interv) == treat_name)]])
+          interv_var <- interv_all_names[treat]
+          if ('int_times' %in% names(interv)){
+            times <- interv$int_times
+            interv$int_times <- NULL
+          } else {
+            times <- 0:(time_points - 1)
+          }
+          interv_single <- c(interv_single, list(unlist(interv)))
+          interv_var_single <- c(interv_var_single, interv_var)
+          interv_time_single <- c(interv_time_single, list(times))
+        }
+
+        interventions[i] <- list(interv_single)
+        intvars[i] <- interv_var_single
+        int_times[i] <- interv_time_single
+      }
+    }
+  }
 
   error_catch(id = id, nsimul = nsimul, intvars = intvars, interventions = interventions,
               int_times = int_times, int_descript = int_descript,
@@ -2333,7 +2595,7 @@ gformula_binary_eof <- function(obs_data, id,
               comprisk = comprisk, censor = censor, censor_name = censor_name,
               covmodels = covparams$covmodels,
               histvals = histvals, ipw_cutoff_quantile = ipw_cutoff_quantile,
-              ipw_cutoff_value = ipw_cutoff_value)
+              ipw_cutoff_value = ipw_cutoff_value, old_convention = old_convention)
 
   min_time <- min(obs_data[[time_name]])
   below_zero_indicator <- min_time < 0
@@ -2373,7 +2635,6 @@ gformula_binary_eof <- function(obs_data, id,
   }
 
   sample_size <- length(unique(obs_data[[id]]))
-  time_points <- max(obs_data[[time_name]])+1
 
   for (i in seq_along(covnames)){
     if (covtypes[i] == 'absorbing'){

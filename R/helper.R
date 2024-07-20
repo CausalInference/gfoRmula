@@ -78,6 +78,7 @@ hr_helper <- function(i, intcomp, time_name, pools){
 #'                               appears in any of the model statements.
 #' @param ipw_cutoff_quantile    Percentile by which to truncate inverse probability weights.
 #' @param ipw_cutoff_value       Cutoff value by which to truncate inverse probability weights.
+#' @param old_convention         Logical scalar indicating whether the "old" intervention convention was used (i.e., by specifying \code{interventions}, \code{intvars}, and \code{int_times}).
 #'
 #' @return                       No value is returned.
 #' @keywords internal
@@ -89,7 +90,7 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
                         time_name, obs_data, parallel, ncores, nsamples,
                         sim_data_b, outcome_name, compevent_name, comprisk,
                         censor, censor_name, covmodels, histvals, ipw_cutoff_quantile,
-                        ipw_cutoff_value){
+                        ipw_cutoff_value, old_convention){
 
   if (!is.data.table(obs_data)){
     if (is.data.frame(obs_data)){
@@ -144,6 +145,16 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
     for (histvar in unique(unlist(histvars))){
       if (!(histvar %in% covnames)){
         stop(paste('Covariate', histvar, 'in histvars not found in covnames'))
+      }
+    }
+  }
+  if (!is.null(intvars)){
+    for (intvar in unique(unlist(intvars))){
+      if (!(intvar %in% obs_colnames)){
+        stop(paste('Intervention variable', intvar, 'not found in obs_data'))
+      }
+      if (!(intvar %in% covnames)){
+        stop(paste('Intervention variable', intvar, 'not found in covnames'))
       }
     }
   }
@@ -229,17 +240,29 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
   }
   if (is.null(int_descript)){
     if (length(intvars) != length(interventions)){
-      stop("Intervention parameters (intvars, interventions) are unequal lengths")
+      if (old_convention){
+        stop("Intervention parameters (intvars, interventions) are unequal lengths")
+      } else {
+        stop("The intervention parameters are not appropriately set")
+      }
     }
   } else {
     if (!all(sapply(list(length(intvars), length(interventions)),
                     FUN = identical, length(int_descript)))){
-      stop("Intervention parameters (intvars, interventions, int_descript) are unequal lengths")
+      if (old_convention){
+        stop("Intervention parameters (intvars, interventions, int_descript) are unequal lengths")
+      } else {
+        stop("The intervention parameters are not appropriately set")
+      }
     }
   }
   if (!is.null(int_times)){
     if (length(int_times) != length(interventions)){
-      stop("Intervention parameters (int_times, interventions) are unequal lengths")
+      if (old_convention){
+        stop("Intervention parameters (int_times, interventions) are unequal lengths")
+      } else {
+        stop("The parameter int_times is not appropriately set")
+      }
     }
   }
 
@@ -588,4 +611,15 @@ get_percent_intervened <- function(pools){
   }
   return(list(percent_intervened = percent_intervened,
               average_percent_intervened = average_percent_intervened))
+}
+
+# Helper function for processing new intervention specification format
+split_args <- function(argument, target_string) {
+  split_list <- stringr::str_split(names(argument), target_string)
+  origin_list <- lapply(split_list, function(x) {x[2]})
+  split_by_dot <- stringr::str_split(origin_list, "[.]")
+  prefix <- lapply(split_by_dot, function(x) {x[1]})
+  suffix <- lapply(split_by_dot, function(x) {x[2]})
+
+  return(list(prefix = prefix, suffix = suffix, origin_list = origin_list))
 }

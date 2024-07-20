@@ -38,6 +38,7 @@ natural <- function(newdf, pool, intvar, intvals, time_name, t){
 #' time_name <- 't0'
 #' covnames <- c('L1', 'L2', 'A')
 #' outcome_name <- 'Y'
+#' outcome_type <- 'survival'
 #' covtypes <- c('binary', 'bounded normal', 'binary')
 #' histories <- c(lagged, lagavg)
 #' histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
@@ -48,24 +49,23 @@ natural <- function(newdf, pool, intvar, intvals, time_name, t){
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
-#' gform_basic <- gformula_survival(obs_data = basicdata_nocomp, id = id,
-#'                                  time_points = time_points,
-#'                                  time_name = time_name, covnames = covnames,
-#'                                  outcome_name = outcome_name,
-#'                                  covtypes = covtypes,
-#'                                  covparams = covparams, ymodel = ymodel,
-#'                                  intvars = intvars,
-#'                                  interventions = interventions,
-#'                                  int_descript = int_descript,
-#'                                  histories = histories, histvars = histvars,
-#'                                  basecovs = c('L3'), nsimul = nsimul,
-#'                                  seed = 1234)
+#' gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
+#'                         time_points = time_points,
+#'                         time_name = time_name, covnames = covnames,
+#'                         outcome_name = outcome_name,
+#'                         outcome_type = outcome_type, covtypes = covtypes,
+#'                         covparams = covparams, ymodel = ymodel,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
+#'                         int_descript = int_descript,
+#'                         histories = histories, histvars = histvars,
+#'                         basecovs = c('L3'), nsimul = nsimul,
+#'                         seed = 1234)
 #' gform_basic
 #' }
 #'
@@ -107,9 +107,8 @@ static <- function(newdf, pool, intvar, intvals, time_name, t){
 #'                                 treat ~ lag1_treat + cumavg_cov1 +
 #'                                   cumavg_cov2 + cov3 + time))
 #' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-#' intvars <- list('treat', 'treat')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(threshold, 1, Inf)))
+#' intervention1.treat <- list(static, rep(0, 7))
+#' intervention2.treat <- list(threshold, 1, Inf)
 #' int_descript <- c('Never treat', 'Threshold - lower bound 1')
 #' nsimul <- 10000
 #' ncores <- 2
@@ -121,8 +120,8 @@ static <- function(newdf, pool, intvar, intvals, time_name, t){
 #'                                      covtypes = covtypes,
 #'                                      covparams = covparams,
 #'                                      ymodel = ymodel,
-#'                                      intvars = intvars,
-#'                                      interventions = interventions,
+#'                                      intervention1.treat = intervention1.treat,
+#'                                      intervention2.treat = intervention2.treat,
 #'                                      int_descript = int_descript,
 #'                                      histories = histories, histvars = histvars,
 #'                                      basecovs = c("cov3"), seed = 1234,

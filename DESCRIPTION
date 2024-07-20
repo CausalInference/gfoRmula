@@ -1,6 +1,6 @@
 Package: gfoRmula
 Title: Parametric G-Formula
-Version: 1.0.5
+Version: 1.1.0
 Authors@R: c(person("Victoria", "Lin", role = c("aut"), 
                      email = "vlin@alumni.harvard.edu", 
                      comment = "V. Lin and S. McGrath made equal 
@@ -20,6 +20,8 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
               person("McGee", "Emma", role = c("aut"), 
                       email = "emcgee@hsph.harvard.edu", 
                       comment = c(ORCID = "0000-0002-7456-6408")),
+              person("Cheng", "Carrie", role = c("aut"), 
+                      email = "zcheng@hsph.harvard.edu"),
               person("Jessica G.", "Young", role = c("aut"),
                       email = "jyoung@hsph.harvard.edu",
                       comment = c(ORCID = "0000-0002-2758-6932", 
@@ -64,7 +66,11 @@ Imports:
     truncnorm,
     truncreg,
     utils
-Suggests: Hmisc
+Suggests: 
+    Hmisc, 
+    knitr, 
+    rmarkdown
+VignetteBuilder: knitr
 URL: https://github.com/CausalInference/gfoRmula, 
     https://doi.org/10.1016/j.patter.2020.100008
 BugReports: https://github.com/CausalInference/gfoRmula/issues

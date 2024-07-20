@@ -46,9 +46,8 @@ covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3
                                 treat ~ lag1_treat + cumavg_cov1 +
                                   cumavg_cov2 + cov3 + time))
 ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-intvars <- list('treat', 'treat')
-interventions <- list(list(c(static, rep(0, 7))),
-                      list(c(threshold, 1, Inf)))
+intervention1.treat <- list(static, rep(0, 7))
+intervention2.treat <- list(threshold, 1, Inf)
 int_descript <- c('Never treat', 'Threshold - lower bound 1')
 nsimul <- 10000
 ncores <- 2
@@ -60,8 +59,8 @@ gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
                                      covtypes = covtypes,
                                      covparams = covparams,
                                      ymodel = ymodel,
-                                     intvars = intvars,
-                                     interventions = interventions,
+                                     intervention1.treat = intervention1.treat,
+                                     intervention2.treat = intervention2.treat,
                                      int_descript = int_descript,
                                      histories = histories, histvars = histvars,
                                      basecovs = c("cov3"), seed = 1234,

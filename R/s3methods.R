@@ -34,9 +34,8 @@
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -46,8 +45,8 @@
 #'                         outcome_name = outcome_name,
 #'                         outcome_type = outcome_type, covtypes = covtypes,
 #'                         covparams = covparams, ymodel = ymodel,
-#'                         intvars = intvars,
-#'                         interventions = interventions,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
 #'                         int_descript = int_descript,
 #'                         histories = histories, histvars = histvars,
 #'                         basecovs = c('L3'), nsimul = nsimul,
@@ -224,6 +223,7 @@ print.summary.gformula <- function(x, all_times = TRUE, coefficients = FALSE,
 #' time_name <- 't0'
 #' covnames <- c('L1', 'L2', 'A')
 #' outcome_name <- 'Y'
+#' outcome_type <- 'survival'
 #' covtypes <- c('binary', 'bounded normal', 'binary')
 #' histories <- c(lagged, lagavg)
 #' histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
@@ -234,24 +234,23 @@ print.summary.gformula <- function(x, all_times = TRUE, coefficients = FALSE,
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
-#' gform_basic <- gformula_survival(obs_data = basicdata_nocomp, id = id,
-#'                                  time_points = time_points,
-#'                                  time_name = time_name, covnames = covnames,
-#'                                  outcome_name = outcome_name,
-#'                                  covtypes = covtypes,
-#'                                  covparams = covparams, ymodel = ymodel,
-#'                                  intvars = intvars,
-#'                                  interventions = interventions,
-#'                                  int_descript = int_descript,
-#'                                  histories = histories, histvars = histvars,
-#'                                  basecovs = c('L3'), nsimul = nsimul,
-#'                                  seed = 1234)
+#' gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
+#'                         time_points = time_points,
+#'                         time_name = time_name, covnames = covnames,
+#'                         outcome_name = outcome_name,
+#'                         outcome_type = outcome_type, covtypes = covtypes,
+#'                         covparams = covparams, ymodel = ymodel,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
+#'                         int_descript = int_descript,
+#'                         histories = histories, histvars = histvars,
+#'                         basecovs = c('L3'), nsimul = nsimul,
+#'                         seed = 1234)
 #' plot(gform_basic)
 #' }
 #'
@@ -376,6 +375,7 @@ plot.gformula_survival <- function(x, covnames = NULL, risk = TRUE,
 #' time_name <- 't0'
 #' covnames <- c('L1', 'L2', 'A')
 #' outcome_name <- 'Y'
+#' outcome_type <- 'continuous_eof'
 #' covtypes <- c('categorical', 'normal', 'binary')
 #' histories <- c(lagged)
 #' histvars <- list(c('A', 'L1', 'L2'))
@@ -384,25 +384,21 @@ plot.gformula_survival <- function(x, covnames = NULL, risk = TRUE,
 #'                                 L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
 #'                                 A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(static, rep(1, 7))))
+#' intervention1.A <- list(static, rep(0, 7))
+#' intervention2.A <- list(static, rep(1, 7))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
-#' gform_cont_eof <- gformula_continuous_eof(obs_data = continuous_eofdata,
-#'                                           id = id,
-#'                                           time_name = time_name,
-#'                                           covnames = covnames,
-#'                                           outcome_name = outcome_name,
-#'                                           covtypes = covtypes,
-#'                                           covparams = covparams, ymodel = ymodel,
-#'                                           intvars = intvars,
-#'                                           interventions = interventions,
-#'                                           int_descript = int_descript,
-#'                                           histories = histories, histvars = histvars,
-#'                                           basecovs = c("L3"),
-#'                                           nsimul = nsimul, seed = 1234)
+#' gform_cont_eof <- gformula(obs_data = continuous_eofdata,
+#'                            id = id, time_name = time_name,
+#'                            covnames = covnames, outcome_name = outcome_name,
+#'                            outcome_type = outcome_type, covtypes = covtypes,
+#'                            covparams = covparams, ymodel = ymodel,
+#'                            intervention1.A = intervention1.A,
+#'                            intervention2.A = intervention2.A,
+#'                            int_descript = int_descript,
+#'                            histories = histories, histvars = histvars,
+#'                            basecovs = c("L3"), nsimul = nsimul, seed = 1234)
 #' plot(gform_cont_eof)
 #' }
 #'
@@ -488,6 +484,7 @@ plot.gformula_continuous_eof <- function(x, covnames = NULL, ncol = NULL, nrow =
 #' ## Estimating the effect of threshold interventions on the mean of a binary
 #' ## end of follow-up outcome
 #' \donttest{
+#' outcome_type <- 'binary_eof'
 #' id <- 'id_num'
 #' time_name <- 'time'
 #' covnames <- c('cov1', 'cov2', 'treat')
@@ -495,34 +492,30 @@ plot.gformula_continuous_eof <- function(x, covnames = NULL, ncol = NULL, nrow =
 #' histories <- c(lagged, cumavg)
 #' histvars <- list(c('treat', 'cov1', 'cov2'), c('cov1', 'cov2'))
 #' covtypes <- c('binary', 'zero-inflated normal', 'normal')
-#' covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 + cov3 +
-#'                                   time,
-#'                                 cov2 ~ lag1_treat + cov1 + lag1_cov1 + lag1_cov2 +
+#' covparams <- list(covmodels = c(cov1 ~ lag1_treat + lag1_cov1 + lag1_cov2 +
 #'                                   cov3 + time,
+#'                                 cov2 ~ lag1_treat + cov1 + lag1_cov1 +
+#'                                   lag1_cov2 + cov3 + time,
 #'                                 treat ~ lag1_treat + cumavg_cov1 +
 #'                                   cumavg_cov2 + cov3 + time))
 #' ymodel <- outcome ~  treat + cov1 + cov2 + lag1_cov1 + lag1_cov2 + cov3
-#' intvars <- list('treat', 'treat')
-#' interventions <- list(list(c(static, rep(0, 7))),
-#'                       list(c(threshold, 1, Inf)))
+#' intervention1.treat <- list(static, rep(0, 7))
+#' intervention2.treat <- list(threshold, 1, Inf)
 #' int_descript <- c('Never treat', 'Threshold - lower bound 1')
 #' nsimul <- 10000
 #' ncores <- 2
 #'
-#' gform_bin_eof <- gformula_binary_eof(obs_data = binary_eofdata, id = id,
-#'                                      time_name = time_name,
-#'                                      covnames = covnames,
-#'                                      outcome_name = outcome_name,
-#'                                      covtypes = covtypes,
-#'                                      covparams = covparams,
-#'                                      ymodel = ymodel,
-#'                                      intvars = intvars,
-#'                                      interventions = interventions,
-#'                                      int_descript = int_descript,
-#'                                      histories = histories, histvars = histvars,
-#'                                      basecovs = c("cov3"), seed = 1234,
-#'                                      parallel = TRUE, nsamples = 5,
-#'                                      nsimul = nsimul, ncores = ncores)
+#' gform_bin_eof <- gformula(obs_data = binary_eofdata,
+#'                           outcome_type = outcome_type, id = id,
+#'                           time_name = time_name, covnames = covnames,
+#'                           outcome_name = outcome_name, covtypes = covtypes,
+#'                           covparams = covparams, ymodel = ymodel,
+#'                           intervention1.treat = intervention1.treat,
+#'                           intervention2.treat = intervention2.treat,
+#'                           int_descript = int_descript, histories = histories,
+#'                           histvars = histvars, basecovs = c("cov3"),
+#'                           seed = 1234, parallel = TRUE, nsamples = 5,
+#'                           nsimul = nsimul, ncores = ncores)
 #' plot(gform_bin_eof)
 #' }
 #'
@@ -623,9 +616,8 @@ plot.gformula_binary_eof <- function(x, covnames = NULL, ncol = NULL, nrow = NUL
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -635,8 +627,8 @@ plot.gformula_binary_eof <- function(x, covnames = NULL, ncol = NULL, nrow = NUL
 #'                         outcome_name = outcome_name,
 #'                         outcome_type = outcome_type, covtypes = covtypes,
 #'                         covparams = covparams, ymodel = ymodel,
-#'                         intvars = intvars,
-#'                         interventions = interventions,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
 #'                         int_descript = int_descript,
 #'                         histories = histories, histvars = histvars,
 #'                         basecovs = c('L3'), nsimul = nsimul,
@@ -700,9 +692,8 @@ coef.gformula <- function(object, ...){
 #'                                 A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
 #'                                   lag_cumavg1_L2 + L3 + t0))
 #' ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
-#' intvars <- list('A', 'A')
-#' interventions <- list(list(c(static, rep(0, time_points))),
-#'                       list(c(static, rep(1, time_points))))
+#' intervention1.A <- list(static, rep(0, time_points))
+#' intervention2.A <- list(static, rep(1, time_points))
 #' int_descript <- c('Never treat', 'Always treat')
 #' nsimul <- 10000
 #'
@@ -712,8 +703,8 @@ coef.gformula <- function(object, ...){
 #'                         outcome_name = outcome_name,
 #'                         outcome_type = outcome_type, covtypes = covtypes,
 #'                         covparams = covparams, ymodel = ymodel,
-#'                         intvars = intvars,
-#'                         interventions = interventions,
+#'                         intervention1.A = intervention1.A,
+#'                         intervention2.A = intervention2.A,
 #'                         int_descript = int_descript,
 #'                         histories = histories, histvars = histvars,
 #'                         basecovs = c('L3'), nsimul = nsimul,

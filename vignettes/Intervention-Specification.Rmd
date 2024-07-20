@@ -1,0 +1,124 @@
+---
+title: "A Simplified Approach for Specifying Interventions in gfoRmula"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{A Simplified Approach for Specifying Interventions in gfoRmula}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Starting from version 1.1.0, the \verb|gfoRmula| package supports a simplified approach to specify interventions. This document describes how to specify interventions using this approach. This document assumes that readers have read the long-form package documentation of [McGrath et al. (2020)](https://doi.org/10.1016/j.patter.2020.100008).
+
+Note that \verb|gfoRmula| maintains backwards compatibility in the sense that users may continue to specify interventions using the previous approach (i.e., based on specifying the arguments \verb|interventions|, \verb|intvars|, and \verb|int_times|). 
+
+## Specifying Interventions
+
+To specify interventions, users can supply arguments with the following naming requirements: 
+
+* Each intervention argument begins with a prefix of \verb|intervention|
+* After the prefix, the intervention number is specified and followed by a period
+* After the period, the treatment variable name is specified
+
+For example, an argument with the name \verb|intervention1.A| specifies the first intervention, which intervenes on variable \verb|A|. 
+
+Each intervention argument takes as input a list with the following elements:
+
+* The first element specifies the intervention function, such as \verb|static|, \verb|threshold|, or a custom intervention function. 
+* The subsequent elements specify any intervention "values". For static interventions, this is a vector of length \verb|time_points| which specifies the values of the static treatment to be assigned. For threshold interventions, these are the lower and upper bounds for the threshold.
+* Users can optionally supply a named element \verb|int_times| to specify the time points to apply the intervention. By default, all interventions are applied at all time points.
+
+The example below specifies an "always treat" intervention on \verb|A|:
+\begin{verbatim}
+intervention1.A = list(static, rep(1, time_points))
+\end{verbatim}
+
+The next example specifies a threshold intervention strategy on \verb|A| with a lower bound of 1:
+\begin{verbatim}
+intervention1.A = list(threshold, 1, Inf)
+\end{verbatim}
+
+The next example specifies a joint intervention on \verb|A1| and \verb|A2| of always treat. Both \verb|A1| and \verb|A2| are intervened on at all time points except the last one.
+\begin{verbatim}
+intervention1.A1 = list(static, rep(1, time_points), int_times = 0:(time_points - 2))
+intervention1.A2 = list(static, rep(1, time_points), int_times = 0:(time_points - 2))
+\end{verbatim}
+
+The next sections illustrate complete examples.
+
+## Example 1: Static interventions
+
+```{r, echo=FALSE}
+library('gfoRmula')
+library('data.table')
+```
+
+In this example, we re-perform the analysis in Example 1 in [McGrath et al. (2020)](https://doi.org/10.1016/j.patter.2020.100008) using the new intervention specification. 
+
+```{r}
+id <- 'id'
+time_points <- 7
+time_name <- 't0'
+covnames <- c('L1', 'L2', 'A')
+outcome_name <- 'Y'
+outcome_type <- 'survival'
+covtypes <- c('binary', 'bounded normal', 'binary')
+histories <- c(lagged, lagavg)
+histvars <- list(c('A', 'L1', 'L2'), c('L1', 'L2'))
+covparams <- list(covmodels = c(L1 ~ lag1_A + lag_cumavg1_L1 + lag_cumavg1_L2 +
+                                  L3 + t0,
+                                L2 ~ lag1_A + L1 + lag_cumavg1_L1 +
+                                  lag_cumavg1_L2 + L3 + t0,
+                                A ~ lag1_A + L1 + L2 + lag_cumavg1_L1 +
+                                  lag_cumavg1_L2 + L3 + t0))
+ymodel <- Y ~ A + L1 + L2 + L3 + lag1_A + lag1_L1 + lag1_L2 + t0
+nsimul <- 10000
+
+gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
+                        time_points = time_points,
+                        time_name = time_name, covnames = covnames,
+                        outcome_name = outcome_name,
+                        outcome_type = outcome_type, covtypes = covtypes,
+                        covparams = covparams, ymodel = ymodel,
+                        histories = histories, histvars = histvars,
+                        basecovs = c('L3'), nsimul = nsimul,
+                        seed = 1234, 
+                        intervention1.A = list(static, rep(0, time_points)),
+                        intervention2.A = list(static, rep(1, time_points)), 
+                        int_descript = c('Never treat', 'Always treat'))
+gform_basic
+```
+
+## Example 2: Custom interventions
+
+In this example, we apply a custom intervention that assigns treatment if \verb|L2| is below a certain threshold. We first define the custom intervention function.
+```{r}
+example_intervention <- function(newdf, pool, intvar, intvals, time_name, t){
+  newdf[, (intvar) := 0]
+  newdf[L2 < intvals[[1]], (intvar) := 1]
+}
+```
+Next, we apply the g-formula with this custom intervention where we consider different thresholds for \verb|L2|.
+```{r}
+gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,
+                        time_points = time_points,
+                        time_name = time_name, covnames = covnames,
+                        outcome_name = outcome_name,
+                        outcome_type = outcome_type, covtypes = covtypes,
+                        covparams = covparams, ymodel = ymodel,
+                        histories = histories, histvars = histvars,
+                        basecovs = c('L3'), nsimul = nsimul,
+                        seed = 1234, 
+                        intervention1.A = list(example_intervention, 0.8),
+                        intervention2.A = list(example_intervention, 1), 
+                        int_descript = c('Treat if L2 < 0.8', 'Treat if L2 < 1'))
+gform_basic
+```
+
+## References
+
+McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, Young JG. gfoRmula: an R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020 Jun 12;1(3).

@@ -1,5 +1,11 @@
 ## Package Updates
 
+### Changes in Version 1.1.0 (TBD)
+
+-   Added a new approach for specifying interventions in the
+    `gformula()` function. See the vignette “A Simplified Approach for
+    Specifying Interventions in gfoRmula”.
+
 ### Changes in Version 1.0.4 (2024-01-30)
 
 -   Fixed an error for joint interventions on multiple treatments

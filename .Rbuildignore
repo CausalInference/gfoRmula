@@ -3,3 +3,5 @@
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^NEWS.Rmd
+^doc$
+^Meta$
