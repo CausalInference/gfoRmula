@@ -413,6 +413,15 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name,
     # Fit GLM for outcome variable using user-specified model and entire dataset
     fitY <- stats::glm(model, family = outcome_fam, data = obs_data, y = TRUE)
   }
+  if(anyNA(coefficients(fitY))) {
+    stop(
+      "`NA` coefficients produced in prediction model. ",
+      "This may be due to (multi)collinearity in `ymodel` predictor variables, ",
+      "or including `time_name` variable in a 'continuous_eof' model.\n",
+      "Variables returning `NA` coefficients:\n - ",
+      paste(names(coefficients(fitY)[is.na(coefficients(fitY))]), collapse = "\n - ")
+      )
+  }
   fitY$rmse <- add_rmse(fitY)
   fitY$stderr <- add_stderr(fitY)
   fitY$vcov <- add_vcov(fitY)
