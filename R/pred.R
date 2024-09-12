@@ -375,21 +375,17 @@ pred_fun_cov <- function(covparams, covnames, covtypes, covfits_custom,
 #' @param time_name      Character string specifying the name of the time variable in \code{obs_data}.
 #' @param obs_data       Data on which the model is fit.
 #' @param model_fits     Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.
+#' @param ymodel_fit_custom Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details.
 #' @return               Fitted model for the outcome variable.
 #' @keywords internal
 #' @import data.table
 
 pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name,
-                       time_name, obs_data, model_fits){
-  if (outcome_type == 'continuous' || outcome_type == 'continuous_eof'){
-    outcome_fam <- stats::gaussian()
-  } else if (outcome_type == 'survival' || outcome_type == 'binary_eof'){
-    outcome_fam <- stats::binomial()
-  }
+                       time_name, obs_data, model_fits, ymodel_fit_custom){
   if (grepl('eof', outcome_type)){
     obs_data <- obs_data[obs_data[[time_name]] == max(unique(obs_data[[time_name]]))]
   }
-  if (!is.na(yrestrictions[[1]][[1]])){ # Check for restrictions on outcome variable modeling
+  if (!is.na(yrestrictions[[1]][[1]])){
     # Set condition where outcome variable is modeled
     condition <- yrestrictions[[1]][1]
     if (length(yrestrictions) > 1){
@@ -399,25 +395,41 @@ pred_fun_Y <- function(model, yrestrictions, outcome_type, outcome_name,
         condition <- paste(condition, yrestriction[1], sep = "&")
       }
     }
-    # Fit GLM for outcome variable using user-specified model
-    if (grepl('continuous', outcome_type)){
-      obs_data[, paste("norm_", outcome_name, sep = "")] <-
-        (obs_data[[outcome_name]] - min(obs_data[[outcome_name]]))/(max(obs_data[[outcome_name]]) - min(obs_data[[outcome_name]]))
-      fitY <- stats::glm(stats::as.formula(paste("norm_", model, sep = "")), family = outcome_fam,
-                  data = subset(obs_data, eval(parse(text = condition))), y = TRUE)
-    } else {
-      fitY <- stats::glm(model, family = outcome_fam,
-                  data = subset(obs_data, eval(parse(text = condition))), y = TRUE)
-    }
-  } else { # Case where there are no restrictions on outcome variable
-    # Fit GLM for outcome variable using user-specified model and entire dataset
-    fitY <- stats::glm(model, family = outcome_fam, data = obs_data, y = TRUE)
   }
-  fitY$rmse <- add_rmse(fitY)
-  fitY$stderr <- add_stderr(fitY)
-  fitY$vcov <- add_vcov(fitY)
-  if (!model_fits){
-    fitY <- trim_glm(fitY)
+
+  if (is.null(ymodel_fit_custom)){
+    if (outcome_type == 'continuous' || outcome_type == 'continuous_eof'){
+      outcome_fam <- stats::gaussian()
+    } else if (outcome_type == 'survival' || outcome_type == 'binary_eof'){
+      outcome_fam <- stats::binomial()
+    }
+    if (!is.na(yrestrictions[[1]][[1]])){ # Check for restrictions on outcome variable modeling
+      # Fit GLM for outcome variable using user-specified model
+      if (grepl('continuous', outcome_type)){
+        obs_data[, paste("norm_", outcome_name, sep = "")] <-
+          (obs_data[[outcome_name]] - min(obs_data[[outcome_name]]))/(max(obs_data[[outcome_name]]) - min(obs_data[[outcome_name]]))
+        fitY <- stats::glm(stats::as.formula(paste("norm_", model, sep = "")), family = outcome_fam,
+                           data = subset(obs_data, eval(parse(text = condition))), y = TRUE)
+      } else {
+        fitY <- stats::glm(model, family = outcome_fam,
+                           data = subset(obs_data, eval(parse(text = condition))), y = TRUE)
+      }
+    } else { # Case where there are no restrictions on outcome variable
+      # Fit GLM for outcome variable using user-specified model and entire dataset
+      fitY <- stats::glm(model, family = outcome_fam, data = obs_data, y = TRUE)
+    }
+    fitY$rmse <- add_rmse(fitY)
+    fitY$stderr <- add_stderr(fitY)
+    fitY$vcov <- add_vcov(fitY)
+    if (!model_fits){
+      fitY <- trim_glm(fitY)
+    }
+  } else {
+    if (!is.na(yrestrictions[[1]][[1]])){
+      fitY <- ymodel_fit_custom(model, obs_data = subset(obs_data, eval(parse(text = condition))))
+    } else {
+      fitY <- ymodel_fit_custom(model, obs_data = obs_data)
+    }
   }
   return (fitY)
 }

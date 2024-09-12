@@ -9,6 +9,7 @@ simulate(
   fitcov,
   fitY,
   fitD,
+  ymodel_predict_custom,
   yrestrictions,
   compevent_restrictions,
   restrictions,
@@ -51,6 +52,8 @@ simulate(
 \item{fitY}{Model fit for the outcome variable.}
 
 \item{fitD}{Model fit for the competing event variable, if any.}
+
+\item{ymodel_predict_custom}{Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.}
 
 \item{yrestrictions}{List of vectors. Each vector containins as its first entry
 a condition and its second entry an integer. When the

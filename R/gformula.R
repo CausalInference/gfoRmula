@@ -70,13 +70,15 @@
 #'                                in \code{histories} is to be applied.
 #' @param histories               Vector of history functions to apply to the variables specified in \code{histvars}. The default is \code{NA}.
 #' @param ymodel                  Model statement for the outcome variable.
-#' @param yrestrictions           List of vectors. Each vector containins as its first entry
+#' @param ymodel_fit_custom       Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
+#' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
+#' @param yrestrictions           List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
 #'                                the outcome variable takes on the value in the second entry.
 #'                                The default is \code{NA}.
-#' @param compevent_restrictions  List of vectors. Each vector containins as its first entry
+#' @param compevent_restrictions  List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the competing event variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
@@ -356,6 +358,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                      covfits_custom = NA, covpredict_custom = NA,
                      histvars = NULL, histories = NA, basecovs = NA,
                      outcome_name, outcome_type, ymodel,
+                     ymodel_fit_custom = NULL,
+                     ymodel_predict_custom = NULL,
                      compevent_name = NULL, compevent_model = NA,
                      compevent_cens = FALSE,
                      censor_name = NULL, censor_model = NA,
@@ -381,6 +385,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                       histvars = histvars, histories = histories,
                       basecovs = basecovs, outcome_name = outcome_name,
                       ymodel = ymodel,
+                      ymodel_fit_custom = ymodel_fit_custom,
+                      ymodel_predict_custom = ymodel_predict_custom,
                       compevent_name = compevent_name,
                       compevent_model = compevent_model,
                       compevent_cens = compevent_cens,
@@ -409,6 +415,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                             histvars = histvars,
                             histories = histories, basecovs = basecovs,
                             outcome_name = outcome_name, ymodel = ymodel,
+                            ymodel_fit_custom = ymodel_fit_custom,
+                            ymodel_predict_custom = ymodel_predict_custom,
                             censor_name = censor_name,
                             censor_model = censor_model,
                             intvars = intvars, interventions = interventions,
@@ -432,7 +440,9 @@ gformula <- function(obs_data, id, time_points = NULL,
                         covpredict_custom = covpredict_custom,
                         histvars = histvars, histories = histories,
                         basecovs = basecovs, outcome_name = outcome_name,
-                        ymodel = ymodel, intvars = intvars,
+                        ymodel = ymodel, ymodel_fit_custom = ymodel_fit_custom,
+                        ymodel_predict_custom = ymodel_predict_custom,
+                        intvars = intvars,
                         censor_name = censor_name,
                         censor_model = censor_model,
                         interventions = interventions, int_times = int_times,
@@ -521,13 +531,15 @@ gformula <- function(obs_data, id, time_points = NULL,
 #'                                in \code{histories} is to be applied.
 #' @param histories               Vector of history functions to apply to the variables specified in \code{histvars}. The default is \code{NA}.
 #' @param ymodel                  Model statement for the outcome variable.
-#' @param yrestrictions           List of vectors. Each vector containins as its first entry
+#' @param ymodel_fit_custom       Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
+#' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
+#' @param yrestrictions           List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
 #'                                the outcome variable takes on the value in the second entry.
 #'                                The default is \code{NA}.
-#' @param compevent_restrictions  List of vectors. Each vector containins as its first entry
+#' @param compevent_restrictions  List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the competing event variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
@@ -730,6 +742,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               covfits_custom = NA, covpredict_custom = NA,
                               histvars = NULL, histories = NA, basecovs = NA,
                               outcome_name, ymodel,
+                              ymodel_fit_custom = NULL,
+                              ymodel_predict_custom = NULL,
                               compevent_name = NULL, compevent_model = NA,
                               compevent_cens = FALSE,
                               censor_name = NULL, censor_model = NA,
@@ -972,7 +986,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     fitcov <- NULL
   }
   fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
-                     model_fits = model_fits)
+                     model_fits = model_fits, ymodel_fit_custom = ymodel_fit_custom)
 
   # If competing event exists, fit model for competing event variable
   if (comprisk){
@@ -1046,6 +1060,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
     pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
                                  fitcov = fitcov, fitY = fitY, fitD = fitD,
+                                 ymodel_predict_custom = ymodel_predict_custom,
                                  yrestrictions = yrestrictions,
                                  compevent_restrictions = compevent_restrictions,
                                  restrictions = restrictions,
@@ -1066,6 +1081,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   } else {
     pools <- lapply(seq_along(comb_interventions), FUN = function(i){
       simulate(fitcov = fitcov, fitY = fitY, fitD = fitD,
+               ymodel_predict_custom = ymodel_predict_custom,
                yrestrictions = yrestrictions,
                compevent_restrictions = compevent_restrictions,
                restrictions = restrictions,
@@ -1159,6 +1175,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
                                       covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                                       basecovs = basecovs, ymodel = ymodel,
+                                      ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
                                       histvars = histvars, histvals = histvals, histories = histories,
                                       comprisk = comprisk, compevent_model = compevent_model,
                                       yrestrictions = yrestrictions,
@@ -1184,6 +1201,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
                          covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                          basecovs = basecovs, ymodel = ymodel,
+                         ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
                          histvars = histvars, histvals = histvals, histories = histories,
                          comprisk = comprisk, compevent_model = compevent_model,
                          yrestrictions = yrestrictions,
@@ -1520,13 +1538,15 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #'                                in \code{histories} is to be applied.
 #' @param histories               Vector of history functions to apply to the variables specified in \code{histvars}. The default is \code{NA}.
 #' @param ymodel                  Model statement for the outcome variable.
+#' @param ymodel_fit_custom       Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
+#' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
 #' @param visitprocess            List of vectors. Each vector contains as its first entry
 #'                                the covariate name of a visit process; its second entry
 #'                                the name of a covariate whose modeling depends on the
 #'                                visit process; and its third entry the maximum number
 #'                                of consecutive visits that can be missed before an
 #'                                individual is censored. The default is \code{NA}.
-#' @param yrestrictions           List of vectors. Each vector containins as its first entry
+#' @param yrestrictions           List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
@@ -1647,6 +1667,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                     covpredict_custom = NA, histvars = NULL,
                                     histories = NA, basecovs = NA,
                                     outcome_name, ymodel,
+                                    ymodel_fit_custom = NULL,
+                                    ymodel_predict_custom = NULL,
                                     censor_name = NULL, censor_model = NA,
                                     intvars = NULL, interventions = NULL,
                                     int_times = NULL, int_descript = NULL, ref_int = 0,
@@ -1879,7 +1901,7 @@ gformula_continuous_eof <- function(obs_data, id,
     fitcov <- NULL
   }
   fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
-                     model_fits = model_fits)
+                     model_fits = model_fits, ymodel_fit_custom = ymodel_fit_custom)
   if (censor){
     fitC <- pred_fun_D(censor_model, NA, obs_data_geq_0, model_fits = model_fits)
   } else {
@@ -1936,6 +1958,7 @@ gformula_continuous_eof <- function(obs_data, id,
     cl <- prep_cluster(ncores = ncores, threads = threads,  covtypes = covtypes)
     pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
                                  fitcov = fitcov, fitY = fitY, fitD = NA,
+                                 ymodel_predict_custom = ymodel_predict_custom,
                                  yrestrictions = yrestrictions,
                                  compevent_restrictions = compevent_restrictions,
                                  restrictions = restrictions,
@@ -1955,6 +1978,7 @@ gformula_continuous_eof <- function(obs_data, id,
   } else {
     pools <- lapply(seq_along(comb_interventions), FUN = function(i){
       simulate(fitcov = fitcov, fitY = fitY, fitD = NA,
+               ymodel_predict_custom = ymodel_predict_custom,
                yrestrictions = yrestrictions,
                compevent_restrictions = compevent_restrictions,
                restrictions = restrictions,
@@ -2014,6 +2038,7 @@ gformula_continuous_eof <- function(obs_data, id,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
                                       covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                                       basecovs = basecovs, ymodel = ymodel,
+                                      ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
                                       histvars = histvars, histvals = histvals, histories = histories,
                                       comprisk = comprisk, compevent_model = compevent_model,
                                       yrestrictions = yrestrictions,
@@ -2040,6 +2065,7 @@ gformula_continuous_eof <- function(obs_data, id,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
                          covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                          basecovs = basecovs, ymodel = ymodel,
+                         ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
                          histvars = histvars, histvals = histvals, histories = histories,
                          comprisk = comprisk, compevent_model = compevent_model,
                          yrestrictions = yrestrictions,
@@ -2334,13 +2360,15 @@ gformula_continuous_eof <- function(obs_data, id,
 #'                                in \code{histories} is to be applied.
 #' @param histories               Vector of history functions to apply to the variables specified in \code{histvars}. The default is \code{NA}.
 #' @param ymodel                  Model statement for the outcome variable.
+#' @param ymodel_fit_custom       Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
+#' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.
 #' @param visitprocess            List of vectors. Each vector contains as its first entry
 #'                                the covariate name of a visit process; its second entry
 #'                                the name of a covariate whose modeling depends on the
 #'                                visit process; and its third entry the maximum number
 #'                                of consecutive visits that can be missed before an
 #'                                individual is censored. The default is \code{NA}.
-#' @param yrestrictions           List of vectors. Each vector containins as its first entry
+#' @param yrestrictions           List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
@@ -2463,7 +2491,10 @@ gformula_binary_eof <- function(obs_data, id,
                                 covfits_custom = NA, covpredict_custom = NA,
                                 histvars = NULL, histories = NA, basecovs = NA,
                                 censor_name = NULL, censor_model = NA,
-                                outcome_name, ymodel, intvars = NULL,
+                                outcome_name, ymodel,
+                                ymodel_fit_custom = NULL,
+                                ymodel_predict_custom = NULL,
+                                intvars = NULL,
                                 interventions = NULL, int_times = NULL, int_descript = NULL,
                                 ref_int = 0, visitprocess = NA,
                                 restrictions = NA, yrestrictions = NA, baselags = FALSE,
@@ -2687,7 +2718,7 @@ gformula_binary_eof <- function(obs_data, id,
     fitcov <- NULL
   }
   fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, obs_data_geq_0,
-                     model_fits = model_fits)
+                     model_fits = model_fits, ymodel_fit_custom = ymodel_fit_custom)
   if (censor){
     fitC <- pred_fun_D(censor_model, NA, obs_data_geq_0, model_fits = model_fits)
   } else {
@@ -2744,6 +2775,7 @@ gformula_binary_eof <- function(obs_data, id,
     cl <- prep_cluster(ncores = ncores, threads = threads , covtypes = covtypes)
     pools <- parallel::parLapply(cl, seq_along(comb_interventions), simulate,
                                  fitcov = fitcov, fitY = fitY, fitD = NA,
+                                 ymodel_predict_custom = ymodel_predict_custom,
                                  yrestrictions = yrestrictions,
                                  compevent_restrictions = compevent_restrictions,
                                  restrictions = restrictions,
@@ -2764,6 +2796,7 @@ gformula_binary_eof <- function(obs_data, id,
   } else {
     pools <- lapply(seq_along(comb_interventions), FUN = function(i){
       simulate(fitcov = fitcov, fitY = fitY, fitD = NA,
+               ymodel_predict_custom = ymodel_predict_custom,
                yrestrictions = yrestrictions,
                compevent_restrictions = compevent_restrictions,
                restrictions = restrictions,
@@ -2823,6 +2856,7 @@ gformula_binary_eof <- function(obs_data, id,
                                       covparams = covparams, covnames = covnames, covtypes = covtypes,
                                       covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                                       basecovs = basecovs, ymodel = ymodel,
+                                      ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
                                       histvars = histvars, histvals = histvals, histories = histories,
                                       comprisk = comprisk, compevent_model = compevent_model,
                                       yrestrictions = yrestrictions,
@@ -2849,6 +2883,7 @@ gformula_binary_eof <- function(obs_data, id,
                          covparams = covparams, covnames = covnames, covtypes = covtypes,
                          covfits_custom = covfits_custom, covpredict_custom = covpredict_custom,
                          basecovs = basecovs, ymodel = ymodel,
+                         ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
                          histvars = histvars, histvals = histvals, histories = histories,
                          comprisk = comprisk, compevent_model = compevent_model,
                          yrestrictions = yrestrictions,

@@ -19,6 +19,8 @@ gformula_survival(
   basecovs = NA,
   outcome_name,
   ymodel,
+  ymodel_fit_custom = NULL,
+  ymodel_predict_custom = NULL,
   compevent_name = NULL,
   compevent_model = NA,
   compevent_cens = FALSE,
@@ -97,6 +99,10 @@ in \code{histories} is to be applied.}
 
 \item{ymodel}{Model statement for the outcome variable.}
 
+\item{ymodel_fit_custom}{Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.}
+
+\item{ymodel_predict_custom}{Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details. The default is \code{NULL}.}
+
 \item{compevent_name}{Character string specifying the name of the competing event variable in \code{obs_data}.}
 
 \item{compevent_model}{Model statement for the competing event variable. The default is \code{NA}.}
@@ -150,14 +156,14 @@ of that covariate given the condition in the second entry is false such that \em
 of the covariate distribution is available; and its fourth entry a value used by the function in the
 third entry. The default is \code{NA}.}
 
-\item{yrestrictions}{List of vectors. Each vector containins as its first entry
+\item{yrestrictions}{List of vectors. Each vector contains as its first entry
 a condition and its second entry an integer. When the
 condition is \code{TRUE}, the outcome variable is simulated
 according to the fitted model; when the condition is \code{FALSE},
 the outcome variable takes on the value in the second entry.
 The default is \code{NA}.}
 
-\item{compevent_restrictions}{List of vectors. Each vector containins as its first entry
+\item{compevent_restrictions}{List of vectors. Each vector contains as its first entry
 a condition and its second entry an integer. When the
 condition is \code{TRUE}, the competing event variable is simulated
 according to the fitted model; when the condition is \code{FALSE},

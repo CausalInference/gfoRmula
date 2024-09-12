@@ -55,6 +55,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @param fitcov                  List of model fits for the time-varying covariates.
 #' @param fitY                    Model fit for the outcome variable.
 #' @param fitD                    Model fit for the competing event variable, if any.
+#' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.
 #' @param yrestrictions           List of vectors. Each vector containins as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
@@ -134,7 +135,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @return                        A data table containing simulated data under the specified intervention.
 #' @keywords internal
 #' @import data.table
-simulate <- function(o, fitcov, fitY, fitD,
+simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
                      yrestrictions, compevent_restrictions, restrictions,
                      outcome_name, compevent_name, time_name,
                      intvars, interventions, int_times, histvars, histvals, histories,
@@ -242,18 +243,30 @@ simulate <- function(o, fitcov, fitY, fitD,
       newdf <- pool[pool[[time_name]] == t]
       # Generate outcome probabilities
       if (outcome_type == 'survival'){
-        set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+        if (is.null(ymodel_predict_custom)){
+          set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+        } else {
+          set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdf = newdf))
+        }
       } else if (outcome_type == 'continuous_eof'){
         if (t < (time_points - 1)){
           set(newdf, j = 'Ey', value = as.double(NA))
         } else if (t == (time_points - 1)){
-          set(newdf, j = 'Ey', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          if (is.null(ymodel_predict_custom)){
+            set(newdf, j = 'Ey', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          } else {
+            set(newdf, j = 'Ey', value = ymodel_predict_custom(fitY, newdf = newdf))
+          }
         }
       } else if (outcome_type == 'binary_eof'){
         if (t < (time_points - 1)){
           set(newdf, j = 'Py', value = as.double(NA))
         } else if (t == (time_points - 1)){
-          set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          if (is.null(ymodel_predict_custom)){
+            set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          } else {
+            set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdata = newdf))
+          }
         }
       }
       if (!is.na(yrestrictions[[1]][[1]])){ # Check if there are restrictions on outcome
@@ -555,18 +568,31 @@ simulate <- function(o, fitcov, fitY, fitD,
         } else {
           set(newdf, j = 'D', value = 0)
         }
-        set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+        if (is.null(ymodel_predict_custom)){
+          set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+        } else {
+          set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdata = newdf))
+        }
       } else if (outcome_type == 'continuous_eof'){
         if (t < (time_points - 1)){
           set(newdf, j = 'Ey', value = as.double(NA))
         } else if (t == (time_points - 1)){
-          set(newdf, j = 'Ey', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          if (is.null(ymodel_predict_custom)){
+            set(newdf, j = 'Ey', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          } else {
+            set(newdf, j = 'Ey', value = ymodel_predict_custom(fitY, newdf = newdf))
+          }
         }
       } else if (outcome_type == 'binary_eof'){
         if (t < (time_points - 1)){
           set(newdf, j = 'Py', value = as.double(NA))
         } else if (t == (time_points - 1)){
-          set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          if (is.null(ymodel_predict_custom)){
+            set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
+          } else {
+            set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdf = newdf))
+          }
+
         }
       }
       if (!is.na(yrestrictions[[1]][[1]])){ # Check if there are restrictions on outcome

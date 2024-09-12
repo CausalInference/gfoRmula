@@ -11,7 +11,8 @@ pred_fun_Y(
   outcome_name,
   time_name,
   obs_data,
-  model_fits
+  model_fits,
+  ymodel_fit_custom
 )
 }
 \arguments{
@@ -32,6 +33,8 @@ the outcome variable takes on the value in the second entry.}
 \item{obs_data}{Data on which the model is fit.}
 
 \item{model_fits}{Logical scalar indicating whether to return the fitted models. The default is \code{FALSE}.}
+
+\item{ymodel_fit_custom}{Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details.}
 }
 \value{
 Fitted model for the outcome variable.

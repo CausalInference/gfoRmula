@@ -1,0 +1,84 @@
+---
+title: "Using Custom Outcome Models in gfoRmula"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using Custom Outcome Models in gfoRmula}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+urlcolor: blue
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+By default, the \verb|gfoRmula| package uses a pooled logistic regression model for survival outcomes, logistic regression model for binary end-of-follow-up outcomes, and a linear regression model for continuous end-of-follow-up outcomes. Starting from version 1.1.0, the \verb|gfoRmula| package allows users to apply their own type of outcome models. This document describes how to specify such custom outcome models. This document assumes that readers have read the long-form package documentation of [McGrath et al. (2020)](https://doi.org/10.1016/j.patter.2020.100008).
+
+## Specifying custom outcome models
+
+To specify custom outcome models, users must provide functions that fit the outcome model and obtain estimates from the fitted model through the parameters \verb|ymodel_fit_custom| and \verb|ymodel_predict_custom|, respectively, in the \verb|gformula| function. 
+
+The function for fitting the outcome model must take the parameters \verb|ymodel| and \verb|obs_data|. Below, we illustrate a function for fitting an outcome model using a random forest. This code uses the \verb|randomForest| package.
+
+```{r}
+ymodel_fit_custom <- function(ymodel, obs_data){
+  return(randomForest::randomForest(formula = ymodel, data = obs_data))
+}
+```
+
+The function for obtaining estimates from the model must take the parameters \verb|fit| (the fitted outcome model) and \verb|newdf| (a \verb|data.table| containing the simulated dataset at time $t$). This function must return the estimated probability of the outcome for survival and binary end-of-follow-up outcomes or the estimated mean of the outcome for continuous end-of-follow-up outcomes in \verb|newdf|. Continuing with the random forest example, the code below obtains the estimated outcome mean for a continuous end-of-follow-up outcome. This code leverages the \verb|predict.randomForest| function in the \verb|randomForest| package.
+
+```{r}
+ymodel_predict_custom <- function(fit, newdf){
+  return(as.numeric(predict(object = fit, newdata = newdf)))
+}
+```
+
+
+## Example
+
+We perform an analysis similar to that Example 3 in [McGrath et al. (2020)](https://doi.org/10.1016/j.patter.2020.100008), except we use the custom outcome model from the previous section. 
+
+```{r, echo=FALSE}
+library('gfoRmula')
+library('data.table')
+```
+
+```{r}
+library('Hmisc')
+id <- 'id'
+time_name <- 't0'
+covnames <- c('L1', 'L2', 'A')
+outcome_name <- 'Y'
+outcome_type <- 'continuous_eof'
+covtypes <- c('categorical', 'normal', 'binary')
+histories <- c(lagged)
+histvars <- list(c('A', 'L1', 'L2'))
+covparams <- list(covmodels = c(L1 ~ lag1_A + lag1_L1 + L3 + t0 +
+                                  rcspline.eval(lag1_L2, knots = c(-1, 0, 1)),
+                                L2 ~ lag1_A + L1 + lag1_L1 + lag1_L2 + L3 + t0,
+                                A ~ lag1_A + L1 + L2 + lag1_L1 + lag1_L2 + L3 + t0))
+ymodel <- Y ~ A + L1 + L2 + lag1_A + lag1_L1 + lag1_L2 + L3
+intervention1.A <- list(static, rep(0, 7))
+intervention2.A <- list(static, rep(1, 7))
+int_descript <- c('Never treat', 'Always treat')
+nsimul <- 10000
+
+gform_cont_eof <- gformula(obs_data = continuous_eofdata,
+                           id = id, time_name = time_name,
+                           covnames = covnames, outcome_name = outcome_name,
+                           outcome_type = outcome_type, covtypes = covtypes,
+                           covparams = covparams, ymodel = ymodel,
+                           ymodel_fit_custom = ymodel_fit_custom, 
+                           ymodel_predict_custom = ymodel_predict_custom,
+                           intervention1.A = intervention1.A,
+                           intervention2.A = intervention2.A,
+                           int_descript = int_descript,
+                           histories = histories, histvars = histvars,
+                           basecovs = c("L3"), nsimul = nsimul, seed = 1234)
+gform_cont_eof
+```
+
+## References
+
+McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, Young JG. gfoRmula: an R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020 Jun 12;1(3).

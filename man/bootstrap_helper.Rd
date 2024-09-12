@@ -24,6 +24,8 @@ bootstrap_helper(
   histvals,
   histories,
   ymodel,
+  ymodel_fit_custom,
+  ymodel_predict_custom,
   yrestrictions,
   compevent_restrictions,
   restrictions,
@@ -111,6 +113,10 @@ in \code{histories} is to be applied.}
 \item{histories}{Vector of history functions to apply to the variables specified in \code{histvars}.}
 
 \item{ymodel}{Model statement for the outcome variable.}
+
+\item{ymodel_fit_custom}{Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details.}
+
+\item{ymodel_predict_custom}{Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.}
 
 \item{yrestrictions}{List of vectors. Each vector containins as its first entry
 a condition and its second entry an integer. When the

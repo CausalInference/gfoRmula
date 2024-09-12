@@ -5,6 +5,9 @@
 -   Added a new approach for specifying interventions in the
     `gformula()` function. See the vignette “A Simplified Approach for
     Specifying Interventions in gfoRmula”.
+-   Added option for users to specify custom outcome models in the
+    `gformula()` function. See the vignette “Using Custom Outcome Models
+    in gfoRmula”.
 
 ### Changes in Version 1.0.4 (2024-01-30)
 

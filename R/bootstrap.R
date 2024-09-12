@@ -48,6 +48,8 @@
 #' @param histvals                List of length two. The first element is a numeric vector specifying the lags used in the model statements (e.g., if \code{lag1_varname} and \code{lag2_varname} were included in the model statements, this vector would be \code{c(1,2)}). The second element is a numeric vector specifying the lag averages used in the model statements.
 #' @param histories               Vector of history functions to apply to the variables specified in \code{histvars}.
 #' @param ymodel                  Model statement for the outcome variable.
+#' @param ymodel_fit_custom       Function specifying a custom outcome model. See the vignette "Using Custom Outcome Models in gfoRmula" for details.
+#' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.
 #' @param yrestrictions           List of vectors. Each vector containins as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
@@ -115,7 +117,8 @@
 bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              intvars, interventions, int_times, ref_int,
                              covparams, covnames, covtypes, covfits_custom, covpredict_custom, basecovs, histvars, histvals, histories,
-                             ymodel, yrestrictions, compevent_restrictions, restrictions,
+                             ymodel, ymodel_fit_custom, ymodel_predict_custom,
+                             yrestrictions, compevent_restrictions, restrictions,
                              comprisk, compevent_model,
                              time_name, outcome_name, compevent_name,
                              ranges, parallel, ncores, max_visits,
@@ -143,7 +146,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                          time_name = time_name, obs_data = resample_data_geq_0,
                          model_fits = FALSE)
   fitY <- pred_fun_Y(ymodel, yrestrictions, outcome_type, outcome_name, time_name, resample_data_geq_0,
-                     model_fits = FALSE)
+                     model_fits = FALSE, ymodel_fit_custom = ymodel_fit_custom)
   if (comprisk){
     fitD <- pred_fun_D(compevent_model, compevent_restrictions, resample_data_geq_0, model_fits = FALSE)
   } else {
@@ -177,6 +180,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
   # Simulate data under different interventions
   pools <- lapply(seq_along(comb_interventions), FUN = function(i){
     simulate(fitcov = fitcov, fitY = fitY, fitD = fitD,
+             ymodel_predict_custom = ymodel_predict_custom,
              yrestrictions = yrestrictions,
              compevent_restrictions = compevent_restrictions,
              restrictions = restrictions,
@@ -329,7 +333,8 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
 bootstrap_helper_with_trycatch <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              intvars, interventions, int_times, ref_int,
                              covparams, covnames, covtypes, covfits_custom, covpredict_custom, basecovs, histvars, histvals, histories,
-                             ymodel, yrestrictions, compevent_restrictions, restrictions,
+                             ymodel, ymodel_fit_custom, ymodel_predict_custom,
+                             yrestrictions, compevent_restrictions, restrictions,
                              comprisk, compevent_model,
                              time_name, outcome_name, compevent_name,
                              ranges, parallel, ncores, max_visits,
@@ -341,7 +346,8 @@ bootstrap_helper_with_trycatch <- function(r, time_points, obs_data, bootseeds, 
       r = r, time_points = time_points, obs_data = obs_data, bootseeds = bootseeds, outcome_type = outcome_type,
       intvars = intvars, interventions = interventions, int_times = int_times, ref_int = ref_int,
       covparams = covparams, covnames = covnames, covtypes = covtypes, covfits_custom = covfits_custom, covpredict_custom = covpredict_custom, basecovs = basecovs, histvars = histvars, histvals = histvals, histories = histories,
-      ymodel = ymodel, yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions, restrictions = restrictions,
+      ymodel = ymodel, ymodel_fit_custom = ymodel_fit_custom, ymodel_predict_custom = ymodel_predict_custom,
+      yrestrictions = yrestrictions, compevent_restrictions = compevent_restrictions, restrictions = restrictions,
       comprisk = comprisk, compevent_model = compevent_model,
       time_name = time_name, outcome_name = outcome_name, compevent_name = compevent_name,
       ranges = ranges, parallel = parallel, ncores = ncores, max_visits = max_visits,
