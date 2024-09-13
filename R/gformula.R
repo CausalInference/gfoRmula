@@ -959,9 +959,10 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 
   # Generate seeds for simulations and bootstrapping
   set.seed(seed)
-  newseeds <- sample.int(2^30, size = nsamples + 1)
+  newseeds <- sample.int(2^30, size = nsamples + 2)
   subseed <- newseeds[1]
   bootseeds <- newseeds[2:(nsamples + 1)]
+  subseed_forresampling <- newseeds[nsamples+2]
 
   # Determine ranges of observed covariates and outcome
   ranges <- lapply(seq_along(covnames), FUN = function(i){
@@ -1012,6 +1013,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   len <- length(unique(obs_data$newid))
   # If the number of user desired simulations differs from the number of individuals in
   # the observed dataset, sample the desired number of observed IDs with replacement
+  set.seed(subseed_forresampling)
   if (nsimul < len){
     ids <- as.data.table(sort(sample(unique(obs_data$newid), nsimul, replace = TRUE)))
     colnames(ids) <- "newid"
@@ -1874,9 +1876,10 @@ gformula_continuous_eof <- function(obs_data, id,
 
   # Generate seeds for simulations and bootstrapping
   set.seed(seed)
-  newseeds <- sample.int(2^30, size = nsamples + 1)
+  newseeds <- sample.int(2^30, size = nsamples + 2)
   subseed <- newseeds[1]
   bootseeds <- newseeds[2:(nsamples + 1)]
+  subseed_forresampling <- newseeds[nsamples+2]
 
   # Determine ranges of observed covariates and outcome
   ranges <- lapply(seq_along(covnames), FUN = function(i){
@@ -1912,6 +1915,7 @@ gformula_continuous_eof <- function(obs_data, id,
   len <- length(unique(obs_data$newid))
   # If the number of user desired simulations differs from the number of individuals in
   # the observed dataset, sample the desired number of observed IDs with replacement
+  set.seed(subseed_forresampling)
   if (nsimul < len){
     ids <- as.data.table(sort(sample(unique(obs_data$newid), nsimul, replace = TRUE)))
     colnames(ids) <- "newid"
@@ -2691,9 +2695,10 @@ gformula_binary_eof <- function(obs_data, id,
 
   # Generate seeds for simulations and bootstrapping
   set.seed(seed)
-  newseeds <- sample.int(2^30, size = nsamples + 1)
+  newseeds <- sample.int(2^30, size = nsamples + 2)
   subseed <- newseeds[1]
   bootseeds <- newseeds[2:(nsamples + 1)]
+  subseed_forresampling <- newseeds[nsamples+2]
 
   # Determine ranges of observed covariates and outcome
   ranges <- lapply(seq_along(covnames), FUN = function(i){
@@ -2729,6 +2734,7 @@ gformula_binary_eof <- function(obs_data, id,
   len <- length(unique(obs_data$newid))
   # If the number of user desired simulations differs from the number of individuals in
   # the observed dataset, sample the desired number of observed IDs with replacement
+  set.seed(subseed_forresampling)
   if (nsimul < len){
     ids <- as.data.table(sort(sample(unique(obs_data$newid), nsimul, replace = TRUE)))
     colnames(ids) <- "newid"

@@ -8,6 +8,10 @@
 -   Added option for users to specify custom outcome models in the
     `gformula()` function. See the vignette “Using Custom Outcome Models
     in gfoRmula”.
+-   Fixed an issue where the point estimates differed when changing the
+    number of bootstrap samples. Since this fix involved adding a
+    `set.seed` statement, point estimates can be numerically different
+    from previous versions of the package.
 
 ### Changes in Version 1.0.4 (2024-01-30)
 
