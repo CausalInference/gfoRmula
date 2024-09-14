@@ -129,6 +129,7 @@
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}. The default is \code{TRUE}.
 #' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
 #' \itemize{
 #' \item{Each intervention argument begins with a prefix of \code{intervention}.}
@@ -372,7 +373,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                      nsamples = 0, parallel = FALSE, ncores = NA,
                      ci_method = 'percentile', threads, model_fits = FALSE,
                      boot_diag = FALSE, show_progress = TRUE, ipw_cutoff_quantile = NULL,
-                     ipw_cutoff_value = NULL, int_visit_type = NULL, ...){
+                     ipw_cutoff_value = NULL, int_visit_type = NULL,
+                     sim_trunc = TRUE, ...){
   if (! outcome_type %in% c('survival', 'continuous_eof', 'binary_eof')){
     stop("outcome_type must be 'survival', 'continuous_eof', or 'binary_eof', but outcome_type was set to", outcome_type)
   }
@@ -404,7 +406,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                       ci_method = ci_method, threads = threads,
                       model_fits = model_fits, boot_diag = boot_diag,
                       show_progress = show_progress, ipw_cutoff_quantile = ipw_cutoff_quantile,
-                      ipw_cutoff_value = ipw_cutoff_value, int_visit_type = int_visit_type, ...)
+                      ipw_cutoff_value = ipw_cutoff_value, int_visit_type = int_visit_type,
+                      sim_trunc = sim_trunc, ...)
   } else if (outcome_type == 'continuous_eof'){
     gformula_continuous_eof(obs_data = obs_data, id = id,
                             time_name = time_name, covnames = covnames,
@@ -431,7 +434,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                             ci_method = ci_method, threads = threads,
                             model_fits = model_fits, boot_diag = boot_diag,
                             show_progress = show_progress, ipw_cutoff_quantile = ipw_cutoff_quantile,
-                            ipw_cutoff_value = ipw_cutoff_value, int_visit_type = int_visit_type, ...)
+                            ipw_cutoff_value = ipw_cutoff_value, int_visit_type = int_visit_type,
+                            sim_trunc = sim_trunc, ...)
   } else if (outcome_type == 'binary_eof'){
     gformula_binary_eof(obs_data = obs_data, id = id,
                         time_name = time_name, covnames = covnames,
@@ -456,7 +460,8 @@ gformula <- function(obs_data, id, time_points = NULL,
                         ci_method = ci_method, threads = threads,
                         model_fits = model_fits, boot_diag = boot_diag,
                         show_progress = show_progress, ipw_cutoff_quantile = ipw_cutoff_quantile,
-                        ipw_cutoff_value = ipw_cutoff_value, int_visit_type = int_visit_type, ...)
+                        ipw_cutoff_value = ipw_cutoff_value, int_visit_type = int_visit_type,
+                        sim_trunc = sim_trunc, ...)
   }
 }
 
@@ -590,6 +595,7 @@ gformula <- function(obs_data, id, time_points = NULL,
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}. The default is \code{TRUE}.
 #' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
 #' \itemize{
 #' \item{Each intervention argument begins with a prefix of \code{intervention}.}
@@ -757,7 +763,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                               ci_method = 'percentile', threads,
                               model_fits = FALSE, boot_diag = FALSE,
                               show_progress = TRUE, ipw_cutoff_quantile = NULL,
-                              ipw_cutoff_value = NULL, int_visit_type = NULL, ...){
+                              ipw_cutoff_value = NULL, int_visit_type = NULL,
+                              sim_trunc = TRUE, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -1078,7 +1085,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel, max_visits = max_visits,
                                  baselags = baselags, below_zero_indicator = below_zero_indicator,
-                                 min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type, ...)
+                                 min_time = min_time, show_progress = FALSE,
+                                 int_visit_type = int_visit_type, sim_trunc = sim_trunc, ...)
     parallel::stopCluster(cl)
   } else {
     pools <- lapply(seq_along(comb_interventions), FUN = function(i){
@@ -1099,7 +1107,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel, max_visits = max_visits,
                baselags = baselags, below_zero_indicator = below_zero_indicator,
-               min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type[i], ...)
+               min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type[i],
+               sim_trunc = sim_trunc, ...)
     })
   }
 
@@ -1189,7 +1198,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
                                       boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
                                       below_zero_indicator = below_zero_indicator, min_time = min_time,
-                                      show_progress = FALSE, int_visit_type = int_visit_type, ...)
+                                      show_progress = FALSE, int_visit_type = int_visit_type,
+                                      sim_trunc = sim_trunc, ...)
       parallel::stopCluster(cl)
     } else {
       if (show_progress){
@@ -1216,7 +1226,8 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
                          boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
                          below_zero_indicator = below_zero_indicator, min_time = min_time,
-                         show_progress = show_progress, pb = pb, int_visit_type = int_visit_type, ...)
+                         show_progress = show_progress, pb = pb, int_visit_type = int_visit_type,
+                         sim_trunc = sim_trunc, ...)
     }
 
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
@@ -1585,6 +1596,7 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}. The default is \code{TRUE}.
 #' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
 #' \itemize{
 #' \item{Each intervention argument begins with a prefix of \code{intervention}.}
@@ -1681,7 +1693,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                     ci_method = 'percentile', threads,
                                     model_fits = FALSE, boot_diag = FALSE,
                                     show_progress = TRUE, ipw_cutoff_quantile = NULL,
-                                    ipw_cutoff_value = NULL, int_visit_type = NULL, ...){
+                                    ipw_cutoff_value = NULL, int_visit_type = NULL,
+                                    sim_trunc = TRUE, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -1977,7 +1990,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel,
                                  baselags = baselags, below_zero_indicator = below_zero_indicator,
-                                 min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type, ...)
+                                 min_time = min_time, show_progress = FALSE,
+                                 int_visit_type = int_visit_type, sim_trunc = sim_trunc, ...)
     parallel::stopCluster(cl)
   } else {
     pools <- lapply(seq_along(comb_interventions), FUN = function(i){
@@ -1997,7 +2011,8 @@ gformula_continuous_eof <- function(obs_data, id,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel,
                baselags = baselags, below_zero_indicator = below_zero_indicator,
-               min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type[i], ...)
+               min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type[i],
+               sim_trunc = sim_trunc, ...)
     })
   }
 
@@ -2054,7 +2069,8 @@ gformula_continuous_eof <- function(obs_data, id,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
                                       boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
                                       below_zero_indicator = below_zero_indicator, min_time = min_time,
-                                      show_progress = FALSE, int_visit_type = int_visit_type, ...)
+                                      show_progress = FALSE, int_visit_type = int_visit_type,
+                                      sim_trunc = sim_trunc, ...)
       parallel::stopCluster(cl)
 
     } else {
@@ -2082,7 +2098,8 @@ gformula_continuous_eof <- function(obs_data, id,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
                          boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
                          below_zero_indicator = below_zero_indicator, min_time = min_time,
-                         show_progress = show_progress, pb = pb, int_visit_type = int_visit_type, ...)
+                         show_progress = show_progress, pb = pb, int_visit_type = int_visit_type,
+                         sim_trunc = sim_trunc, ...)
     }
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
       as.data.table(t(m$Result))
@@ -2409,6 +2426,7 @@ gformula_continuous_eof <- function(obs_data, id,
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}. The default is \code{TRUE}.
 #' @param ...                     Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
 #' \itemize{
 #' \item{Each intervention argument begins with a prefix of \code{intervention}.}
@@ -2507,7 +2525,8 @@ gformula_binary_eof <- function(obs_data, id,
                                 ci_method = 'percentile', threads,
                                 model_fits = FALSE, boot_diag = FALSE,
                                 show_progress = TRUE, ipw_cutoff_quantile = NULL,
-                                ipw_cutoff_value = NULL, int_visit_type = NULL, ...){
+                                ipw_cutoff_value = NULL, int_visit_type = NULL,
+                                sim_trunc = TRUE, ...){
 
   lag_indicator <- lagavg_indicator <- cumavg_indicator <- c()
   lag_indicator <- update_lag_indicator(covparams$covmodels, lag_indicator)
@@ -2796,7 +2815,8 @@ gformula_binary_eof <- function(obs_data, id,
                                  subseed = subseed, time_points = time_points,
                                  obs_data = obs_data, parallel = parallel,
                                  baselags = baselags, below_zero_indicator = below_zero_indicator,
-                                 min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type, ...)
+                                 min_time = min_time, show_progress = FALSE,
+                                 int_visit_type = int_visit_type, sim_trunc = sim_trunc, ...)
     parallel::stopCluster(cl)
 
   } else {
@@ -2817,7 +2837,8 @@ gformula_binary_eof <- function(obs_data, id,
                subseed = subseed, time_points = time_points,
                obs_data = obs_data, parallel = parallel,
                baselags = baselags, below_zero_indicator = below_zero_indicator,
-               min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type[i], ...)
+               min_time = min_time, show_progress = FALSE, int_visit_type = int_visit_type[i],
+               sim_trunc = sim_trunc, ...)
     })
   }
 
@@ -2874,7 +2895,8 @@ gformula_binary_eof <- function(obs_data, id,
                                       max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
                                       boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
                                       below_zero_indicator = below_zero_indicator, min_time = min_time,
-                                      show_progress = FALSE, int_visit_type = int_visit_type, ...)
+                                      show_progress = FALSE, int_visit_type = int_visit_type,
+                                      sim_trunc = sim_trunc, ...)
       parallel::stopCluster(cl)
 
     } else {
@@ -2902,7 +2924,8 @@ gformula_binary_eof <- function(obs_data, id,
                          max_visits = max_visits, hazardratio = hazardratio, intcomp = intcomp,
                          boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
                          below_zero_indicator = below_zero_indicator, min_time = min_time,
-                         show_progress = show_progress, pb = pb, int_visit_type = int_visit_type, ...)
+                         show_progress = show_progress, pb = pb, int_visit_type = int_visit_type,
+                         sim_trunc = sim_trunc, ...)
     }
     comb_result <- rbindlist(lapply(final_bs, FUN = function(m){
       as.data.table(t(m$Result))

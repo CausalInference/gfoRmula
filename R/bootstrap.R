@@ -104,6 +104,7 @@
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}.
 #' @param ...                     Other arguments
 #' @return                        A list with the following components:
 #' \item{Result}{Matrix containing risks over time under the natural course and under each user-specific intervention.}
@@ -124,7 +125,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
                              ranges, parallel, ncores, max_visits,
                              hazardratio, intcomp, boot_diag, nsimul, baselags,
                              below_zero_indicator, min_time, show_progress, pb,
-                             int_visit_type, ...){
+                             int_visit_type, sim_trunc, ...){
 
   set.seed(bootseeds[r])
 
@@ -197,7 +198,7 @@ bootstrap_helper <- function(r, time_points, obs_data, bootseeds, outcome_type,
              obs_data = resample_data, parallel = FALSE, max_visits = max_visits,
              baselags = baselags, below_zero_indicator = below_zero_indicator,
              min_time = min_time, show_progress = show_progress, pb = pb,
-             int_visit_type = int_visit_type[i], ...)
+             int_visit_type = int_visit_type[i], sim_trunc = sim_trunc, ...)
   })
 
   nat_pool <- pools[[1]] # Simulated data under natural course
@@ -340,7 +341,7 @@ bootstrap_helper_with_trycatch <- function(r, time_points, obs_data, bootseeds, 
                              ranges, parallel, ncores, max_visits,
                              hazardratio, intcomp, boot_diag, nsimul, baselags,
                              below_zero_indicator, min_time, show_progress, pb,
-                             int_visit_type, ...){
+                             int_visit_type, sim_trunc, ...){
   tryCatch({
     bootstrap_helper(
       r = r, time_points = time_points, obs_data = obs_data, bootseeds = bootseeds, outcome_type = outcome_type,
@@ -353,7 +354,7 @@ bootstrap_helper_with_trycatch <- function(r, time_points, obs_data, bootseeds, 
       ranges = ranges, parallel = parallel, ncores = ncores, max_visits = max_visits,
       hazardratio = hazardratio, intcomp = intcomp, boot_diag = boot_diag, nsimul = nsimul, baselags = baselags,
       below_zero_indicator = below_zero_indicator, min_time = min_time, show_progress = show_progress, pb = pb,
-      int_visit_type = int_visit_type, ...)
+      int_visit_type = int_visit_type, sim_trunc = sim_trunc, ...)
   },
   error = function(e){
     warning(paste0('An error occured in bootstrap replicate ', r,

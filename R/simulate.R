@@ -131,6 +131,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
+#' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}.
 #' @param ...                     Other arguments, which are passed to the functions in \code{covpredict_custom}.
 #' @return                        A data table containing simulated data under the specified intervention.
 #' @keywords internal
@@ -143,7 +144,8 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
                      outcome_type, subseed, obs_data, time_points, parallel,
                      covnames, covtypes, covparams, covpredict_custom,
                      basecovs, max_visits, baselags, below_zero_indicator,
-                     min_time, show_progress, pb, int_visit_type, ...){
+                     min_time, show_progress, pb, int_visit_type, sim_trunc,
+                     ...){
   set.seed(subseed)
 
   # Mechanism of passing intervention variable and intervention is different for parallel
@@ -473,22 +475,24 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
               value = cast(covpredict_custom[[i]](obs_data, newdf, fitcov[[i]],time_name, t,
                                              condition, covnames[i], ...)))
         }
-        if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
-           covtypes[i] == 'truncated normal'){
+        if (sim_trunc){
+          if (covtypes[i] == 'normal' || covtypes[i] == 'bounded normal' ||
+              covtypes[i] == 'truncated normal'){
 
-             if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1]][[covnames[i]]]) != 0){
-                newdf[newdf[[covnames[i]]] < ranges[[i]][1], (covnames[i]) := cast(ranges[[i]][1])]
-             }
-             if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
-                newdf[newdf[[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
-             }
-        } else if (covtypes[i] == 'zero-inflated normal') {
-             if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1] & newdf[[covnames[i]]] > 0][[covnames[i]]]) != 0){
-                newdf[newdf[[covnames[i]]] < ranges[[i]][1] & newdf[[covnames[i]]] > 0, (covnames[i]) := cast(ranges[[i]][1])]
-             }
-             if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
-                newdf[newdf[[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
-             }
+            if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1]][[covnames[i]]]) != 0){
+              newdf[newdf[[covnames[i]]] < ranges[[i]][1], (covnames[i]) := cast(ranges[[i]][1])]
+            }
+            if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
+              newdf[newdf[[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
+            }
+          } else if (covtypes[i] == 'zero-inflated normal') {
+            if (length(newdf[newdf[[covnames[i]]] < ranges[[i]][1] & newdf[[covnames[i]]] > 0][[covnames[i]]]) != 0){
+              newdf[newdf[[covnames[i]]] < ranges[[i]][1] & newdf[[covnames[i]]] > 0, (covnames[i]) := cast(ranges[[i]][1])]
+            }
+            if (length(newdf[newdf[[covnames[i]]] > ranges[[i]][2]][[covnames[i]]]) != 0){
+              newdf[newdf[[covnames[i]]] > ranges[[i]][2], (covnames[i]) := cast(ranges[[i]][2])]
+            }
+          }
         }
         # Check if there are restrictions on covariate simulation
         if (!is.na(restrictions[[1]][[1]])){

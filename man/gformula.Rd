@@ -52,6 +52,7 @@ gformula(
   ipw_cutoff_quantile = NULL,
   ipw_cutoff_value = NULL,
   int_visit_type = NULL,
+  sim_trunc = TRUE,
   ...
 )
 }
@@ -213,6 +214,8 @@ In many applications, users may wish to set this argument equal to \code{paralle
 \item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
+
+\item{sim_trunc}{Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}. The default is \code{TRUE}.}
 
 \item{...}{Other arguments, including (a) those that specify the interventions and (b) those that are passed to the functions in \code{covpredict_custom}. To specify interventions, users can supply arguments with the following naming requirements
 \itemize{
