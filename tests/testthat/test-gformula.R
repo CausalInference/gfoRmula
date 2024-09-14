@@ -124,7 +124,6 @@ test_that("IPCW", {
                           histories = histories, histvars = histvars,
                           seed = 1234)
   )
-
 })
 
 
