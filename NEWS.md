@@ -12,6 +12,7 @@
     number of bootstrap samples. Since this fix involved adding a
     `set.seed` statement, point estimates can be numerically different
     from previous versions of the package.
+-   Added unit tests.
 
 ### Changes in Version 1.0.4 (2024-01-30)
 

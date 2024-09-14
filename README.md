@@ -7,6 +7,8 @@
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/gfoRmula)](https://cran.r-project.org/package=gfoRmula)
 [![R-CMD-check](https://github.com/CausalInference/gfoRmula/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CausalInference/gfoRmula/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/CausalInference/gfoRmula/graph/badge.svg)](https://app.codecov.io/gh/CausalInference/gfoRmula)
 <!-- badges: end -->
 
 ## Installation
