@@ -968,8 +968,11 @@ gformula_survival <- function(obs_data, id, time_points = NULL,
   set.seed(seed)
   newseeds <- sample.int(2^30, size = nsamples + 2)
   subseed <- newseeds[1]
-  bootseeds <- newseeds[2:(nsamples + 1)]
-  subseed_forresampling <- newseeds[nsamples+2]
+  subseed_forresampling <- newseeds[2]
+  if (nsamples > 0){
+    bootseeds <- newseeds[3:(nsamples + 2)]
+  }
+
 
   # Determine ranges of observed covariates and outcome
   ranges <- lapply(seq_along(covnames), FUN = function(i){
@@ -1891,8 +1894,10 @@ gformula_continuous_eof <- function(obs_data, id,
   set.seed(seed)
   newseeds <- sample.int(2^30, size = nsamples + 2)
   subseed <- newseeds[1]
-  bootseeds <- newseeds[2:(nsamples + 1)]
-  subseed_forresampling <- newseeds[nsamples+2]
+  subseed_forresampling <- newseeds[2]
+  if (nsamples > 0){
+    bootseeds <- newseeds[3:(nsamples + 2)]
+  }
 
   # Determine ranges of observed covariates and outcome
   ranges <- lapply(seq_along(covnames), FUN = function(i){
@@ -2716,8 +2721,11 @@ gformula_binary_eof <- function(obs_data, id,
   set.seed(seed)
   newseeds <- sample.int(2^30, size = nsamples + 2)
   subseed <- newseeds[1]
-  bootseeds <- newseeds[2:(nsamples + 1)]
-  subseed_forresampling <- newseeds[nsamples+2]
+  subseed_forresampling <- newseeds[2]
+  if (nsamples > 0){
+    bootseeds <- newseeds[3:(nsamples + 2)]
+  }
+
 
   # Determine ranges of observed covariates and outcome
   ranges <- lapply(seq_along(covnames), FUN = function(i){
