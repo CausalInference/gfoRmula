@@ -39,7 +39,7 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
     names(obs_means) <- covnames
     for (covname in covnames){
       covtype <- covtypes[which(covname == covnames)]
-      if (covtype != 'categorical'){
+      if (!(covtype %in% c('categorical', 'categorical time'))){
         cov_means <- rep(NA, length = time_points)
         for (i in 0:(time_points-1)){
           cur_time_ind <- obs_data[[time_name]] == i
@@ -51,7 +51,7 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
             cov_means[i+1] <- stats::weighted.mean(x = obs_data[cur_time_ind][[covname]], w = w[prev_time_ind], na.rm = TRUE)
           }
         }
-      } else {
+      } else if (covtype == 'categorical') {
         all_levels <- levels(as.factor(obs_data[[covname]]))
         cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
                                 V1 = rep(-1, length = time_points * length(all_levels)))
@@ -75,6 +75,8 @@ obs_calculate <- function(outcome_name, compevent_name, compevent2_name, censor_
             }
           }
         }
+      } else {
+        cov_means <- rep(NA, time_points)
       }
       obs_means[[covname]] <- cov_means
     }
@@ -299,14 +301,14 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
     names(sim_results_cov) <- covnames
     for (covname in covnames){
       covtype <- covtypes[which(covname == covnames)]
-      if (covtype != 'categorical'){
+      if (!(covtype %in% c('categorical', 'categorical time'))){
         cov_means <- rep(NA, length = time_points)
         for (i in 0:(time_points - 1)){
           cur_time_ind <- nat_pool[[time_name]] == i
           psurv <- get_weights(weights = weights, cur_time_ind = cur_time_ind)
           cov_means[i+1] <- mean(nat_pool[cur_time_ind][[covname]] * psurv) / mean(psurv)
         }
-      } else {
+      } else if (covtype == 'categorical') {
         all_levels <- levels(as.factor(obs_data[[covname]]))
         cov_means <- data.table(t0 = rep(0:(time_points - 1), each = length(all_levels)),
                                 V1 = rep(-1, length = time_points * length(all_levels)))
@@ -321,6 +323,8 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
             row_ind <- row_ind + 1
           }
         }
+      } else {
+        cov_means <- rep(NA, time_points)
       }
       sim_results_cov[[covname]] <- cov_means
     }
