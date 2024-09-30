@@ -1,6 +1,6 @@
 ## Package Updates
 
-### Changes in Version 1.1.0 (TBD)
+### Changes in Version 1.1.0 (2024-09-30)
 
 -   Added a new approach for specifying interventions in the
     `gformula()` function. See the vignette “A Simplified Approach for
