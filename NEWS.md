@@ -1,5 +1,10 @@
 ## Package Updates
 
+### Changes in Version 1.1.1 (TBD)
+
+-   Fixed a bug occuring when using custom outcome models in the
+    `gformula()` function (Thanks to @Keling-Wang)
+
 ### Changes in Version 1.1.0 (2024-09-30)
 
 -   Added a new approach for specifying interventions in the

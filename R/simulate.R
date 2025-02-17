@@ -267,7 +267,7 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
           if (is.null(ymodel_predict_custom)){
             set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
           } else {
-            set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdata = newdf))
+            set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdf = newdf))
           }
         }
       }
@@ -575,7 +575,7 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
         if (is.null(ymodel_predict_custom)){
           set(newdf, j = 'Py', value = stats::predict(fitY, type = 'response', newdata = newdf))
         } else {
-          set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdata = newdf))
+          set(newdf, j = 'Py', value = ymodel_predict_custom(fitY, newdf = newdf))
         }
       } else if (outcome_type == 'continuous_eof'){
         if (t < (time_points - 1)){
