@@ -6,7 +6,7 @@ Authors@R: c(person("Victoria", "Lin", role = c("aut"),
                      comment = "V. Lin and S. McGrath made equal 
                      contributions"),
               person("Sean", "McGrath", role = c("aut", "cre"),
-                      email = "sean_mcgrath@g.harvard.edu", 
+                      email = "sean.mcgrath514@gmail.com", 
                       comment = c(ORCID = "0000-0002-7281-3516", 
                       "V. Lin and S. McGrath made equal contributions")),
               person("Zilu", "Zhang", role = c("aut"),

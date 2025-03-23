@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Package Updates
 
-### Changes in Version 1.1.1 (TBD)
+### Changes in Version 1.1.1 (2025-03-23)
 *  Fixed a bug occuring when using custom outcome models in the `gformula()` function (Thanks to @Keling-Wang)
 
 ### Changes in Version 1.1.0 (2024-09-30)
