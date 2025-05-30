@@ -211,6 +211,10 @@ error_catch <- function(id, nsimul, intvars, interventions, int_times, int_descr
       if (is.factor(obs_data[[covnames[k]]])){
         stop("binary covariates must be numeric 0-1")
       }
+    } else if (covtypes[k] == 'categorical'){
+      if (!is.factor(obs_data[[covnames[k]]])){
+        stop("categorical covariates should be factor variables")
+      }
     }
   }
   all_covtypes <- c('binary', 'normal', 'categorical', 'bounded normal',

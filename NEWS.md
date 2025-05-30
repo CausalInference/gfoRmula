@@ -1,8 +1,13 @@
 ## Package Updates
 
-### Changes in Version 1.1.1 (TBD)
+### Changes in Version 1.1.2 (TBD)
 
--   Fixed a bug occuring when using custom outcome models in the
+-   Fixed an error occurring when simulating categorical covariates
+    (Thanks to @demetriomagatti)
+
+### Changes in Version 1.1.1 (2025-03-23)
+
+-   Fixed a bug occurring when using custom outcome models in the
     `gformula()` function (Thanks to @Keling-Wang)
 
 ### Changes in Version 1.1.0 (2024-09-30)
@@ -16,7 +21,7 @@
 -   Added the option to not truncate covariates simulated from a normal
     distribution. See the argument `sim_trunc` to the `gformula()`
     function
--   Fixed a bug occuring when using covariates of type
+-   Fixed a bug occurring when using covariates of type
     `"categorical time"`
 -   Fixed an issue where the point estimates differed when changing the
     number of bootstrap samples. Since this fix involved adding a

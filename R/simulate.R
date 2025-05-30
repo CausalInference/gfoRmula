@@ -346,8 +346,12 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
                                                        newdata = newdf),
                                      est_sd = rmses[[i]])))
         } else if (covtypes[i] == 'categorical'){
-          set(newdf, j = covnames[i],
-              value = cast(stats::predict(fitcov[[i]], type = 'class', newdata = newdf)))
+          est_probs <- stats::predict(fitcov[[i]], type = 'probs', newdata = newdf)
+          cov_levels <- levels(obs_data[[covnames[i]]])
+          prediction <- apply(est_probs, 1, function(probs) {
+            sample(cov_levels, size = 1, prob = probs)
+          })
+          set(newdf, j = covnames[i], value = cast(prediction))
         } else if (covtypes[i] == 'zero-inflated normal'){
           set(newdf, j = paste("I_", covnames[i], sep = ""),
               value = predict_binomial(data_len, 1, stats::predict(fitcov[[i]][[1]], type = 'response',
