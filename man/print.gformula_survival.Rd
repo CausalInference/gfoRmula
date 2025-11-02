@@ -57,7 +57,7 @@
 
 \item{coefficients}{Logical scalar indicating whether to print the model coefficients. The default is \code{FALSE}.}
 
-\item{stderrs}{Logical scalar indicating whether to print the standard error of the model coefficients. The default is \code{FALSE}.}
+\item{stderrs}{Logical scalar indicating whether to print the standard errors of the model coefficients. The default is \code{FALSE}.}
 
 \item{rmses}{Logical scalar indicating whether to print the model root mean square errors (RMSEs). The default is \code{FALSE}.}
 
@@ -73,7 +73,7 @@
 No value is returned for the \code{print} functions. The \code{summary} function returns the object passed to it and adds the class "summary.gformula" to it.
 }
 \description{
-Print and summary method for objects of class "gformula_survival", "gformula_continuous_eof", or "gformula_binary_eof".
+Print and summary methods for objects of class "gformula_survival", "gformula_continuous_eof", or "gformula_binary_eof".
 }
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a

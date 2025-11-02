@@ -56,13 +56,13 @@ simulate(
 
 \item{ymodel_predict_custom}{Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.}
 
-\item{yrestrictions}{List of vectors. Each vector containins as its first entry
+\item{yrestrictions}{List of vectors. Each vector contains as its first entry
 a condition and its second entry an integer. When the
 condition is \code{TRUE}, the outcome variable is simulated
 according to the fitted model; when the condition is \code{FALSE},
 the outcome variable takes on the value in the second entry.}
 
-\item{compevent_restrictions}{List of vectors. Each vector containins as its first entry
+\item{compevent_restrictions}{List of vectors. Each vector contains as its first entry
 a condition and its second entry an integer. When the
 condition is \code{TRUE}, the competing event variable is simulated
 according to the fitted model; when the condition is \code{FALSE},
@@ -141,7 +141,7 @@ covariate, then that index should be set to \code{NA}.}
 a binary covariate representing a visit process may be missed before
 the individual is censored from the data (in the observed data) or
 a visit is forced (in the simulated data). Multiple values exist in the
-vector when the modeling of more than covariate is attached to a visit
+vector when the modeling of more than one covariate is attached to a visit
 process.}
 
 \item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
@@ -158,7 +158,7 @@ are set to their values at time 0. The default is \code{FALSE}.}
 
 \item{pb}{Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.}
 
-\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variable(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
 

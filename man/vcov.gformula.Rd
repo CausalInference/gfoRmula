@@ -12,10 +12,10 @@
 \item{...}{Other arguments.}
 }
 \value{
-If \code{bootdiag} was set to \code{FALSE} in \code{\link{gformula}},
+If \code{boot_diag} was set to \code{FALSE} in \code{\link{gformula}},
 this function returns a list of the variance-covariance matrices of the
 parameters of the fitted models to the observed data set. If bootstrapping
-was used and \code{bootdiag} was set to \code{TRUE} in
+was used and \code{boot_diag} was set to \code{TRUE} in
 \code{\link{gformula}}, this function returns a list described as follows.
 The first element (named 'Original sample') is a list of the
 variance-covariance matrices of the parameters of the fitted models to the

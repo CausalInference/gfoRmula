@@ -22,7 +22,7 @@ entry some value used by the function (in this case, this entry is not used).}
 
 \item{t}{Integer specifying the current time index.}
 
-\item{int_visit_type}{Logical scalar specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type}
+\item{int_visit_type}{Logical scalar specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variable(s) when performing a carry forward restriction type}
 
 \item{intvar}{A vector specifying the name(s) of the variable(s) to be intervened on.}
 }
@@ -61,7 +61,7 @@ intervention2.A <- list(static, rep(1, time_points))
 int_descript <- c('Never treat', 'Always treat')
 nsimul <- 10000
 
-# At t0 == 5, assign L1 its value at the previous time point
+# At t0 == 5, assign L2 its value at the previous time point
 restrictions <- list(c('L2', 't0 != 5', carry_forward))
 
 gform_basic <- gformula(obs_data = basicdata_nocomp, id = id,

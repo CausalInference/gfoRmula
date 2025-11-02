@@ -37,7 +37,7 @@ in \code{histories} is to be applied.}
 a binary covariate representing a visit process may be missed before
 the individual is censored from the data (in the observed data) or
 a visit is forced (in the simulated data). Multiple values exist in the
-vector when the modeling of more than covariate is attached to a visit
+vector when the modeling of more than one covariate is attached to a visit
 process. A value of \code{NA} should be provided when there is no visit process.}
 
 \item{baselags}{Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not

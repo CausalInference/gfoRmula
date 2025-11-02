@@ -5,7 +5,7 @@
 \alias{censor_data}
 \title{Example Dataset for a Survival Outcome with an Indicator of Censoring Variable}
 \format{
-A data table with 22,500 rows and 7 variables:
+A data table with 118,725 rows and 6 variables:
 \describe{
   \item{t0}{Time index.}
   \item{id}{Unique identifier for each individual.}

@@ -69,7 +69,7 @@ should be set to \code{NA} at that index.}
 
 \item{covfits_custom}{Vector containing custom fit functions for time-varying covariates that
 do not fall within the pre-defined covariate types. It should be in
-the same order \code{covnames}. If a custom fit function is not
+the same order as \code{covnames}. If a custom fit function is not
 required for a particular covariate (e.g., if the first
 covariate is of type \code{"binary"} but the second is of type \code{"custom"}), then that
 index should be set to \code{NA}. The default is \code{NA}.}
@@ -111,7 +111,7 @@ integers used to specify the treatment regime).}
 When an intervention is not applied, the simulated natural course value is used. By default, this argument is set so that all interventions are applied in all time points.}
 
 \item{int_descript}{Vector of character strings, each describing an intervention. It must
-be in same order as the specified interventions (see the \code{...} argument).}
+be in the same order as the specified interventions (see the \code{...} argument).}
 
 \item{ref_int}{Integer denoting the intervention to be used as the
 reference for calculating the end-of-follow-up mean ratio and mean difference. 0 denotes the
@@ -179,7 +179,7 @@ In many applications, users may wish to set this argument equal to \code{paralle
 
 \item{ipw_cutoff_value}{Cutoff value by which to truncate inverse probability weights. The default is \code{NULL} (i.e., no truncation). See "Details".}
 
-\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variable(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
 
@@ -203,7 +203,7 @@ See the vignette "A Simplified Approach for Specifying Interventions in gfoRmula
 }
 \value{
 An object of class "gformula_continuous_eof". The object is a list with the following components:
-\item{result}{Results table containing the estimated mean outcome for all interventions (inculding natural course) at the last time point as well as the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap end-of-follow-up mean ratio, standard error, and 95\% confidence interval.}
+\item{result}{Results table containing the estimated mean outcome for all interventions (including natural course) at the last time point as well as the "cumulative percent intervened on" and the "average percent intervened on". If bootstrapping was used, the results table includes the bootstrap end-of-follow-up mean ratio, standard error, and 95\% confidence interval.}
 \item{coeffs}{A list of the coefficients of the fitted models.}
 \item{stderrs}{A list of the standard errors of the coefficients of the fitted models.}
 \item{vcovs}{A list of the variance-covariance matrices of the parameters of the fitted models.}
@@ -225,15 +225,7 @@ multiple user-specified interventions using the parametric g-formula. See McGrat
 further details concerning the application and implementation of the parametric g-formula.
 }
 \details{
-To assess model misspecification in the parametric g-formula, users can obtain inverse probability (IP) weighted estimates of the natural course means of the time-varying covariates from the observed data.
-See Chiu et al. (2023) for details.
-In addition to the general requirements described in McGrath et al. (2020), the requirements for the input data set and the call to the gformula function for such analyses are described below.
-
-Users need to include a column in \code{obs_data} with a time-varying censoring variable.
-Users need to indicate the name of the censoring variable and a model statement for the censoring variable with parameters \code{censor_name} and \code{censor_model}, respectively.
-Finally, users can specify how to truncate IP weights with the \code{ipw_cutoff_quantile} or \code{ipw_cutoff_value} parameters.
-
-In addition to the package output described in McGrath et al. (2020), the output will display estimates of the "cumulative percent intervened on" and the "average percent intervened on". When using a custom intervention function, users need to specify whether each individual at that time point is eligible to contribute person-time to the percent intervened on calculations. Specifically, this must be specified in the \code{eligible_pt} column of \code{newdf}. By default, \code{eligible_pt} is set to \code{TRUE} for each individual at each time point in custom interventions.
+Users should generally apply the \code{\link{gformula}} function rather than this internal function. See the documentation of the \code{\link{gformula}} function for more details.
 }
 \examples{
 
@@ -280,7 +272,7 @@ Chiu YH, Wen L, McGrath S, Logan R, Dahabreh IJ, Hernán MA. Evaluating model sp
 
 McGrath S, Lin V, Zhang Z, Petito LC, Logan RW, Hernán MA, and JG Young. gfoRmula: An R package for estimating the effects of sustained treatment strategies via the parametric g-formula. Patterns. 2020;1:100008.
 
-Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-.945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
+Robins JM. A new approach to causal inference in mortality studies with a sustained exposure period: application to the healthy worker survivor effect. Mathematical Modelling. 1986;7:1393–1512. [Errata (1987) in Computers and Mathematics with Applications 14, 917.-921. Addendum (1987) in Computers and Mathematics with Applications 14, 923-945. Errata (1987) to addendum in Computers and Mathematics with Applications 18, 477.].
 }
 \seealso{
 \code{\link{gformula}}

@@ -3,7 +3,7 @@
 \docType{data}
 \name{basicdata_nocomp}
 \alias{basicdata_nocomp}
-\title{Example Dataset for a Survival Outcome without Censoring}
+\title{Example Dataset for a Survival Outcome without Competing Events}
 \format{
 A data table with 13,170 rows and 7 variables:
 \describe{

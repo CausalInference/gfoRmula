@@ -1,12 +1,12 @@
 #' Print and summary methods for "gformula" objects
 #'
-#' Print and summary method for objects of class "gformula_survival", "gformula_continuous_eof", or "gformula_binary_eof".
+#' Print and summary methods for objects of class "gformula_survival", "gformula_continuous_eof", or "gformula_binary_eof".
 #'
 #' @param x Object of class "gformula_survival", "gformula_continuous_eof", "gformula_binary_eof", or "summary.gformula" (for \code{print}).
 #' @param object Object of class "gformula" (for \code{summary}).
 #' @param all_times Logical scalar indicating whether to print the results for all time points. This argument is only applicable to objects of class "gformula_survival". If this argument is set to \code{FALSE}, the results are only shown for the final time point. The default is \code{FALSE} for \code{print} and \code{TRUE} for \code{summary}.
 #' @param coefficients Logical scalar indicating whether to print the model coefficients. The default is \code{FALSE}.
-#' @param stderrs Logical scalar indicating whether to print the standard error of the model coefficients. The default is \code{FALSE}.
+#' @param stderrs Logical scalar indicating whether to print the standard errors of the model coefficients. The default is \code{FALSE}.
 #' @param rmses Logical scalar indicating whether to print the model root mean square errors (RMSEs). The default is \code{FALSE}.
 #' @param hazardratio Logical scalar indicating whether to print the hazard ratio between two interventions (if computed). If bootstrapping was used, 95\% confidence intervals will be given. This argument is only applicable to objects of class "gformula_survival". The default is \code{FALSE}.
 #' @param fits Logical scalar indicating whether to print summaries of the fitted models for the time-varying covariates, outcome, and competing event (if applicable). This argument is only effective if the argument \code{model_fits} was set to \code{TRUE} in \code{gformula}. The default is \code{FALSE} for \code{print} and \code{TRUE} for \code{summary}.
@@ -199,7 +199,7 @@ print.summary.gformula <- function(x, all_times = TRUE, coefficients = FALSE,
 #' @param covnames Vector of character strings specifying the names of the time-varying covariates to be plotted. The ordering of covariates given here is used in the plot grid. Time-varying covariates of type \code{"categorical time"} cannot be included. To plot none of the time-varying covariates, set this argument to \code{NA}. By default, this argument is set equal to the \code{covnames} argument used in \code{\link{gformula_survival}}, where covariates of type 'categorical time' are removed.
 #' @param risk Logical scalar indicating whether to include a plot for the risk. The default is \code{TRUE}.
 #' @param survival Logical scalar indicating whether to include a plot for the survival. The default is \code{FALSE}.
-#' @param ncol Number of columns in the plot grid. By default, two columns are used when there is at least two plots.
+#' @param ncol Number of columns in the plot grid. By default, two columns are used when there are at least two plots.
 #' @param nrow Number of rows in the plot grid. By default, a maximum of six rows is used and additional plots are included in subsequent pages.
 #' @param common.legend Logical scalar indicating whether to include a legend. The default is \code{TRUE}.
 #' @param legend Character string specifying the legend position. Valid values are \code{"top"}, \code{"bottom"}, \code{"left"}, \code{"right"}, and \code{"none"}. The default is \code{"bottom"}.
@@ -207,7 +207,7 @@ print.summary.gformula <- function(x, all_times = TRUE, coefficients = FALSE,
 #' @param ylab_cov Vector of character strings for the y axes of the plots for the covariates. This argument must be the same length as \code{covnames}. The i-th element of this argument corresponds to the plot for the i-th element of \code{covnames}.
 #' @param ylab_risk Character string for the y axis of the plot for the risk (if applicable). The default is \code{"risk"}.
 #' @param ylab_surv Character string for the y axis of the plot for the survival (if applicable). The default is \code{"survival"}.
-#' @param pos_risk Integer specifying the position at which to order the risk plot (if applicable). By default, this argument is set to the number of plots in the grid minus one (i.e., orders the risk plot second last).
+#' @param pos_risk Integer specifying the position at which to order the risk plot (if applicable). By default, this argument is set to the number of plots in the grid minus one (i.e., orders the risk plot second to last).
 #' @param pos_surv Integer specifying the position at which to order the survival plot (if applicable). By default, this argument is set to the number of plots in the grid (i.e., orders the survival plot last).
 #' @param ci_risk Logical scalar specifying whether to include error bars for the 95\% confidence intervals of the estimated risk under the natural course. This argument is only effective if the argument \code{nsamples} was set to a positive value in \code{\link{gformula_survival}}. The default is \code{TRUE}.
 #' @param ... Other arguments, which are passed to \code{\link[ggpubr]{ggarrange}}.
@@ -356,7 +356,7 @@ plot.gformula_survival <- function(x, covnames = NULL, risk = TRUE,
 #'
 #' @param x Object of class "gformula_continuous_eof".
 #' @param covnames Vector of character strings specifying the names of the time-varying covariates to be plotted. The ordering of covariates given here is used in the plot grid. Time-varying covariates of type \code{"categorical time"} cannot be included. By default, this argument is set equal to the \code{covnames} argument used in \code{\link{gformula_continuous_eof}}, where covariates of type \code{"categorical time"} are removed.
-#' @param ncol Number of columns in the plot grid. By default, two columns are used when there is at least two plots.
+#' @param ncol Number of columns in the plot grid. By default, two columns are used when there are at least two plots.
 #' @param nrow Number of rows in the plot grid. By default, a maximum of six rows is used and additional plots are included in subsequent pages.
 #' @param common.legend Logical scalar indicating whether to include a legend. The default is \code{TRUE}.
 #' @param legend Character string specifying the legend position. Valid values are \code{"top"}, \code{"bottom"}, \code{"left"}, \code{"right"}, and \code{"none"}. The default is \code{"bottom"}.
@@ -470,7 +470,7 @@ plot.gformula_continuous_eof <- function(x, covnames = NULL, ncol = NULL, nrow =
 #'
 #' @param x Object of class "gformula_binary_eof".
 #' @param covnames Vector of character strings specifying the names of the time-varying covariates to be plotted. The ordering of covariates given here is used in the plot grid. Time-varying covariates of type \code{"categorical time"} cannot be included. By default, this argument is set equal to the \code{covnames} argument used in \code{\link{gformula_binary_eof}}, where covariates of type \code{"categorical time"} are removed.
-#' @param ncol Number of columns in the plot grid. By default, two columns are used when there is at least two plots.
+#' @param ncol Number of columns in the plot grid. By default, two columns are used when there are at least two plots.
 #' @param nrow Number of rows in the plot grid. By default, a maximum of six rows is used and additional plots are included in subsequent pages.
 #' @param common.legend Logical scalar indicating whether to include a legend. The default is \code{TRUE}.
 #' @param legend Character string specifying the legend position. Valid values are \code{"top"}, \code{"bottom"}, \code{"left"}, \code{"right"}, and \code{"none"}. The default is \code{"bottom"}.
@@ -582,13 +582,13 @@ plot.gformula_binary_eof <- function(x, covnames = NULL, ncol = NULL, nrow = NUL
 #' Coefficient method for objects of class "gformula"
 #'
 #' This function extracts the coefficients of the fitted models for the
-#' time-varying covariates, outcome, and compevent event (if applicable).
+#' time-varying covariates, outcome, and competing event (if applicable).
 #'
 #' @param object Object of class "gformula".
 #' @param ... Other arguments.
-#' @return If \code{bootdiag} was set to \code{FALSE} in \code{\link{gformula}},
+#' @return If \code{boot_diag} was set to \code{FALSE} in \code{\link{gformula}},
 #' this function returns a list of the coefficients of the fitted models to the
-#' observed data set. If bootstrapping was used and \code{bootdiag} was set to \code{TRUE} in
+#' observed data set. If bootstrapping was used and \code{boot_diag} was set to \code{TRUE} in
 #' \code{\link{gformula}}, this function returns a list described as follows.
 #' The first element (named 'Original sample') is a list of the coefficients of
 #' the fitted models to the observed data set. The kth element (named 'Bootstrap
@@ -660,10 +660,10 @@ coef.gformula <- function(object, ...){
 #'
 #' @param object Object of class "gformula".
 #' @param ... Other arguments.
-#' @return If \code{bootdiag} was set to \code{FALSE} in \code{\link{gformula}},
+#' @return If \code{boot_diag} was set to \code{FALSE} in \code{\link{gformula}},
 #' this function returns a list of the variance-covariance matrices of the
 #' parameters of the fitted models to the observed data set. If bootstrapping
-#' was used and \code{bootdiag} was set to \code{TRUE} in
+#' was used and \code{boot_diag} was set to \code{TRUE} in
 #' \code{\link{gformula}}, this function returns a list described as follows.
 #' The first element (named 'Original sample') is a list of the
 #' variance-covariance matrices of the parameters of the fitted models to the

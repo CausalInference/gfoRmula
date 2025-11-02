@@ -32,7 +32,7 @@
 
 \item{survival}{Logical scalar indicating whether to include a plot for the survival. The default is \code{FALSE}.}
 
-\item{ncol}{Number of columns in the plot grid. By default, two columns are used when there is at least two plots.}
+\item{ncol}{Number of columns in the plot grid. By default, two columns are used when there are at least two plots.}
 
 \item{nrow}{Number of rows in the plot grid. By default, a maximum of six rows is used and additional plots are included in subsequent pages.}
 
@@ -48,7 +48,7 @@
 
 \item{ylab_surv}{Character string for the y axis of the plot for the survival (if applicable). The default is \code{"survival"}.}
 
-\item{pos_risk}{Integer specifying the position at which to order the risk plot (if applicable). By default, this argument is set to the number of plots in the grid minus one (i.e., orders the risk plot second last).}
+\item{pos_risk}{Integer specifying the position at which to order the risk plot (if applicable). By default, this argument is set to the number of plots in the grid minus one (i.e., orders the risk plot second to last).}
 
 \item{pos_surv}{Integer specifying the position at which to order the survival plot (if applicable). By default, this argument is set to the number of plots in the grid (i.e., orders the survival plot last).}
 

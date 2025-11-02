@@ -21,7 +21,7 @@
 
 \item{covnames}{Vector of character strings specifying the names of the time-varying covariates to be plotted. The ordering of covariates given here is used in the plot grid. Time-varying covariates of type \code{"categorical time"} cannot be included. By default, this argument is set equal to the \code{covnames} argument used in \code{\link{gformula_binary_eof}}, where covariates of type \code{"categorical time"} are removed.}
 
-\item{ncol}{Number of columns in the plot grid. By default, two columns are used when there is at least two plots.}
+\item{ncol}{Number of columns in the plot grid. By default, two columns are used when there are at least two plots.}
 
 \item{nrow}{Number of rows in the plot grid. By default, a maximum of six rows is used and additional plots are included in subsequent pages.}
 

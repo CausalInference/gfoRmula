@@ -119,13 +119,13 @@ in \code{histories} is to be applied.}
 
 \item{ymodel_predict_custom}{Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.}
 
-\item{yrestrictions}{List of vectors. Each vector containins as its first entry
+\item{yrestrictions}{List of vectors. Each vector contains as its first entry
 a condition and its second entry an integer. When the
 condition is \code{TRUE}, the outcome variable is simulated
 according to the fitted model; when the condition is \code{FALSE},
 the outcome variable takes on the value in the second entry.}
 
-\item{compevent_restrictions}{List of vectors. Each vector containins as its first entry
+\item{compevent_restrictions}{List of vectors. Each vector contains as its first entry
 a condition and its second entry an integer. When the
 condition is \code{TRUE}, the competing event variable is simulated
 according to the fitted model; when the condition is \code{FALSE},
@@ -164,7 +164,7 @@ simulation.}
 a binary covariate representing a visit process may be missed before
 the individual is censored from the data (in the observed data) or
 a visit is forced (in the simulated data). Multiple values exist in the
-vector when the modeling of more than covariate is attached to a visit
+vector when the modeling of more than one covariate is attached to a visit
 process. A value of \code{NA} should be provided when there is no visit process.}
 
 \item{hazardratio}{Logical scalar indicating whether the hazard ratio should be computed between two interventions.}
@@ -191,7 +191,7 @@ are set to their values at time 0. The default is \code{FALSE}.}
 
 \item{pb}{Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.}
 
-\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+\item{int_visit_type}{Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variable(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.}
 
@@ -201,11 +201,12 @@ By default, this argument is set so that the intervened value of the treatment v
 }
 \value{
 A list with the following components:
-\item{Result}{Matrix containing risks over time under the natural course and under each user-specific intervention.}
-\item{ResultRatio}{Matrix containing risk ratios over time under the natural course and under each user-specific intervention.}
-\item{ResultDiff}{Matrix containing risk differences over time under the natural course and under each user-specific intervention.}
+\item{Result}{Matrix containing risks over time under the natural course and under each user-specified intervention.}
+\item{ResultRatio}{Matrix containing risk ratios over time under the natural course and under each user-specified intervention.}
+\item{ResultDiff}{Matrix containing risk differences over time under the natural course and under each user-specified intervention.}
 \item{bootcoeffs}{List of the coefficients of the fitted models. If the argument \code{boot_diag} is set to \code{FALSE}, a value of \code{NA} is given.}
 \item{bootstderrs}{List of the standard errors of the coefficients of the fitted models. If the argument \code{boot_diag} is set to \code{FALSE}, a value of \code{NA} is given.}
+\item{bootvcovs}{List of the variance-covariance matrices of the coefficients of the fitted models. If the argument \code{boot_diag} is set to \code{FALSE}, a value of \code{NA} is given.}
 }
 \description{
 This internal function bootstraps the observed data (i.e., resamples the observed data set with replacement to

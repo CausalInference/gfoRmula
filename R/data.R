@@ -1,4 +1,4 @@
-#' Example Dataset for a Survival Outcome without Censoring
+#' Example Dataset for a Survival Outcome without Competing Events
 #'
 #' A dataset consisting of 13,170 observations on 2,500 individuals over 7 time points. Each row in the dataset corresponds to the record of one individual at one time point.
 #'
@@ -16,7 +16,7 @@
 #' }
 "basicdata_nocomp"
 
-#' Example Dataset for a Survival Outcome with Censoring
+#' Example Dataset for a Survival Outcome with Competing Events
 #'
 #' A dataset consisting of 11,332 observations on 2,500 individuals over 7 time points. Each row in the dataset corresponds to the record of one individual at one time point. Individuals who are censored at time \eqn{k+1} only have a total of \eqn{k+1} records, which correspond to time indices \eqn{0,..., k}.
 #'
@@ -98,7 +98,7 @@
 #'
 #' @docType data
 #'
-#' @format A data table with 22,500 rows and 7 variables:
+#' @format A data table with 118,725 rows and 6 variables:
 #' \describe{
 #'   \item{t0}{Time index.}
 #'   \item{id}{Unique identifier for each individual.}

@@ -56,12 +56,12 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @param fitY                    Model fit for the outcome variable.
 #' @param fitD                    Model fit for the competing event variable, if any.
 #' @param ymodel_predict_custom   Function obtaining predictions from the custom outcome model specified in \code{ymodel_fit_custom}. See the vignette "Using Custom Outcome Models in gfoRmula" for details.
-#' @param yrestrictions           List of vectors. Each vector containins as its first entry
+#' @param yrestrictions           List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the outcome variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
 #'                                the outcome variable takes on the value in the second entry.
-#' @param compevent_restrictions  List of vectors. Each vector containins as its first entry
+#' @param compevent_restrictions  List of vectors. Each vector contains as its first entry
 #'                                a condition and its second entry an integer. When the
 #'                                condition is \code{TRUE}, the competing event variable is simulated
 #'                                according to the fitted model; when the condition is \code{FALSE},
@@ -117,7 +117,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #'                                a binary covariate representing a visit process may be missed before
 #'                                the individual is censored from the data (in the observed data) or
 #'                                a visit is forced (in the simulated data). Multiple values exist in the
-#'                                vector when the modeling of more than covariate is attached to a visit
+#'                                vector when the modeling of more than one covariate is attached to a visit
 #'                                process.
 #' @param baselags                Logical scalar for specifying the convention used for lagi and lag_cumavgi terms in the model statements when pre-baseline times are not
 #'                                included in \code{obs_data} and when the current time index, \eqn{t}, is such that \eqn{t < i}. If this argument is set to \code{FALSE}, the value
@@ -128,7 +128,7 @@ predict_trunc_normal <- function(x, mean, est_sd, a, b){
 #' @param min_time                Numeric scalar specifying lowest value of time \eqn{t} in the observed data set.
 #' @param show_progress           Logical scalar indicating whether to print a progress bar for the number of bootstrap samples completed in the R console. This argument is only applicable when \code{parallel} is set to \code{FALSE} and bootstrap samples are used (i.e., \code{nsamples} is set to a value greater than 0). The default is \code{TRUE}.
 #' @param pb                      Progress bar R6 object. See \code{\link[progress]{progress_bar}} for further details.
-#' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variables(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
+#' @param int_visit_type          Vector of logicals. The kth element is a logical specifying whether to carry forward the intervened value (rather than the natural value) of the treatment variable(s) when performing a carry forward restriction type for the kth intervention in \code{interventions}.
 #'                                When the kth element is set to \code{FALSE}, the natural value of the treatment variable(s) in the kth intervention in \code{interventions} will be carried forward.
 #'                                By default, this argument is set so that the intervened value of the treatment variable(s) is carried forward for all interventions.
 #' @param sim_trunc               Logical scalar indicating whether to truncate simulated covariates to their range in the observed data set. This argument is only applicable for covariates of type \code{"normal"}, \code{"bounded normal"}, \code{"truncated normal"}, and \code{"zero-inflated normal"}.

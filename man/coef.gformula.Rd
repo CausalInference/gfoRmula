@@ -12,9 +12,9 @@
 \item{...}{Other arguments.}
 }
 \value{
-If \code{bootdiag} was set to \code{FALSE} in \code{\link{gformula}},
+If \code{boot_diag} was set to \code{FALSE} in \code{\link{gformula}},
 this function returns a list of the coefficients of the fitted models to the
-observed data set. If bootstrapping was used and \code{bootdiag} was set to \code{TRUE} in
+observed data set. If bootstrapping was used and \code{boot_diag} was set to \code{TRUE} in
 \code{\link{gformula}}, this function returns a list described as follows.
 The first element (named 'Original sample') is a list of the coefficients of
 the fitted models to the observed data set. The kth element (named 'Bootstrap
@@ -23,7 +23,7 @@ to the k-1th bootstrap sample.
 }
 \description{
 This function extracts the coefficients of the fitted models for the
-time-varying covariates, outcome, and compevent event (if applicable).
+time-varying covariates, outcome, and competing event (if applicable).
 }
 \examples{
 ## Estimating the effect of static treatment strategies on risk of a
