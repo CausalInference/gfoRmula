@@ -175,6 +175,20 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
     restrict_covs <- lapply(restrictions, FUN = function(restriction){restriction[[1]]})
   }
 
+  # Update the time-t rows by reference instead of `pl[pl[[time_name]] == t] <- nd`,
+  # which round-trips the whole table. Columns in `nd` but not in `pl` are created
+  # first (NA elsewhere), then the time-t rows are filled.
+  assign_time_rows <- function(pl, nd, idx){
+    for (cn in names(nd)){
+      if (!(cn %in% names(pl))){
+        proto <- nd[[cn]][NA][1]
+        set(pl, j = cn, value = rep(proto, nrow(pl)))
+      }
+      set(pl, i = idx, j = cn, value = nd[[cn]])
+    }
+    invisible(pl)
+  }
+
   # Create histories_int and histvars_int, which are the necessary histories to create after the intervention
   nat_course <- length(intvar) == 1 && intvar == 'none'
   if (!nat_course) {
@@ -235,7 +249,7 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
         pool <- rbind(pool[pool[[time_name]] < t], newdf, fill = TRUE)
         pool <- pool[order(id, get(time_name))]
       } else {
-        pool[pool[[time_name]] == t] <- newdf
+        assign_time_rows(pool, newdf, which(pool[[time_name]] == t))
       }
       # Update datatable with new covariates that are functions of history of existing
       # covariates
@@ -509,7 +523,7 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
             }
           })
         }
-        pool[pool[[time_name]] == t] <- newdf
+        assign_time_rows(pool, newdf, which(pool[[time_name]] == t))
         if (covnames[i] %in% unlist(histvars)){
           ind <- unlist(lapply(histvars, FUN = function(x) {
             covnames[i] %in% x
@@ -548,7 +562,7 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
 
       # Update datatable with new covariates that are functions of history of existing
       # covariates
-      pool[pool[[time_name]] == t] <- newdf
+      assign_time_rows(pool, newdf, which(pool[[time_name]] == t))
 
       if (!(length(intvar) == 1 && intvar == 'none') && length(histvars_int) > 0){
         make_histories(pool = pool, histvars = histvars_int, histvals = histvals,
@@ -620,18 +634,20 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
       if (outcome_type == 'survival'){
         set(newdf, j = 'Y', value = stats::rbinom(data_len, 1, newdf$Py))
         newdf[newdf$D == 1, 'Y' := NA]
+        # Previous time slice, fetched once rather than re-subset per product.
+        prev <- pool[pool[[time_name]] == t - 1, ]
         if (comprisk){
           set(newdf, j = 'prodp1',
-              value = newdf$Py * (1 - newdf$Pd) * pool[pool[[time_name]] == t - 1,]$prodp0 * pool[pool[[time_name]] == t - 1,]$prodd0)
-          set(newdf, j = 'prodd0', value = (1 - newdf$Pd) * pool[pool[[time_name]] == t - 1,]$prodd0)
+              value = newdf$Py * (1 - newdf$Pd) * prev$prodp0 * prev$prodd0)
+          set(newdf, j = 'prodd0', value = (1 - newdf$Pd) * prev$prodd0)
         } else {
           set(newdf, j = 'prodp1',
-              value = newdf$Py * pool[pool[[time_name]] == t - 1,]$prodp0)
+              value = newdf$Py * prev$prodp0)
         }
-        set(newdf, j = 'prodp0', value = (1 - newdf$Py) * pool[pool[[time_name]] == t - 1,]$prodp0)
-        set(newdf, j = 'poprisk', value = pool[pool[[time_name]] == t - 1,]$poprisk + newdf$prodp1)
+        set(newdf, j = 'prodp0', value = (1 - newdf$Py) * prev$prodp0)
+        set(newdf, j = 'poprisk', value = prev$poprisk + newdf$prodp1)
       }
-      pool[pool[[time_name]] == t] <- newdf
+      assign_time_rows(pool, newdf, which(pool[[time_name]] == t))
     }
   }
   colnames(pool)[colnames(pool) == time_name] <- 't0'
@@ -641,9 +657,8 @@ simulate <- function(o, fitcov, fitY, fitD, ymodel_predict_custom,
   if (outcome_type == 'survival'){
     pool[, 'survival' := 1 - pool$poprisk]
   }
-  pool2 <- copy(pool)
   if (show_progress){
     pb$tick()
   }
-  return (pool2)
+  return (pool)
 }

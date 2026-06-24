@@ -70,36 +70,43 @@
 #' @export
 lagged <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
                    below_zero_indicator){
+  # Cache the time-t rows once and align source slices to them by id. This
+  # assumes one row per id per time, as gformula's pool always has.
+  tcol <- pool[[time_name]]
+  t_idx <- which(tcol == t)
+  if (length(t_idx) == 0) return(invisible(pool))
+  t_ids <- pool[[id_name]][t_idx]
   for (i in histvals){
     if (t < i & baselags & !below_zero_indicator){
-      current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
-      lapply(histvars, FUN = function(histvar){
-        classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-        myclass <- paste('as.', classtmp, sep = "")
-        pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) :=
-               get(myclass)(pool[pool[[time_name]] == 0 & get(id_name) %in% current_ids][[histvar]])]
-      })
+      src_idx <- which(tcol == 0)
+      src_pos <- src_idx[match(t_ids, pool[[id_name]][src_idx])]
+      for (histvar in histvars){
+        myclass <- paste0('as.', class(pool[[histvar]][t_idx])[1])
+        set(pool, i = t_idx, j = paste0("lag", i, "_", histvar),
+            value = get(myclass)(pool[[histvar]][src_pos]))
+      }
     } else if (t < i & !below_zero_indicator){
-      lapply(histvars, FUN = function(histvar){
-        classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-        myclass <- paste('as.', classtmp, sep = "")
-        if (is.factor(pool[pool[[time_name]] == t][[histvar]])){
-          reflevel <- levels(pool[pool[[time_name]] == t][[histvar]])[1]
-          pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) := reflevel]
+      for (histvar in histvars){
+        col_t <- pool[[histvar]][t_idx]
+        if (is.factor(col_t)){
+          reflevel <- levels(col_t)[1]
+          set(pool, i = t_idx, j = paste0("lag", i, "_", histvar), value = reflevel)
         } else {
-          pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) := get(myclass)(0)]
+          myclass <- paste0('as.', class(col_t)[1])
+          set(pool, i = t_idx, j = paste0("lag", i, "_", histvar), value = get(myclass)(0))
         }
-      })
+      }
     } else {
-      current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
-      lapply(histvars, FUN = function(histvar){
-        classtmp <- class(pool[pool[[time_name]] == t][[histvar]])
-        myclass <- paste('as.', classtmp, sep = "")
-        pool[pool[[time_name]] == t, (paste("lag", i, "_", histvar, sep = "")) :=
-               get(myclass)(pool[pool[[time_name]] == t - i & get(id_name) %in% current_ids][[histvar]])]
-      })
+      src_idx <- which(tcol == t - i)
+      src_pos <- src_idx[match(t_ids, pool[[id_name]][src_idx])]
+      for (histvar in histvars){
+        myclass <- paste0('as.', class(pool[[histvar]][t_idx])[1])
+        set(pool, i = t_idx, j = paste0("lag", i, "_", histvar),
+            value = get(myclass)(pool[[histvar]][src_pos]))
+      }
     }
   }
+  invisible(pool)
 }
 
 #' @rdname lagged
@@ -110,123 +117,120 @@ cumavg <- function(pool, histvars, time_name, t, id_name, below_zero_indicator){
   } else {
     denom <- t + 1
   }
+  tcol <- pool[[time_name]]
+  t_idx <- which(tcol == t)
+  if (length(t_idx) == 0) return(invisible(pool))
   if (t == 0 & !below_zero_indicator){
     # At first time point, set all cumulative averages equal to the actual value of the
     # variable
-    lapply(histvars, FUN = function(histvar){
-      pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
-             as.double(pool[get(time_name) == t][[histvar]])]
-    })
+    for (histvar in histvars){
+      set(pool, i = t_idx, j = paste0("cumavg_", histvar),
+          value = as.double(pool[[histvar]][t_idx]))
+    }
   } else {
     # At subsequent time points, create new column containing calculated cumulative
     # average until that time point
-    current_ids <- unique(pool[get(time_name) == t][[id_name]])
+    t_ids <- pool[[id_name]][t_idx]
     colnam <- colnames(pool)
     if (!(paste("cumavg_", "_", histvars[1], sep = "") %in% colnam)){
       # The cumulative average variable was not created yet
       # Therefore, cannot use recursive formula
-      id_factor <- is.factor(pool[[id_name]])
-      if (id_factor){
-        lapply(histvars, FUN = function(histvar){
-          pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
-                 as.double(tapply(pool[get(id_name) %in% current_ids &
-                                         get(time_name) <= t][[histvar]],
-                                  droplevels(pool[get(id_name) %in% current_ids &
-                                                    get(time_name) <= t][[id_name]]),
-                                  FUN = mean))]
-        })
-      } else {
-        lapply(histvars, FUN = function(histvar){
-          pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
-                 as.double(tapply(pool[get(id_name) %in% current_ids &
-                                         get(time_name) <= t][[histvar]],
-                                  pool[get(id_name) %in% current_ids &
-                                         get(time_name) <= t][[id_name]], FUN = mean))]
-        })
+      keep <- which(tcol <= t)
+      keep_ids <- pool[[id_name]][keep]
+      for (histvar in histvars){
+        gm <- vapply(split(pool[[histvar]][keep], keep_ids), mean, numeric(1))
+        set(pool, i = t_idx, j = paste0("cumavg_", histvar),
+            value = as.double(gm[as.character(t_ids)]))
       }
     } else {
       # The cumulative average variable was already created
       # Therefore, can use recursive formula
+      prev_idx <- which(tcol == (t - 1))
+      prev_pos <- prev_idx[match(t_ids, pool[[id_name]][prev_idx])]
       for (histvar in histvars){
-        pool[get(time_name) == t, (paste("cumavg_", histvar, sep = "")) :=
-               as.double(
-                 (pool[get(id_name) %in% current_ids & get(time_name) == (t-1)][[paste("cumavg_", histvar, sep = "")]] * (denom - 1)
-                  + pool[get(id_name) %in% current_ids & get(time_name) == t][[histvar]]) / denom
-               )
-        ]
+        cumcol <- paste0("cumavg_", histvar)
+        set(pool, i = t_idx, j = cumcol,
+            value = as.double(
+              (pool[[cumcol]][prev_pos] * (denom - 1) + pool[[histvar]][t_idx]) / denom
+            ))
       }
     }
   }
+  invisible(pool)
 }
 
 #' @rdname lagged
 #' @export
 lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
                    below_zero_indicator){
+  tcol <- pool[[time_name]]
+  t_idx <- which(tcol == t)
+  if (length(t_idx) == 0) return(invisible(pool))
+  t_ids <- pool[[id_name]][t_idx]
+  min_time <- min(tcol)
   for (i in histvals){
     if (t < i & !below_zero_indicator){
       if (baselags){
-        current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
-        lapply(histvars, FUN = function(histvar){
-          pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-                 as.double(pool[pool[[time_name]] == 0 & get(id_name) %in% current_ids, ][[histvar]])]
-        })
+        src_idx <- which(tcol == 0)
+        src_pos <- src_idx[match(t_ids, pool[[id_name]][src_idx])]
+        for (histvar in histvars){
+          set(pool, i = t_idx, j = paste0("lag_cumavg", i, "_", histvar),
+              value = as.double(pool[[histvar]][src_pos]))
+        }
       } else {
         # At time point less than i, set all lagged cumulative averages equal to 0
-        lapply(histvars, FUN = function(histvar){
-          pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) := as.double(0)]
-
-        })
+        for (histvar in histvars){
+          set(pool, i = t_idx, j = paste0("lag_cumavg", i, "_", histvar), value = as.double(0))
+        }
       }
 
-    } else if (t == (i + min(pool[[time_name]]))){
+    } else if (t == (i + min_time)){
       # At time point i, set all lagged cumulative averages equal to the actual value
       # of the variable
-      current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
-      lapply(histvars, FUN = function(histvar){
-        pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-               as.double(pool[pool[[time_name]] == t - i & get(id_name) %in% current_ids, ][[histvar]])]
-      })
-    } else if (t > (i + min(pool[[time_name]]))) {
+      src_idx <- which(tcol == t - i)
+      src_pos <- src_idx[match(t_ids, pool[[id_name]][src_idx])]
+      for (histvar in histvars){
+        set(pool, i = t_idx, j = paste0("lag_cumavg", i, "_", histvar),
+            value = as.double(pool[[histvar]][src_pos]))
+      }
+    } else if (t > (i + min_time)) {
 
       # At time points after i, create new column containing calculated lagged cumulative
       # average until that time point
-      current_ids <- unique(pool[pool[[time_name]] == t][[id_name]])
       colnam <- colnames(pool)
       if (!(paste("lag_cumavg", i, "_", histvars[1], sep = "") %in% colnam)){
         # The lagged cumulative average variable was not created yet
         # Therefore, cannot use recursive formula
-        id_factor <- is.factor(pool[[id_name]])
-        if (id_factor){
-          lapply(histvars, FUN = function(histvar){
-            pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-                   as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
-                                    droplevels(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]]), FUN = mean))]
-          })
-        } else {
-          lapply(histvars, FUN = function(histvar){
-            pool[pool[[time_name]] == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-                   as.double(tapply(pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids, ][[histvar]],
-                                    pool[pool[[time_name]] < t-i+1 & get(id_name) %in% current_ids][[id_name]], FUN = mean))]
-          })
+        keep <- which(tcol < t - i + 1)
+        keep_ids <- pool[[id_name]][keep]
+        for (histvar in histvars){
+          gm <- vapply(split(pool[[histvar]][keep], keep_ids), mean, numeric(1))
+          set(pool, i = t_idx, j = paste0("lag_cumavg", i, "_", histvar),
+              value = as.double(gm[as.character(t_ids)]))
         }
       } else {
         if (below_zero_indicator){
-          denom <- t - i + 1 - min(pool[[time_name]])
+          denom <- t - i + 1 - min_time
         } else {
           denom <- t - i + 1
         }
         # The lagged cumulative average variable was already created
         # Therefore, can use recursive formula
+        prev_idx <- which(tcol == (t - 1))
+        prev_pos <- prev_idx[match(t_ids, pool[[id_name]][prev_idx])]
+        ti_idx <- which(tcol == (t - i))
+        ti_pos <- ti_idx[match(t_ids, pool[[id_name]][ti_idx])]
         for (histvar in histvars){
-          pool[get(time_name) == t, (paste("lag_cumavg", i, "_", histvar, sep = "")) :=
-                 as.double((pool[get(id_name) %in% current_ids & get(time_name) == (t-1)][[paste("lag_cumavg", i, "_", histvar, sep = "")]] * (denom - 1)
-                            + pool[get(id_name) %in% current_ids & get(time_name) == (t - i)][[histvar]]) / denom)
-          ]
+          lacol <- paste0("lag_cumavg", i, "_", histvar)
+          set(pool, i = t_idx, j = lacol,
+              value = as.double(
+                (pool[[lacol]][prev_pos] * (denom - 1) + pool[[histvar]][ti_pos]) / denom
+              ))
         }
       }
     }
   }
+  invisible(pool)
 }
 
 
@@ -254,22 +258,33 @@ lagavg <- function(pool, histvars, histvals, time_name, t, id_name, baselags,
 #' @keywords internal
 visit_sum <- function(pool, histvars, time_name, t, id_name, max_visits){
 
-  current_ids <- unique(pool[pool[[time_name]] ==t ,get(id_name)])
+  tcol <- pool[[time_name]]
+  t_idx <- which(tcol == t)
+  if (length(t_idx) == 0) return(invisible(pool))
   if(t == 0){
-      lapply(histvars,FUN=function(histvar){
-      pool[ pool[[time_name]] == t   , c( paste("ts_", histvar, sep = "") ,  paste("lag1_ts_", histvar, sep = "") ):= list(as.integer(0) , as.integer(0))]
-  ##    pool[ pool[[time_name]] == t , paste("lag1_ts_", histvar, sep = "") := as.integer(0)]
-      })
-
-  } else if (t > 0) {
-    lapply(histvars,FUN=function(histvar) {
-    pool[pool[[time_name]] == t   ,
-         paste('lag1_ts_',histvar,sep="") :=  as.integer( pool[ pool[[time_name]] == (t-1) & get(id_name) %in% current_ids , eval(parse(text=paste('ts_',histvar,sep=""))) ] )]
-    pool[( pool[[time_name]] == t & pool[[histvar]] == 1 )  , paste('ts_',histvar,sep="") := as.integer(0)]
-    pool[( pool[[time_name]] == t & pool[[histvar]] == 0 )  , paste('ts_',histvar,sep="") := as.integer(eval(parse(text=paste('lag1_ts_',histvar,sep=""))) + 1)]
+    for (histvar in histvars){
+      set(pool, i = t_idx, j = paste0("ts_", histvar), value = as.integer(0))
+      set(pool, i = t_idx, j = paste0("lag1_ts_", histvar), value = as.integer(0))
     }
-    )
+  } else if (t > 0) {
+    t_ids <- pool[[id_name]][t_idx]
+    prev_idx <- which(tcol == (t - 1))
+    prev_pos <- prev_idx[match(t_ids, pool[[id_name]][prev_idx])]
+    for (histvar in histvars){
+      ts_col   <- paste0("ts_", histvar)
+      lag_col  <- paste0("lag1_ts_", histvar)
+      lag_vals <- as.integer(pool[[ts_col]][prev_pos])
+      set(pool, i = t_idx, j = lag_col, value = lag_vals)
+      # ts = 0 where the visit occurred this period, lag1_ts + 1 where it did not.
+      hv <- pool[[histvar]][t_idx]
+      touch1 <- which(hv == 1L)
+      touch0 <- which(hv == 0L)
+      if (length(touch1)) set(pool, i = t_idx[touch1], j = ts_col, value = 0L)
+      if (length(touch0)) set(pool, i = t_idx[touch0], j = ts_col,
+                              value = lag_vals[touch0] + 1L)
+    }
   }
+  invisible(pool)
 }
 
 
@@ -307,28 +322,31 @@ visit_sum <- function(pool, histvars, time_name, t, id_name, max_visits){
 make_histories <- function(pool, histvars, histvals, histories, time_name, t, id,
                            max_visits, baselags, below_zero_indicator){
   if (!is.na(histvars[1]) && !is.na(histories[1])){
-    lapply(seq_along(histories), FUN = function(i){
-      if (isTRUE(all.equal(histories[[i]], visit_sum))){
+    # Skip the costlier all.equal() when the functions are identical.
+    same_fun <- function(f, g) identical(f, g) || isTRUE(all.equal(f, g))
+    for (i in seq_along(histories)){
+      hf <- histories[[i]]
+      if (same_fun(hf, visit_sum)){
         visit_sum(pool = pool, histvars = histvars[[i]], time_name = time_name,
                        t = t, id_name = id, max_visits = max_visits[i])
-      } else if (isTRUE(all.equal(histories[[i]], lagged))){
+      } else if (same_fun(hf, lagged)){
         lagged(pool = pool, histvars = histvars[[i]],
                histvals = histvals$lag_indicator,
                time_name = time_name, t = t, id_name = id,
                baselags = baselags, below_zero_indicator = below_zero_indicator)
-      } else if (isTRUE(all.equal(histories[[i]], lagavg))){
+      } else if (same_fun(hf, lagavg)){
         lagavg(pool = pool, histvars = histvars[[i]],
                histvals = histvals$lagavg_indicator,
                time_name = time_name, t = t, id_name = id,
                baselags = baselags, below_zero_indicator = below_zero_indicator)
-      } else if (isTRUE(all.equal(histories[[i]], cumavg))){
+      } else if (same_fun(hf, cumavg)){
         cumavg(pool = pool, histvars = histvars[[i]],
                time_name = time_name, t = t, id_name = id,
                below_zero_indicator = below_zero_indicator)
       } else {
-        histories[[i]](pool = pool, histvars = histvars[[i]], time_name = time_name,
+        hf(pool = pool, histvars = histvars[[i]], time_name = time_name,
                        t = t, id_name = id)
       }
-    })
+    }
   }
 }
