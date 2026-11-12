@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Package Updates
 
 ### Changes in Version 1.1.2 (TBD)
+*  Fixed an error in estimating the natural course covariate means (Thanks to @bsvennblad) 
 *  Fixed an error occurring when simulating categorical covariates (Thanks to @demetriomagatti)
 
 ### Changes in Version 1.1.1 (2025-03-23)

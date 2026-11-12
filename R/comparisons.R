@@ -282,13 +282,10 @@ get_plot_info <- function(outcome_name, compevent_name, compevent2_name, censor_
         if (i == 0){
           psurv <- rep(1, sum(cur_time_ind))
         } else {
-          temp_rows <- nat_pool[[time_name]] < i & nat_pool[[time_name]] >= 0
-          if (comprisk){
-            psurv <- tapply(nat_pool[temp_rows]$prodp0, nat_pool[temp_rows]$id, FUN = prod) *
-              tapply(1 - nat_pool[temp_rows]$Pd, nat_pool[temp_rows]$id, FUN = prod)
-          } else {
-            #psurv <- nat_pool[nat_pool[[time_name]] == i - 1]$survival
-            psurv <- tapply(nat_pool[temp_rows]$prodp0, nat_pool[temp_rows]$id, FUN = prod)
+          prev_rows <- nat_pool[[time_name]] == (i - 1)
+          psurv <- nat_pool[prev_rows]$prodp0
+          if (comprisk) {
+            psurv <- psurv * nat_pool[prev_rows]$prodd0
           }
         }
       } else {
